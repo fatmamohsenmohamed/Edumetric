@@ -39,3 +39,30 @@ def register_user(request):
         "message": "User created successfully",
         "email": email
     })
+
+#data is the insereted data in the database
+@api_view(['POST'])
+def login_user(request):
+    data = request.data
+
+    email = data.get("email")
+    password = data.get("password")
+
+    # 1. check empty fields
+    if not email or not password:
+        return Response({"error": "Email and password are required"}, status=400)
+
+    # 2. check if user exists
+    try:
+        user = User.objects.get(username=email)
+    except User.DoesNotExist:
+        return Response({"error": "Invalid email or password"}, status=400)
+
+    # 3. check password
+    if not user.check_password(password):
+        return Response({"error": "Invalid email or password"}, status=400)
+
+    return Response({
+        "message": "Login successful",
+        "email": email
+    })
