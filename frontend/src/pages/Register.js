@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import "../styles/register.css";
-//  useState → stores your form data
+// useState → stores your form data
 // formData → current values
 // setFormData → updates values
 export default function Register() {
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -41,19 +43,22 @@ export default function Register() {
     if (!response.ok) {
       console.log("Error:", data);
 
-      if (data.error === "Email already exists") {
-        alert("Email already exists. Please login instead.");
+      setError("Email already exists. Redirecting to login...");
+      // de a5r haga w2fna 3ndha 3yzin nzhr el message fel UI
+
+      setTimeout(() => {
         window.location.href = "/login";
-      } else {
-        alert(data.error || "Something went wrong");
-      }
+      }, 1200);
 
       return;
+    } else {
+      setMessage(data.error || "Something went wrong");
     }
 
     // 👇 success case
     console.log("Response from backend:", data);
   };
+
   return (
     <form onSubmit={handleSubmit}>
       <div className="min-h-screen bg-gradient-to-br from-purple-700 via-purple-500 to-indigo-600 flex items-center justify-center p-8">

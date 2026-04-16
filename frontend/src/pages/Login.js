@@ -16,19 +16,50 @@ export default function Login() {
     e.preventDefault();
 
     if (!formData.email || !formData.password) {
-      setError("Please fill all fields");
+      setError("All fields are required");
       return;
     }
 
     setError("");
     setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
-      alert("Logged in successfully 🔥");
-    }, 2000);
-  };
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        // credentials: "include", // session support
+        body: JSON.stringify(formData),
+      });
 
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        throw new Error("Invalid server response");
+      }
+
+      if (!response.ok) {
+        setError(data.error || "Login failed");
+        setLoading(false);
+        return;
+      }
+
+      // success
+      setError("");
+
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 1200);
+
+      // optional redirect
+      // window.location.href = "/dashboard";
+    } catch (err) {
+      setLoading(false);
+      setError(err.message || "Server error. Try again later.");
+    }
+  };
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 px-4">
       <div className="w-full max-w-md">
