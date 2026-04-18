@@ -8,4 +8,7 @@ urlpatterns = [
 
     # 👇 prefix for all API routes
     path("api/", include("edu.urls")),
+    path('api/', include('accounts.urls')),
+    
+
 ]

@@ -4,7 +4,7 @@ import { FaUsers, FaGraduationCap, FaLightbulb } from 'react-icons/fa';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
-export default function AboutUs() {
+export default function About() {
   const [offsetY, setOffsetY] = useState(0);
 
   const handleScroll = () => setOffsetY(window.scrollY);
