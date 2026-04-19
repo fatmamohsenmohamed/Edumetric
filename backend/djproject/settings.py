@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'edu.apps.EduConfig',
     'accounts.apps.AccountsConfig',
+    # 'questions.apps.QuestionConfig'
     'rest_framework',
     'corsheaders',
 
@@ -85,7 +86,7 @@ DATABASES = {
         'NAME': 'EduMetric',
         'USER': 'django_user',
         'PASSWORD': 'Femos526199',
-        'HOST': '192.168.1.39',
+        'HOST': '10.83.136.173',
         'PORT': '1433',
         'OPTIONS': {
             'driver': 'ODBC Driver 17 for SQL Server',
