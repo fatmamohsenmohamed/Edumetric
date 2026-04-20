@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Pricing from "./pages/Pricing";
+import Teacher_Dashboard from "./pages/Teacher_Dashboard";
 function App() {
   return (
     <BrowserRouter>
@@ -13,6 +14,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/teacher_dashboard" element={<Teacher_Dashboard />} />
       </Routes>
     </BrowserRouter>
   );

@@ -41,13 +41,18 @@ export default function Register() {
     if (!response.ok) {
       console.log("Error:", data);
 
-      setError("Email already exists. Redirecting to login...");
+      setError("Account exists. Login");
 
       setTimeout(() => {
         window.location.href = "/login";
-      }, 1200);
+      }, 1200); //2 sec instead of 1200 equivelent to 1.2 min
 
       return;
+    }
+    if (data.user_type === "teacher") {
+      window.location.href = "/teacher";
+    } else {
+      window.location.href = "/student-dashboard";
     }
 
     setError("");
@@ -56,16 +61,26 @@ export default function Register() {
 
   return (
     <>
+      {error && (
+        <div
+          style={{
+            position: "fixed",
+            top: "20px",
+            right: "20px",
+            backgroundColor: "red",
+            color: "white",
+            padding: "10px",
+            borderRadius: "5px",
+          }}
+        >
+          {error}
+        </div>
+      )}
+      const [success, setSuccess] = useState(""); const [error, setError] =
+      useState("");
       <form onSubmit={handleSubmit}>
         <div className="min-h-screen bg-gradient-to-br from-purple-700 via-purple-500 to-indigo-600 flex items-center justify-center p-8">
           <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* ERROR MESSAGE */}
-            {error && (
-              <div className="col-span-full bg-red-500/20 text-red-200 text-sm p-2 rounded-lg text-center">
-                {error}
-              </div>
-            )}
-
             {/* Branding */}
             <div className="hidden md:flex flex-col justify-between bg-gradient-to-br from-purple-600 to-indigo-600 rounded-3xl p-12 text-white">
               <div className="flex flex-col gap-6">
