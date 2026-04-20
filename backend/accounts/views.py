@@ -9,8 +9,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from django.shortcuts import render
 from questions.models import Question, Chapter, Choice
-
-
+from django.shortcuts import redirect
 
 
 @csrf_exempt
@@ -109,38 +108,11 @@ def login(request):
         return JsonResponse({
             "message": "Login successful",
             "user_id": user.id,
-            "email": user.email
+            "email": user.email,
+            "user_type": user.user_type,
+            "redirect": "/teacher_dashboard" if user.user_type == "teacher" else "/login" #shwya w h5lih yroh ll student dashboard bs lma n3mlha
         })
 
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
-    
-# @csrf_exempt
-# def teacher_dashboard(request):
-#     questions = Question.objects.filter(created_by=request.user).order_by("-created_at")
-#     chapters = Chapter.objects.all()
-
-#     # optional filtering (same logic as your filter view)
-#     subject = request.GET.get("subject")
-#     q_type = request.GET.get("type")
-#     difficulty = request.GET.get("difficulty")
-
-#     if subject:
-#         questions = questions.filter(chapter__subject=subject)
-
-#     if q_type:
-#         questions = questions.filter(question_type=q_type)
-
-#     if difficulty:
-#         questions = questions.filter(difficulty=difficulty)
-
-#     return render(request, "teacher/dashboard.html", {
-#         "questions": questions,
-#         "chapters": chapters,
-#         "filters": {
-#             "subject": subject,
-#             "type": q_type,
-#             "difficulty": difficulty
-#         }
-#     })

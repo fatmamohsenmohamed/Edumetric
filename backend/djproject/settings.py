@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'edu.apps.EduConfig',
     'accounts.apps.AccountsConfig',
     'questions.apps.QuestionsConfig',
+    'teacher.apps.TeacherConfig',
     'rest_framework',
     'corsheaders',
 
