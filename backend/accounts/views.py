@@ -107,7 +107,9 @@ def login(request):
         return JsonResponse({
             "message": "Login successful",
             "user_id": user.id,
-            "email": user.email
+            "email": user.email,
+            "user_type": user.user_type,
+            "redirect": "/teacher_dashboard" if user.user_type == "teacher" else "/login" #shwya w h5lih yroh ll student dashboard bs lma n3mlha
         })
 
     except json.JSONDecodeError:

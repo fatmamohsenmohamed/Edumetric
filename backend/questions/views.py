@@ -1,98 +1,108 @@
-# from django.shortcuts import render
+from django.shortcuts import render
 
-# # Create your views here.
+# Create your views here.
 
-# from django.shortcuts import render, get_object_or_404, redirect
-# from .models import Question, Choice
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Question, Choice, Chapter
 
-# def question_list(request):
-#     questions = Question.objects.all().order_by("-created_at")
-#     return render(request, "questions/question_list.html", {
-#         "questions": questions
-#     })
+def question_list(request):
+    questions = Question.objects.all().order_by("-created_at")
+    return render(request, "questions/question_list.html", {
+        "questions": questions
+    })
 
-# def create_question(request):
-#     if request.method == "POST":
-#         Question.objects.create(
-#             text=request.POST["text"],
-#             question_type=request.POST["question_type"],
-#             subject=request.POST.get("subject"),
-#             difficulty=request.POST.get("difficulty"),
-#             created_by=request.user
-#         )
-#         return redirect("question_list")
+def create_question(request):
+    chapters = Chapter.objects.all()
 
-#     return render(request, "questions/create_question.html")
+    if request.method == "POST":
+        Question.objects.create(
+            text=request.POST["text"],
+            question_type=request.POST["question_type"],
+            difficulty=request.POST["difficulty"],
+            chapter_id=request.POST["chapter"],
+            created_by=request.user
+        )
+        return redirect("question_list")
 
-# def add_choices(request, question_id):
-#     question = get_object_or_404(Question, id=question_id)
+    return render(request, "questions/create_question.html", {
+        "chapters": chapters
+    })
 
-#     # TF questions do NOT use choices
-#     if question.question_type == "tf":
-#         return redirect("set_tf_answer", question_id=question.id)
+def add_choices(request, question_id):
+    question = get_object_or_404(Question, id=question_id)
 
-#     if request.method == "POST":
-#         choices_text = request.POST.getlist("choices")
-#         correct_index = int(request.POST["correct"])
+    # TF questions do NOT use choices
+    if question.question_type == "tf":
+        return redirect("set_tf_answer", question_id=question.id)
 
-#         for i, text in enumerate(choices_text):
-#             Choice.objects.create(
-#                 question=question,
-#                 text=text,
-#                 is_correct=(i == correct_index)
-#             )
+    if request.method == "POST":
+        choices_text = request.POST.getlist("choices")
+        correct_index = int(request.POST["correct"])
 
-#         return redirect("question_detail", question_id=question.id)
+        
+        Choice.objects.filter(question=question).update(is_correct=False)
 
-#     return render(request, "questions/add_choices.html", {
-#         "question": question
-#     })
-# def question_detail(request, question_id):
-#     question = get_object_or_404(Question, id=question_id)
-#     choices = question.choices.all()
+        for i, text in enumerate(choices_text):
+            Choice.objects.create(
+                question=question,
+                text=text,
+                is_correct=(i == correct_index)
+            )
 
-#     return render(request, "questions/question_detail.html", {
-#         "question": question,
-#         "choices": choices
-#     })
+        return redirect("question_detail", question_id=question.id)
 
-# def update_question(request, question_id):
-#     question = get_object_or_404(Question, id=question_id)
+    return render(request, "questions/add_choices.html", {
+        "question": question
+    })
 
-#     if request.method == "POST":
-#         question.text = request.POST["text"]
-#         question.subject = request.POST.get("subject")
-#         question.difficulty = request.POST.get("difficulty")
-#         question.save()
+def question_detail(request, question_id):
+    question = get_object_or_404(Question, id=question_id)
+    choices = question.choices.all()
 
-#         return redirect("question_detail", question_id=question.id)
+    return render(request, "questions/question_detail.html", {
+        "question": question,
+        "choices": choices
+    })
 
-#     return render(request, "questions/update_question.html", {
-#         "question": question
-#     })
+def update_question(request, question_id):
+    question = get_object_or_404(Question, id=question_id, created_by=request.user)
 
-# def delete_question(request, question_id):
-#     question = get_object_or_404(Question, id=question_id)
-#     question.delete()
-#     return redirect("question_list")
+    if request.method == "POST":
+        question.text = request.POST["text"]
+        question.difficulty = request.POST["difficulty"]
+        question.chapter_id = request.POST["chapter"]
+        question.save()
 
-# def filter_questions(request):
-#     questions = Question.objects.all()
+        return redirect("teacher")
 
-#     subject = request.GET.get("subject")
-#     q_type = request.GET.get("type")
-#     difficulty = request.GET.get("difficulty")
+    chapters = Chapter.objects.all()
 
-#     if subject:
-#         questions = questions.filter(subject=subject)
+    return render(request, "questions/update_question.html", {
+        "question": question,
+        "chapters": chapters
+    })
+def delete_question(request, question_id):
+    question = get_object_or_404(Question, id=question_id, created_by=request.user)
+    question.delete()
+    return redirect("teacher")
 
-#     if q_type:
-#         questions = questions.filter(question_type=q_type)
+def filter_questions(request):
+    questions = Question.objects.all()
 
-#     if difficulty:
-#         questions = questions.filter(difficulty=difficulty)
+    subject = request.GET.get("subject")
+    q_type = request.GET.get("type")
+    difficulty = request.GET.get("difficulty")
 
-#     return render(request, "questions/question_list.html", {
-#         "questions": questions
-#     })
+    if subject:
+        questions = questions.filter(subject=subject)
+
+    if q_type:
+        questions = questions.filter(question_type=q_type)
+
+    if difficulty:
+        questions = questions.filter(difficulty=difficulty)
+
+    return render(request, "questions/question_list.html", {
+        "questions": questions
+    })
 
