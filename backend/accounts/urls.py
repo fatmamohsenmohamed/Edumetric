@@ -20,4 +20,5 @@ from .views import register, login
 urlpatterns = [
     path("register/", register),
     path("login/", login),  # Placeholder for login view
-]
+    # path("teacher_dashboard/", teacher_dashboard),  
+] 

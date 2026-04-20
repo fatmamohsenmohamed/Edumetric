@@ -7,6 +7,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
+from django.shortcuts import render
+from questions.models import Question, Chapter, Choice
 
 
 
@@ -56,11 +58,15 @@ def register(request):
             password=make_password(password),  # Hash the password before saving
         )
         
+      
 
         return JsonResponse({
             "message": "User registered successfully",
-            "user_id": user.id
+            "user_id": user.id,
+            "email": user.email,
+            "user_type": user.user_type
         })
+  
 
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON"}, status=400)
@@ -109,3 +115,32 @@ def login(request):
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
+    
+# @csrf_exempt
+# def teacher_dashboard(request):
+#     questions = Question.objects.filter(created_by=request.user).order_by("-created_at")
+#     chapters = Chapter.objects.all()
+
+#     # optional filtering (same logic as your filter view)
+#     subject = request.GET.get("subject")
+#     q_type = request.GET.get("type")
+#     difficulty = request.GET.get("difficulty")
+
+#     if subject:
+#         questions = questions.filter(chapter__subject=subject)
+
+#     if q_type:
+#         questions = questions.filter(question_type=q_type)
+
+#     if difficulty:
+#         questions = questions.filter(difficulty=difficulty)
+
+#     return render(request, "teacher/dashboard.html", {
+#         "questions": questions,
+#         "chapters": chapters,
+#         "filters": {
+#             "subject": subject,
+#             "type": q_type,
+#             "difficulty": difficulty
+#         }
+#     })

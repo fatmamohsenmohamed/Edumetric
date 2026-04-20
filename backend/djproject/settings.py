@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'edu.apps.EduConfig',
     'accounts.apps.AccountsConfig',
-    # 'questions.apps.QuestionConfig'
+    'questions.apps.QuestionsConfig',
     'rest_framework',
     'corsheaders',
 
@@ -81,17 +81,23 @@ WSGI_APPLICATION = 'djproject.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
+
     'default': {
-        'ENGINE': 'mssql',
-        'NAME': 'EduMetric',
-        'USER': 'django_user',
-        'PASSWORD': 'Femos526199',
-        'HOST': '10.83.136.173',
-        'PORT': '1433',
-        'OPTIONS': {
-            'driver': 'ODBC Driver 17 for SQL Server',
-        },
-    }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+   
+}
+    # 'default': {
+    #     'ENGINE': 'mssql',
+    #     'NAME': 'EduMetric',
+    #     'USER': 'django_user',
+    #     'PASSWORD': 'Femos526199',
+    #     'HOST': '10.83.136.173',
+    #     'PORT': '1433',
+    #     'OPTIONS': {
+    #         'driver': 'ODBC Driver 17 for SQL Server',
+    #     },
+    # }
 }
 
 # Password validation
