@@ -84,12 +84,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'mssql',
         'NAME': 'EduMetric',
-        'USER': 'django_user',
-        'PASSWORD': 'Femos526199',
-        'HOST': '10.83.136.173',
-        'PORT': '1433',
+        'HOST': 'DESKTOP-0SKT89E\SQLEXPRESS',
         'OPTIONS': {
             'driver': 'ODBC Driver 17 for SQL Server',
+            'trusted_connection': 'yes',
         },
     }
 }
