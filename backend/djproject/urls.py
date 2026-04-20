@@ -5,11 +5,10 @@ from django.urls import path, include
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-
-    # 👇 prefix for all API routes
     path("api/", include("edu.urls")),
     path('api/', include('accounts.urls')),
-    # path('api/', include('questions.urls'))
+    path('api/', include('questions.urls')),
+    path('api/', include('teacher.urls')),
     
 
 ]

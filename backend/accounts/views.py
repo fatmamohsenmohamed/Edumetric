@@ -56,11 +56,15 @@ def register(request):
             password=make_password(password),  # Hash the password before saving
         )
         
+      
 
         return JsonResponse({
             "message": "User registered successfully",
-            "user_id": user.id
+            "user_id": user.id,
+            "email": user.email,
+            "user_type": user.user_type
         })
+  
 
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON"}, status=400)

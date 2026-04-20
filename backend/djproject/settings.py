@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'edu.apps.EduConfig',
     'accounts.apps.AccountsConfig',
-    # 'questions.apps.QuestionConfig'
+    'questions.apps.QuestionsConfig',
+    'teacher.apps.TeacherConfig',
     'rest_framework',
     'corsheaders',
 
