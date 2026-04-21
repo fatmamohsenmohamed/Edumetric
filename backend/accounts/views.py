@@ -24,6 +24,7 @@ def register(request):
         email = data.get("email")
         user_type = data.get("userType")
         password = data.get("password")
+
     
 
         required_fields = [full_name, email, user_type, password, data.get("confirmPassword")]
@@ -72,6 +73,8 @@ def register(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
     
+########################################################################################################
+# login view #
 
 @csrf_exempt
 # ❌ CSRF protection blocking your POST request
@@ -86,6 +89,8 @@ def login(request):
         email = data.get("email")
         password = data.get("password")
         required= [email, password]
+        remember_me = data.get("remember_me")  #  lw 3ml check 3la remember me h5ly el session yfdl b3d ma y2fl el browser w lw msh 3ml check h5ly el session kill lma y2fl el browser bs
+
         #  w btdo loop hna 
         if any(x is None or x == "" for x in required):
             return JsonResponse({"error": "Email and password are required"}, status=400)
@@ -101,8 +106,12 @@ def login(request):
             return JsonResponse({"error": "Invalid email or password"}, status=400)
         email = email.strip().lower()
 
-
-        # request.session['user_id'] = user.id
+        #remember me checkbox 
+        request.session['user_id'] = user.id # 3shan a5ly el session y5ly el user m3aya 3la tool lma y3ml login
+        if remember_me:
+            request.session.set_expiry(1209600)  # 2 weeks
+        else:
+            request.session.set_expiry(0)  # expires on browser close
 
         return JsonResponse({
             "message": "Login successful",

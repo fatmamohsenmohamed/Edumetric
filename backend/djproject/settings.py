@@ -55,7 +55,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware', # goz2 el session 3shan a5ly el session y5ly el user m3aya 3la tool lma y3ml login
 ]
+
 
 ROOT_URLCONF = 'djproject.urls'
 
@@ -85,7 +87,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'mssql',
         'NAME': 'EduMetric',
-        'HOST': 'DESKTOP-0SKT89E\SQLEXPRESS',
+        'HOST': 'DESKTOP-0SKT89E\\SQLEXPRESS',
         'OPTIONS': {
             'driver': 'ODBC Driver 17 for SQL Server',
             'trusted_connection': 'yes',
