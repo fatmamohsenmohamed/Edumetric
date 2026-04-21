@@ -92,6 +92,10 @@ def login(request):
         remember_me = data.get("remember_me")  #  lw 3ml check 3la remember me h5ly el session yfdl b3d ma y2fl el browser w lw msh 3ml check h5ly el session kill lma y2fl el browser bs
 
         #  w btdo loop hna 
+        if email:
+            email = email.strip().lower()
+            required = [email, password]
+
         if any(x is None or x == "" for x in required):
             return JsonResponse({"error": "Email and password are required"}, status=400)
 
@@ -104,7 +108,7 @@ def login(request):
         #lw el password msh sah 2oly brdo eno el 8alat fel email aw el password
         if not check_password(password, user.password):
             return JsonResponse({"error": "Invalid email or password"}, status=400)
-        email = email.strip().lower()
+
 
         #remember me checkbox 
         request.session['user_id'] = user.id # 3shan a5ly el session y5ly el user m3aya 3la tool lma y3ml login

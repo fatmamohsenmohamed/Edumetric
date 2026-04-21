@@ -12,7 +12,7 @@ export default function Register() {
   });
 
   const [error, setError] = useState("");
-
+  const [success, setSuccess] = useState("");  // add this line 15
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -45,15 +45,15 @@ export default function Register() {
 
       setTimeout(() => {
         window.location.href = "/login";
-      }, 1200); //2 sec instead of 1200 equivelent to 1.2 min
+      }, 2000); //2 sec instead of 1200 equivelent to 1.2 min
 
       return;
     }
-    if (data.user_type === "teacher") {
-      window.location.href = "/teacher";
-    } else {
-      window.location.href = "/student-dashboard";
-    }
+// ✅ Replace with this:
+      setSuccess("Account created successfully! Redirecting...");
+      setTimeout(() => {
+      window.location.href = "/dashboard"; // change this when your team decides the route
+      }, 2000); // 2000 = 2 seconds
 
     setError("");
     console.log("Response from backend:", data);
@@ -76,8 +76,17 @@ export default function Register() {
           {error}
         </div>
       )}
-      const [success, setSuccess] = useState(""); const [error, setError] =
-      useState("");
+      {success && (
+    <div style={{
+        position: "fixed", top: "20px", right: "20px",
+        backgroundColor: "green", color: "white",
+        padding: "10px 20px", borderRadius: "5px",
+        fontSize: "16px", zIndex: 9999,
+    }}>
+        {success}
+    </div>
+)}
+
       <form onSubmit={handleSubmit}>
         <div className="min-h-screen bg-gradient-to-br from-purple-700 via-purple-500 to-indigo-600 flex items-center justify-center p-8">
           <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8">
