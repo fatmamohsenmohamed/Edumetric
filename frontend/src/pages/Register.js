@@ -12,7 +12,8 @@ export default function Register() {
   });
 
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");  // add this line 15
+  const [success, setSuccess] = useState("");  /////////////////
+  const [termsAccepted, setTermsAccepted] = useState(false); ///////////////////
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -49,10 +50,10 @@ export default function Register() {
 
       return;
     }
-// ✅ Replace with this:
+
       setSuccess("Account created successfully! Redirecting...");
       setTimeout(() => {
-      window.location.href = "/dashboard"; // change this when your team decides the route
+      window.location.href = "/dashboard"; //  team decides the route
       }, 2000); // 2000 = 2 seconds
 
     setError("");
@@ -262,10 +263,13 @@ export default function Register() {
                 </div>
 
                 {/* Terms (UI only) */}
-                <div className="flex items-start gap-2">
+                <div className="flex items-start gap-2">////////////////////////////////////////
+                  {/*  Now connected to termsAccepted state */}
                   <input
-                    type="checkbox"
-                    className="w-5 h-5 accent-purple-500"
+                      type="checkbox"
+                      className="w-5 h-5 accent-purple-500"
+                      checked={termsAccepted}
+                      onChange={(e) => setTermsAccepted(e.target.checked)}
                   />
                   <label className="text-gray-700 text-sm">
                     I agree to the{" "}
@@ -275,12 +279,17 @@ export default function Register() {
                   </label>
                 </div>
 
-                {/* Submit */}
+                {/* Submit */}///////////////////////////////////////////////////////
                 <button
-                  type="submit"
-                  className="bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-bold py-3 rounded-lg hover:shadow-lg transition"
+                    type="submit"
+                    disabled={!termsAccepted}
+                    className="bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-bold py-3 rounded-lg hover:shadow-lg transition"
+                    style={{
+                        opacity: termsAccepted ? 1 : 0.5,   // dims when disabled
+                        cursor: termsAccepted ? "pointer" : "not-allowed"  // shows X cursor when disabled
+                    }}
                 >
-                  Create Account
+                    Create Account
                 </button>
               </div>
 
