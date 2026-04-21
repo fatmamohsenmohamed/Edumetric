@@ -263,7 +263,7 @@ export default function Register() {
                 </div>
 
                 {/* Terms (UI only) */}
-                <div className="flex items-start gap-2">////////////////////////////////////////
+                <div className="flex items-start gap-2">
                   {/*  Now connected to termsAccepted state */}
                   <input
                       type="checkbox"
@@ -279,7 +279,7 @@ export default function Register() {
                   </label>
                 </div>
 
-                {/* Submit */}///////////////////////////////////////////////////////
+                {/* Submit */}
                 <button
                     type="submit"
                     disabled={!termsAccepted}
