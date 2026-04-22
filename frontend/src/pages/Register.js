@@ -12,7 +12,7 @@ export default function Register() {
   });
 
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");  /////////////////
+  const [success, setSuccess] = useState(""); /////////////////
   const [termsAccepted, setTermsAccepted] = useState(false); ///////////////////
   const handleChange = (e) => {
     setFormData({
@@ -51,10 +51,10 @@ export default function Register() {
       return;
     }
 
-      setSuccess("Account created successfully! Redirecting...");
-      setTimeout(() => {
+    setSuccess("Account created successfully! Redirecting...");
+    setTimeout(() => {
       window.location.href = "/dashboard"; //  team decides the route
-      }, 2000); // 2000 = 2 seconds
+    }, 2000); // 2000 = 2 seconds
 
     setError("");
     console.log("Response from backend:", data);
@@ -78,15 +78,22 @@ export default function Register() {
         </div>
       )}
       {success && (
-    <div style={{
-        position: "fixed", top: "20px", right: "20px",
-        backgroundColor: "green", color: "white",
-        padding: "10px 20px", borderRadius: "5px",
-        fontSize: "16px", zIndex: 9999,
-    }}>
-        {success}
-    </div>
-)}
+        <div
+          style={{
+            position: "fixed",
+            top: "20px",
+            right: "20px",
+            backgroundColor: "green",
+            color: "white",
+            padding: "10px 20px",
+            borderRadius: "5px",
+            fontSize: "16px",
+            zIndex: 9999,
+          }}
+        >
+          {success}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <div className="min-h-screen bg-gradient-to-br from-purple-700 via-purple-500 to-indigo-600 flex items-center justify-center p-8">
@@ -266,10 +273,10 @@ export default function Register() {
                 <div className="flex items-start gap-2">
                   {/*  Now connected to termsAccepted state */}
                   <input
-                      type="checkbox"
-                      className="w-5 h-5 accent-purple-500"
-                      checked={termsAccepted}
-                      onChange={(e) => setTermsAccepted(e.target.checked)}
+                    type="checkbox"
+                    className="w-5 h-5 accent-purple-500"
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
                   />
                   <label className="text-gray-700 text-sm">
                     I agree to the{" "}
@@ -281,15 +288,15 @@ export default function Register() {
 
                 {/* Submit */}
                 <button
-                    type="submit"
-                    disabled={!termsAccepted}
-                    className="bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-bold py-3 rounded-lg hover:shadow-lg transition"
-                    style={{
-                        opacity: termsAccepted ? 1 : 0.5,   // dims when disabled
-                        cursor: termsAccepted ? "pointer" : "not-allowed"  // shows X cursor when disabled
-                    }}
+                  type="submit"
+                  disabled={!termsAccepted}
+                  className="bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-bold py-3 rounded-lg hover:shadow-lg transition"
+                  style={{
+                    opacity: termsAccepted ? 1 : 0.5, // dims when disabled
+                    cursor: termsAccepted ? "pointer" : "not-allowed", // shows X cursor when disabled
+                  }}
                 >
-                    Create Account
+                  Create Account
                 </button>
               </div>
 
