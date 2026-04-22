@@ -218,5 +218,5 @@ def reset_password(request):
                              "redirect": "/login" # h5ly el user yroh ll login page 3la tool b3d ma y3ml reset ll password bta3o
                              })
 
-    except Exception as e:
+    except Exception as e: 
         return JsonResponse({"error": str(e)}, status=500)
