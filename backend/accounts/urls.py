@@ -20,4 +20,7 @@ from .views import register, login
 urlpatterns = [
     path("register/", register),
     path("login/", login),  # Placeholder for login view
+
+    # path('forgot-password/', forgot_password), # lsa mat3amlo4
+    # path('reset-password/', reset_password),   #lsa mat3amlo4 
 ]

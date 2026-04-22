@@ -141,3 +141,11 @@ STATICFILES_DIRS = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
+
+#email settings for password reset
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'edumetric.plattform2026@gmail.com'      # email you want to send from, na 3amlt el acc da ll project
+EMAIL_HOST_PASSWORD = 'fhnu blln zpuv logq' #pass key generated from that email for security, not the actual email password

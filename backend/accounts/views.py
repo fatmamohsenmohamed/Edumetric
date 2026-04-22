@@ -8,6 +8,11 @@ from rest_framework.response import Response
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 
+#tokens imorts
+import uuid # this generates random unique codes
+from django.core.mail import send_mail
+from .models import PasswordResetToken
+
 
 
 
@@ -128,3 +133,91 @@ def login(request):
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
+#############################
+#reset password view#
+
+# hna el user hy7ott el email bta3o 34an neb3tlo 3lyh message feha link y3ml click 3leha w yro7 ll page gdida 34an y3ml fiha reset ll password bta3o
+@csrf_exempt
+def forgot_password(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        email = data.get("email", "").strip().lower()
+        
+        if not email:
+            return JsonResponse({"error": "Email is required"}, status=400)
+        
+        # check if user exists
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return JsonResponse({"message": "a reset link has been sent"}) #hna m4 ha2olo en el email dosent exist 34an el hacking
+        
+        # delete ay token adema abl ma a3ml wa7da gdede
+        PasswordResetToken.objects.filter(user=user).delete()
+        
+        # generate token
+        token = str(uuid.uuid4())
+        
+        # save the token in the database
+        PasswordResetToken.objects.create(user=user, token=token)
+        
+        # # build the reset link
+        reset_link = f"http://localhost:3000/reset-password/{token}" # ha8yer el esm lw 3amlo el page b 7aga tanya
+        
+        # send the email
+        send_mail(
+            subject="Reset Your account Password",
+            message=f"Hello {user.full_name},\n\nClick the link below to reset your password:\n{reset_link}\n\nThis link expires in 1 hour.\n\nIf you didn't request this, ignore this email.",
+            from_email="edumetric.plattform2026@gmail.com",  # el email el 3amlto f settings.py
+            recipient_list=[user.email],
+        )
+        
+        return JsonResponse({"message": "If this email exists, a reset link has been sent"})
+    
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+#  eh el user hy3mlo b3d ma y click 3la el link hay3ml new password f page el reset password
+
+@csrf_exempt
+def reset_password(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        token = data.get("token")
+        new_password = data.get("password")
+        
+        if not token or not new_password:
+            return JsonResponse({"error": "password is required"}, status=400)
+        
+        # find the token in the database
+        try:
+            reset_token = PasswordResetToken.objects.get(token=token)
+        except PasswordResetToken.DoesNotExist:
+            return JsonResponse({"error": "Invalid or expired link"}, status=400)
+        
+        # check if token is still valid (not older than 1 hour)
+        if not reset_token.is_valid():
+            reset_token.delete()  # clean up expired token
+            return JsonResponse({"error": "This link has expired. Please request a new one"}, status=400)
+        
+        # lazem a match el token b el user 34an a3ml reset ll password bta3t el user da
+        user = reset_token.user
+        user.password = make_password(new_password)
+        user.save()
+        
+        # lazem amsa7 el token f a5er el process 34an m4 y3ml reset tany b nafs el token da
+        reset_token.delete()
+        
+        return JsonResponse({"message": "Password reset successfully!",
+                             "redirect": "/login" # h5ly el user yroh ll login page 3la tool b3d ma y3ml reset ll password bta3o
+                             })
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
