@@ -14,11 +14,11 @@ from django.db import transaction
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Question, Choice, Chapter
 
-def question_list(request):
-    questions = Question.objects.all().order_by("-created_at")
-    return render(request, "questions/question_list.html", {
-        "questions": questions
-    })
+# def question_list(request):
+#     questions = Question.objects.all().order_by("-created_at")
+#     return render(request, "questions/question_list.html", {
+#         "questions": questions
+#     })
 
 def create_question(request):
     chapters = Chapter.objects.all()
