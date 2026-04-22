@@ -2,7 +2,7 @@ import re
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
-from .models import User
+from .models import User #table el user f el models
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth.hashers import make_password
@@ -54,7 +54,7 @@ def register(request):
         #     return JsonResponse({"error": "Password must contain at least one number"}, status=400)
 
 
-        # 💾 Save to database
+        # Save to database
         user = User.objects.create(
             full_name=full_name.strip(),
             email=email.strip().lower(),
@@ -62,7 +62,6 @@ def register(request):
             password=make_password(password),  # Hash the password before saving
         )
         
-      
 
         return JsonResponse({
             "message": "User registered successfully",
