@@ -12,23 +12,50 @@ import "aos/dist/aos.css";
 
 export default function Contact() {
   useEffect(() => {
-    AOS.init({ duration: 1000, once: true });
+    AOS.init({ duration: 900, once: true, easing: "ease-out-cubic" });
   }, []);
 
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+
+  const [errors, setErrors] = useState({});
   const [status, setStatus] = useState({
     message: "",
     type: "",
   });
 
+  const [loading, setLoading] = useState(false);
+
+  const validate = () => {
+    let newErrors = {};
+
+    if (!form.name.trim()) newErrors.name = "Name is required";
+    if (!form.email.includes("@")) newErrors.email = "Invalid email";
+    if (!form.subject.trim()) newErrors.subject = "Subject is required";
+    if (form.message.trim().length < 10)
+      newErrors.message = "Message must be at least 10 characters";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setErrors({ ...errors, [e.target.name]: "" });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = {
-      name: e.target.name.value,
-      email: e.target.email.value,
-      subject: e.target.subject.value,
-      message: e.target.message.value,
-    };
+    setStatus({ message: "", type: "" });
+
+    if (!validate()) return;
+
+    setLoading(true);
 
     try {
       const response = await fetch("http://127.0.0.1:8000/api/contact/", {
@@ -36,10 +63,11 @@ export default function Contact() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(form),
       });
 
       const data = await response.json();
+      setLoading(false);
 
       if (!response.ok) {
         setStatus({
@@ -50,143 +78,186 @@ export default function Contact() {
       }
 
       setStatus({
-        message: "Message sent successfully!",
+        message: "Message sent successfully 🎉",
         type: "success",
       });
 
-      e.target.reset();
-    } catch (error) {
+      setForm({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+      });
+    } catch (err) {
+      setLoading(false);
       setStatus({
-        message: "Server error. Please try again.",
+        message: "Server error. Try again later",
         type: "error",
       });
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-700 via-purple-500 to-indigo-600 flex flex-col items-center p-8">
-      {/* STATUS MESSAGE (like login alert) */}
+    <div className="min-h-screen bg-bg flex flex-col items-center p-8">
+
+      {/* STATUS ANIMATION */}
       {status.message && (
         <div
-          className={`mb-6 px-4 py-2 rounded-lg text-white text-center w-full max-w-xl ${
-            status.type === "success" ? "bg-green-500/80" : "bg-red-500/80"
+          className={`mb-6 px-4 py-3 rounded-xl text-sm text-center w-full max-w-xl border animate-fadeIn transform transition-all duration-300 scale-100 hover:scale-[1.01]
+          ${
+            status.type === "success"
+              ? "bg-success/10 text-success border-success/30"
+              : "bg-danger/10 text-danger border-danger/30"
           }`}
         >
           {status.message}
         </div>
       )}
 
-      {/* Header */}
-      <div className="text-center max-w-4xl mb-12" data-aos="fade-down">
-        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+      {/* HEADER ANIMATION */}
+      <div
+        className="text-center max-w-4xl mb-12"
+        data-aos="fade-down"
+      >
+        <h1 className="text-4xl font-bold text-textMain mb-4 transition-all duration-300 hover:tracking-wide">
           Get in Touch
         </h1>
-        <p className="text-white/90 text-lg md:text-xl">
-          We’d love to hear from you! Fill out the form or reach us via our
-          contact info below.
+        <p className="text-textSoft transition-all duration-300 hover:text-textMain">
+          We’d love to hear from you
         </p>
       </div>
 
       {/* GRID */}
-      <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-12">
+      <div className="w-full max-w-6xl grid md:grid-cols-2 gap-12">
+
         {/* FORM */}
         <div
-          className="bg-white rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden"
+          className="bg-card border border-border rounded-3xl p-10 shadow-soft transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
           data-aos="fade-right"
         >
-          {status.message && status.type === "error" && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4 text-center shadow-sm">
-              {status.message}
-            </div>
-          )}
-          <form
-            onSubmit={handleSubmit}
-            className="relative flex flex-col gap-6 z-10"
-          >
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+
             {/* NAME */}
-            <div className="flex flex-col gap-1">
-              <label className="text-gray-700 font-semibold">Full Name</label>
+            <div className="transition-all duration-200 hover:scale-[1.01]">
+              <label className="text-textMain text-sm mb-1 block">
+                Full Name
+              </label>
               <input
                 name="name"
-                type="text"
-                placeholder="John Doe"
-                className="border-2 border-gray-200 rounded-lg p-3"
+                placeholder="Enter your name"
+                value={form.name}
+                onChange={handleChange}
+                className="w-full p-3 rounded-xl bg-bg border border-border transition-all duration-200 focus:scale-[1.01] focus:ring-2 focus:ring-primary/20"
               />
+              {errors.name && (
+                <p className="text-danger text-xs mt-1 animate-fadeIn">
+                  {errors.name}
+                </p>
+              )}
             </div>
 
             {/* EMAIL */}
-            <div className="flex flex-col gap-1">
-              <label className="text-gray-700 font-semibold">
-                Email Address
+            <div className="transition-all duration-200 hover:scale-[1.01]">
+              <label className="text-textMain text-sm mb-1 block">
+                Email
               </label>
               <input
                 name="email"
-                type="email"
-                placeholder="you@example.com"
-                className="border-2 border-gray-200 rounded-lg p-3"
+                placeholder="Enter your email"
+                value={form.email}
+                onChange={handleChange}
+                className="w-full p-3 rounded-xl bg-bg border border-border transition-all duration-200 focus:scale-[1.01] focus:ring-2 focus:ring-primary/20"
               />
+              {errors.email && (
+                <p className="text-danger text-xs mt-1 animate-fadeIn">
+                  {errors.email}
+                </p>
+              )}
             </div>
 
             {/* SUBJECT */}
-            <div className="flex flex-col gap-1">
-              <label className="text-gray-700 font-semibold">Subject</label>
+            <div className="transition-all duration-200 hover:scale-[1.01]">
+              <label className="text-textMain text-sm mb-1 block">
+                Subject
+              </label>
               <input
                 name="subject"
-                type="text"
-                placeholder="Subject"
-                className="border-2 border-gray-200 rounded-lg p-3"
+                placeholder="subject"
+                value={form.subject}
+                onChange={handleChange}
+                className="w-full p-3 rounded-xl bg-bg border border-border transition-all duration-200 focus:scale-[1.01] focus:ring-2 focus:ring-primary/20"
               />
+              {errors.subject && (
+                <p className="text-danger text-xs mt-1 animate-fadeIn">
+                  {errors.subject}
+                </p>
+              )}
             </div>
 
             {/* MESSAGE */}
-            <div className="flex flex-col gap-1">
-              <label className="text-gray-700 font-semibold">Message</label>
+            <div className="transition-all duration-200 hover:scale-[1.01]">
+              <label className="text-textMain text-sm mb-1 block">
+                Message
+              </label>
               <textarea
                 name="message"
-                rows={6}
-                placeholder="Type your message..."
-                className="border-2 border-gray-200 rounded-lg p-3 resize-none"
+                placeholder="Your message..."
+                rows={5}
+                value={form.message}
+                onChange={handleChange}
+                className="w-full p-3 rounded-xl bg-bg border border-border transition-all duration-200 focus:scale-[1.01] focus:ring-2 focus:ring-primary/20"
               />
+              {errors.message && (
+                <p className="text-danger text-xs mt-1 animate-fadeIn">
+                  {errors.message}
+                </p>
+              )}
             </div>
 
-            {/* BUTTON */}
+            {/* BUTTON ANIMATION */}
             <button
               type="submit"
-              className="bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition"
+              disabled={loading}
+              className="bg-primary text-white py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] disabled:opacity-50 flex justify-center items-center gap-2"
             >
-              Send Message
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                "Send Message"
+              )}
             </button>
+
           </form>
         </div>
 
-        {/* INFO */}
-        <div className="flex flex-col gap-8 text-white" data-aos="fade-left">
-          <h2 className="text-3xl font-bold mb-6">Contact Info</h2>
+        {/* INFO ANIMATION */}
+        <div
+          className="flex flex-col gap-8 text-textMain"
+          data-aos="fade-left"
+        >
 
-          <div className="flex items-center gap-4">
-            <FaMapMarkerAlt className="text-purple-300 text-xl" />
-            <span>123 St, Cairo, Egypt</span>
+          <div className="flex items-center gap-3 transition-transform duration-200 hover:translate-x-1">
+            <FaMapMarkerAlt className="text-primary" />
+            <span className="text-textSoft">Cairo, Egypt</span>
           </div>
 
-          <div className="flex items-center gap-4">
-            <FaPhone className="text-purple-300 text-xl" />
-            <span>+20 123 456 7890</span>
+          <div className="flex items-center gap-3 transition-transform duration-200 hover:translate-x-1">
+            <FaPhone className="text-primary" />
+            <span className="text-textSoft">+20 123 456 789</span>
           </div>
 
-          <div className="flex items-center gap-4">
-            <FaEnvelope className="text-purple-300 text-xl" />
-            <span>support@edumetric.com</span>
+          <div className="flex items-center gap-3 transition-transform duration-200 hover:translate-x-1">
+            <FaEnvelope className="text-primary" />
+            <span className="text-textSoft">support@edumetric.com</span>
           </div>
 
-          <div className="flex gap-4 mt-8">
-            <FaFacebookF />
-            <FaTwitter />
-            <FaLinkedinIn />
+          <div className="flex gap-4 text-primary text-lg">
+            <FaFacebookF className="hover:scale-110 transition" />
+            <FaTwitter className="hover:scale-110 transition" />
+            <FaLinkedinIn className="hover:scale-110 transition" />
           </div>
 
-          <p className="text-white/80 mt-8 text-sm">
-            We typically respond within 24 hours.
-          </p>
         </div>
       </div>
     </div>
