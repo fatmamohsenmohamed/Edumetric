@@ -9,18 +9,21 @@ export default function Login() {
   });
 
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => { 
     e.preventDefault();
 
+    setError("");
+    setSuccess("");
+
     if (!formData.email || !formData.password) {
       setError("All fields are required");
       return;
     }
 
-    setError("");
     setLoading(true);
 
     try {
@@ -48,10 +51,13 @@ export default function Login() {
 
       // success
       setError("");
-
+      setSuccess("Logged in successfully 🔥");
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("token", data.token);
       setTimeout(() => {
-        window.location.href = "/dashboard";
+       window.location.href = "/dashboard";
       }, 1200);
+
 
       // optional redirect
       // window.location.href = "/dashboard";
@@ -61,26 +67,31 @@ export default function Login() {
     }
   };
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 px-4">
-      <div className="w-full max-w-md">
-        <div className="backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl rounded-3xl p-8">
-          <h2 className="text-3xl font-bold text-center text-white mb-2">
+    <div className="min-h-screen flex items-center justify-center bg-bg px-4 ">
+      <div className="w-full max-w-lg">
+        <div className="backdrop-blur-xl bg-white/10 border border-border shadow-soft rounded-2xl p-10">
+          <h2 className="text-3xl font-bold text-center text-textMain mb-2">
             Welcome Back 👋
           </h2>
-          <p className="text-center text-white/70 mb-6 text-sm">
+          <p className="text-center text-textSoft mb-6 text-sm">
             Login to your EduMetric account
           </p>
 
           {error && (
-            <div className="bg-red-500/20 text-red-200 text-sm p-2 rounded-lg mb-4 text-center">
+            <div className="bg-danger/10 border border-danger/30 text-danger text-sm p-3 rounded-xl mb-4 text-center">
               {error}
+            </div>
+          )}
+          {success && (
+            <div className="bg-success/10 border border-success/30 text-success text-sm p-3 rounded-xl mb-4 text-center">
+              {success}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email */}
             <div className="relative">
-              <FaEnvelope className="absolute left-3 top-3 text-white/70" />
+              <FaEnvelope className="absolute left-3 top-3 text-textSoft" />
               <input
                 type="email"
                 placeholder="example@email.com"
@@ -88,13 +99,13 @@ export default function Login() {
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                className="mt-1 w-full pl-10 px-4 py-2 rounded-xl bg-white/20 text-white placeholder-white/50 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white"
+                className="mt-1 w-full pl-10 px-4 py-3 rounded-xl bg-bg border border-border text-textMain placeholder-textSoft  focus:outline-none focus:ring-2 focus:ring-primary/30 hover:border-primary/40 transition"
               />
             </div>
 
             {/* Password */}
             <div className="relative">
-              <FaLock className="absolute left-3 top-3 text-white/70" />
+              <FaLock className="absolute left-3 top-3 text-textSoft" />
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
@@ -102,35 +113,35 @@ export default function Login() {
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
-                className="mt-1 w-full pl-10 px-4 py-2 rounded-xl bg-white/20 text-white placeholder-white/50 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white"
+                className="mt-1 w-full pl-10 px-4 py-3 rounded-xl bg-bg border border-border text-textMain placeholder-textSoft  focus:outline-none focus:ring-2 focus:ring-primary/30 hover:border-primary/40 transition"
               />
               <span
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-xs text-white/70 cursor-pointer"
+                className="absolute right-3 top-3 text-xs text-textSoft cursor-pointer hover:text-primary transition"
               >
                 {showPassword ? "Hide" : "Show"}
               </span>
             </div>
 
             {/* Options */}
-            <div className="flex justify-between items-center text-xs text-white/70">
+            <div className="flex justify-between items-center text-xs text-textSoft">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="accent-pink-500" />
+                <input type="checkbox" className="accent-primary" />
                 Remember me
               </label>
-              <span className="hover:underline cursor-pointer">
+              <Link to="/forgot-password" className="text-primary hover:underline">
                 Forgot password?
-              </span>
+              </Link>
             </div>
 
             {/* Button */}
             <button
               type="submit"
-              className="w-full py-2 rounded-xl bg-white text-purple-600 font-semibold hover:scale-105 transition-transform shadow-lg flex justify-center items-center gap-2"
-              disabled={loading}
+              className="w-full py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primaryLight hover:shadow-soft transition  flex justify-center items-center gap-2"
+              disabled={loading || !formData.email || !formData.password}
             >
               {loading ? (
-                <div className="w-5 h-5 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 "Login"
               )}
@@ -139,27 +150,27 @@ export default function Login() {
 
           {/* Divider */}
           <div className="flex items-center my-6">
-            <div className="flex-grow border-t border-white/20"></div>
-            <span className="mx-3 text-white/60 text-xs">OR</span>
-            <div className="flex-grow border-t border-white/20"></div>
+            <div className="flex-grow border-t border-border"></div>
+            <span className="mx-3 text-textSoft text-xs">OR</span>
+            <div className="flex-grow border-t border-border"></div>
           </div>
 
           {/* Social */}
           <div className="flex gap-3">
-            <button className="flex-1 py-2 rounded-xl bg-white/20 text-white hover:bg-white/30 transition flex justify-center items-center gap-2">
-              <FaGoogle /> Google
+            <button className="flex-1 py-3 rounded-xl bg-card border border-border text-textMain hover:bg-primary/5 transition flex justify-center items-center gap-2">
+              <FaGoogle className="text-danger" /> Google
             </button>
-            <button className="flex-1 py-2 rounded-xl bg-white/20 text-white hover:bg-white/30 transition flex justify-center items-center gap-2">
-              <FaFacebook /> Facebook
+            <button className="flex-1 py-3 rounded-xl bg-card border border-border text-textMain hover:bg-primary/5 transition flex justify-center items-center gap-2">
+              <FaFacebook className="text-primary" /> Facebook
             </button>
           </div>
 
           {/* Footer */}
-          <p className="text-center text-white/70 text-sm mt-6">
+          <p className="text-center text-textSoft text-sm mt-6">
             Don’t have an account?
             <Link
               to="/Register"
-              className="text-white font-semibold hover:underline cursor-pointer"
+              className="text-primary font-semibold hover:underline "
             >
               Sign up
             </Link>
