@@ -15,12 +15,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from .views import register, login
+from .views import register, login, reset_password, forgot_password
 
 urlpatterns = [
     path("register/", register),
     path("login/", login),  # Placeholder for login view
 
-    # path('forgot-password/', forgot_password), # lsa mat3amlo4
-    # path('reset-password/', reset_password),   #lsa mat3amlo4 
+    path('forgot_password/',forgot_password), # lsa mat3amlo4
+    path('reset_password/', reset_password),   #lsa mat3amlo4 
 ]
