@@ -249,7 +249,7 @@ export default function Contact() {
 
           <div className="flex items-center gap-3 transition-transform duration-200 hover:translate-x-1">
             <FaEnvelope className="text-primary" />
-            <span className="text-textSoft">support@edumetric.com</span>
+            <span className="text-textSoft">edumetric.plattform2026@gmail.com</span>
           </div>
 
           <div className="flex gap-4 text-primary text-lg">
