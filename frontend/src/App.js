@@ -7,6 +7,7 @@ import About from "./pages/common/About";
 import Contact from "./pages/common/Contact";
 import Pricing from "./pages/common/Pricing";
 import Terms from './pages/common/Terms';
+import Checkout from "./pages/common/Checkout";
 import Teacher_Dashboard from "./pages/Teacher_Dashboard";
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/terms" element={<Terms />} />
+        <Route path="/checkout" element={<Checkout />} />
         <Route path="/teacher_dashboard" element={<Teacher_Dashboard />} />
       </Routes>
     </BrowserRouter>
