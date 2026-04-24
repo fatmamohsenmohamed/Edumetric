@@ -11,7 +11,8 @@ from django.contrib.auth.hashers import check_password
 #tokens imorts
 import uuid # this generates random unique codes
 from django.core.mail import send_mail
-from .models import PasswordResetToken
+from .models import PasswordResetToken,EmailConfirmationToken
+
 
 
 
@@ -54,22 +55,39 @@ def register(request):
         #     return JsonResponse({"error": "Password must contain at least one number"}, status=400)
 
 
+
         # Save to database
         user = User.objects.create(
             full_name=full_name.strip(),
             email=email.strip().lower(),
             user_type=user_type,
-            password=make_password(password),  # Hash the password before saving
+            password=make_password(password), # Hash the password before saving
+
+            is_active=False,  # keep the user inactive until they verify their email m4 ha3ml save ll data bta3to 8er lma y2aked el email
+
         )
-        
+
+        # generate a random token
+        token = str(uuid.uuid4())
+
+        # save the token in the database
+        EmailConfirmationToken.objects.create(user=user, token=token)
+
+        # build the confirmation link
+        confirm_link = f"http://localhost:3000/confirm_email?token={token}" # han3ml page ll confirmation f el frontend w h5ly el link da yro7 l page di w yb3tlha el token 34an a3rf a confirm el email bta3t el user da aw la2
+
+        # send confirmation email
+        send_mail(
+            subject="Confirm Your EduMetric Email",
+            message=f"Hello {user.full_name},\n\nPlease confirm your email by clicking the link below:\n{confirm_link}\n\nThis link expires in 24 hours.\n\nIf you didn't register, ignore this email.",
+            from_email="edumetric.plattform2026@gmail.com",
+            recipient_list=[user.email],
+        )
 
         return JsonResponse({
-            "message": "User registered successfully",
-            "user_id": user.id,
-            "email": user.email,
-            "user_type": user.user_type
+            "message": "Registration successful! Please check your email to confirm your account.",
         })
-  
+
 
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON"}, status=400)
@@ -108,6 +126,10 @@ def login(request):
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             return JsonResponse({"error": "Invalid email or password"}, status=400)
+        
+        #hna b check lw el user da lsa m4 a confirm el email bta3to w 2olo en y confirm el email bta3to 34an y2dar ya3ml login ba3d kda
+        if not user.is_active:
+            return JsonResponse({"error": "Please confirm your email before logging in"}, status=400)
 
         #lw el password msh sah 2oly brdo eno el 8alat fel email aw el password
         if not check_password(password, user.password):
@@ -181,7 +203,6 @@ def forgot_password(request):
 
 
 #  eh el user hy3mlo b3d ma y click 3la el link hay3ml new password f page el reset password
-
 @csrf_exempt
 def reset_password(request):
     if request.method != "POST":
@@ -219,4 +240,41 @@ def reset_password(request):
                              })
 
     except Exception as e: 
+        return JsonResponse({"error": str(e)}, status=500)
+    
+# confirming the email address view and saving the user as active in the database 34an y2dar ya3ml login ba3d kda
+@csrf_exempt
+def confirm_email(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        token = data.get("token")   # hna el token da hyb2a el code el 3mlna f el email w ba3d ma y click 3leha w yro7 ll page el confirmation hya5od el token da w yba3to l backend 34an a confirm el email bta3t el user da aw la2
+
+        if not token:
+            return JsonResponse({"error": "Token is required"}, status=400)
+        
+        # find the token in the database 34an a3rf a confirm el email bta3t el user da aw la2
+        try:
+            confirm_token = EmailConfirmationToken.objects.get(token=token)
+        except EmailConfirmationToken.DoesNotExist:
+            return JsonResponse({"error": "Invalid confirmation link"}, status=400)
+        
+        # check if token is still valid lw m4 valid h3ml delete ll token da w a2olo en el link da expired w y3ml register tany
+        if not confirm_token.is_valid():
+            confirm_token.delete()
+            return JsonResponse({"error": "This link has expired. Please register again"}, status=400)
+        
+        # activate the user account
+        user = confirm_token.user  # get the user linked to this token
+        user.is_active = True      # set is_active to True
+        user.save()                # save to database b3d ma a confirm el email bta3t el user da a3ml save ll data bta3to
+        
+        # delete the token so it can't be used again
+        confirm_token.delete()
+        
+        return JsonResponse({"message": "Email confirmed successfully! You can now login."})
+    
+    except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
