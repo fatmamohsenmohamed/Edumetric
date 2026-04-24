@@ -93,14 +93,16 @@ export default function Register() {
       return;
     }
 
-    setSuccess("Account created successfully 🎉");
+    // setSuccess("Account created successfully 🎉");
 
-    setTimeout(() => {
-      window.location.href =
-        data.user_type === "teacher"
-          ? "/teacher"
-          : "/student-dashboard";
-    }, 1200);
+    // setTimeout(() => {
+    //   window.location.href =
+    //     data.user_type === "teacher"
+    //       ? "/teacher"
+    //       : "/student-dashboard";
+    // }, 1200);
+
+      setSuccess("Account created! check your email."); //hna 34an a3ml confirmation ll email w b3d kda aro7 ll login
   };
       // ================= TERMS =================
     const [showTerms, setShowTerms] = useState(false);
@@ -266,7 +268,7 @@ export default function Register() {
               >
                 <option value="student">Student</option>
                 <option value="teacher">Teacher</option>
-                <option value="institution">Institution</option>
+
               </select>
             </div>
 

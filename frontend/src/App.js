@@ -9,6 +9,7 @@ import Pricing from "./pages/common/Pricing";
 import Terms from './pages/common/Terms';
 import Checkout from "./pages/common/Checkout";
 import Teacher_Dashboard from "./pages/Teacher_Dashboard";
+import ConfirmEmail from "./pages/ConfirmEmail"; 
 function App() {
   return (
     <BrowserRouter>
@@ -23,9 +24,13 @@ function App() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/teacher_dashboard" element={<Teacher_Dashboard />} />
+        <Route path="/confirm_email" element={<ConfirmEmail />} /> # bagarb nadae hat3mlha
       </Routes>
     </BrowserRouter>
   );
 }
 
 export default App;
+
+
+
