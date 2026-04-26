@@ -21,10 +21,9 @@ from .views import register, login, reset_password, forgot_password ,confirm_ema
 urlpatterns = [
     path("register/", register),
     path("login/", login),  # Placeholder for login view
-    path("confirm-email/", confirm_email),
     path("me/", me),  # View for retrieving user information
 
     path('forgot_password/',forgot_password), 
     path('reset_password/', reset_password),   
-    path('confirm_email/', confirm_email),
+    path('confirm-email/', confirm_email),
 ]

@@ -149,6 +149,7 @@ STATICFILES_DIRS = [
 ]
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+
 ]
 
 #email settings for password reset
@@ -158,3 +159,12 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'edumetric.plattform2026@gmail.com'      # email you want to send from, na 3amlt el acc da ll project
 EMAIL_HOST_PASSWORD = 'fhnu blln zpuv logq' #pass key generated from that email for security, not the actual email password
+
+
+CORS_ALLOW_CREDENTIALS = True
+
+SESSION_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_HTTPONLY = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SECURE = False

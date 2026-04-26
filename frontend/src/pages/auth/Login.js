@@ -27,12 +27,12 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/login/", {
+      const response = await fetch("http://localhost:8000/api/login/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        // credentials: "include", // session support
+        credentials: "include", // session support
         body: JSON.stringify(formData),
       });
 
@@ -52,9 +52,9 @@ export default function Login() {
       // success
       setError("");
       setSuccess("Logged in successfully 🔥");
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("token", data.token);
-      setTimeout(() => {
+      // localStorage.setItem("user", JSON.stringify(data.user));
+      // localStorage.setItem("token", data.token);
+      setTimeout(() => { 
         window.location.href =
           data.user_type === "teacher" ? "/teacher" : "/student";
       }, 1200);

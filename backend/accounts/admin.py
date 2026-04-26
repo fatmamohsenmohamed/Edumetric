@@ -7,7 +7,6 @@ from .models import PasswordResetToken
 from .models import EmailConfirmationToken 
 
 
-admin.site.register(User)
 admin.site.register(Profile)
 admin.site.register(PasswordResetToken)
 admin.site.register(EmailConfirmationToken)

@@ -9,8 +9,9 @@ import Pricing from "./pages/common/Pricing";
 import Terms from "./pages/common/Terms";
 import Checkout from "./pages/common/Checkout";
 import ConfirmEmail from "./pages/ConfirmEmail";
-import ImportQuestions from "./pages/instructor/ImportQuestions";
-import CreateExam from "./pages/instructor/CreateExam";
+// import ImportQuestions from "./pages/instructor/ImportQuestions";
+// import CreateExam from "./pages/instructor/CreateExam";
+import Dashboard from "./pages/Dashboard";
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";
 
 function App() {
@@ -26,11 +27,12 @@ function App() {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/checkout" element={<Checkout />} />
-        <Route path="/confirm_email" element={<ConfirmEmail />} /> # bagarb
+        <Route path="/confirm-email" element={<ConfirmEmail />} /> # bagarb
         nadae hat3mlha
-        <Route path="/importquestions" element={<ImportQuestions />} />
-        <Route path="/createexam" element={<CreateExam />} />
+        {/* <Route path="/importquestions" element={<ImportQuestions />} /> */}
+        {/* <Route path="/createexam" element={<CreateExam />} /> */}
         <Route path="/instructordashboard" element={<InstructorDashboard />} />
+        <Route path="/student" element={<Dashboard />} />
       </Routes>
     </BrowserRouter>
   );
