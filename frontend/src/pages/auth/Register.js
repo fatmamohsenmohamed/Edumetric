@@ -21,25 +21,23 @@ export default function Register() {
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-  const accepted = localStorage.getItem("acceptedTerms");
+    const accepted = localStorage.getItem("acceptedTerms");
 
-  if (accepted === "true") {
-    setFormData((prev) => ({
-      ...prev,
-      agree: true,
-    }));
-  }
- }, []);    
+    if (accepted === "true") {
+      setFormData((prev) => ({
+        ...prev,
+        agree: true,
+      }));
+    }
+  }, []);
 
   // ================= VALIDATION =================
   const validate = () => {
     let newErrors = {};
 
-    if (!formData.fullName)
-      newErrors.fullName = "Full name is required";
+    if (!formData.fullName) newErrors.fullName = "Full name is required";
 
-    if (!formData.email.includes("@"))
-      newErrors.email = "Enter a valid email";
+    if (!formData.email.includes("@")) newErrors.email = "Enter a valid email";
 
     if (formData.phone.length < 10)
       newErrors.phone = "Enter valid phone number";
@@ -51,8 +49,8 @@ export default function Register() {
       newErrors.confirmPassword = "Passwords do not match";
 
     if (!formData.agree) {
-    newErrors.agree = "You must accept Terms & Conditions";
-     }
+      newErrors.agree = "You must accept Terms & Conditions";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -60,13 +58,13 @@ export default function Register() {
 
   // ================= CHANGE =================
   function handleChange(e) {
-        const { name, value, type, checked } = e.target;
+    const { name, value, type, checked } = e.target;
 
-        setFormData({
-            ...formData,
-            [name]: type === "checkbox" ? checked : value,
-        });
-    }
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    });
+  }
 
   // ================= SUBMIT =================
   const handleSubmit = async (e) => {
@@ -93,22 +91,20 @@ export default function Register() {
       return;
     }
 
-    setSuccess("Account created successfully 🎉");
+    setSuccess("Account created! check your email.");
 
-    setTimeout(() => {
-      window.location.href =
-        data.user_type === "teacher"
-          ? "/teacher"
-          : "/student-dashboard";
-    }, 1200);
+    // setTimeout(() => {
+    //   window.location.href =
+    //     data.user_type === "teacher"
+    //       ? "/teacher"
+    //       : "/student-dashboard";
+    // }, 1200);
   };
-      // ================= TERMS =================
-    const [showTerms, setShowTerms] = useState(false);
-    
+  // ================= TERMS =================
+  const [showTerms, setShowTerms] = useState(false);
 
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center p-6">
-
       {/* ALERTS */}
       <div className="fixed top-5 right-5 space-y-3 z-50">
         {error && (
@@ -121,13 +117,9 @@ export default function Register() {
             <MdCheckCircle /> {success}
           </div>
         )}
-    
       </div>
-    
 
       <div className="w-full max-w-6xl grid md:grid-cols-2 gap-8">
-    
-
         {/* LEFT */}
         <div className="hidden md:flex flex-col justify-between bg-primary text-white rounded-2xl p-10 shadow-soft">
           <div>
@@ -138,9 +130,7 @@ export default function Register() {
               <h1 className="text-2xl font-bold">EduMetric</h1>
             </div>
 
-            <h2 className="text-2xl font-bold mb-3">
-              Smart Learning Platform
-            </h2>
+            <h2 className="text-2xl font-bold mb-3">Smart Learning Platform</h2>
 
             <p className="text-white/70 mb-10">
               Create and take exams with AI-powered questions and analytics
@@ -175,16 +165,10 @@ export default function Register() {
 
         {/* RIGHT */}
         <div className="bg-card border border-border rounded-2xl p-10 shadow-soft">
-
-          <h2 className="text-2xl font-bold text-textMain">
-            Create Account
-          </h2>
-          <p className="text-textSoft mb-6">
-            Join EduMetric today
-          </p>
+          <h2 className="text-2xl font-bold text-textMain">Create Account</h2>
+          <p className="text-textSoft mb-6">Join EduMetric today</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-
             {/* Full Name */}
             <div className="flex flex-col gap-1">
               <label className="text-textSoft text-base font-medium">
@@ -302,92 +286,85 @@ export default function Register() {
                 className="border border-border rounded-xl p-3 bg-bg"
               />
               {errors.confirmPassword && (
-                <p className="text-danger text-sm">
-                  {errors.confirmPassword}
-                </p>
+                <p className="text-danger text-sm">{errors.confirmPassword}</p>
               )}
             </div>
 
             {/* Terms */}
             <div className="flex items-start gap-2 mt-2">
-             <input
-              type="checkbox"
-              name="agree"
-              checked={formData.agree}
-              onChange={handleChange}
-              className="mt-1 accent-primary cursor-pointer"
-            />
+              <input
+                type="checkbox"
+                name="agree"
+                checked={formData.agree}
+                onChange={handleChange}
+                className="mt-1 accent-primary cursor-pointer"
+              />
 
-             <label className="text-textSoft text-sm">
-               I agree to the{" "}
-               <span
-                 onClick={() => setShowTerms(true)}
-                 className="text-primary font-medium cursor-pointer hover:underline"
+              <label className="text-textSoft text-sm">
+                I agree to the{" "}
+                <span
+                  onClick={() => setShowTerms(true)}
+                  className="text-primary font-medium cursor-pointer hover:underline"
                 >
                   Terms & Conditions
                 </span>
-           </label>
-           </div>
+              </label>
+            </div>
             {errors.agree && (
-             <p className="text-danger text-xs mt-1">
-              {errors.agree}
-             </p>
+              <p className="text-danger text-xs mt-1">{errors.agree}</p>
             )}
 
-             {/* popup */}
+            {/* popup */}
             {showTerms && (
-             <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 animate-fadeIn">
-                 <div className="bg-card w-full max-w-2xl p-6 rounded-2xl shadow-soft relative animate-scaleIn">
+              <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 animate-fadeIn">
+                <div className="bg-card w-full max-w-2xl p-6 rounded-2xl shadow-soft relative animate-scaleIn">
+                  {/* Close */}
+                  <button
+                    onClick={() => setShowTerms(false)}
+                    className="absolute top-3 right-3 text-textSoft hover:text-textMain text-lg"
+                  >
+                    ✕
+                  </button>
 
-                 {/* Close */}
-                 <button
-                  onClick={() => setShowTerms(false)}
-                  className="absolute top-3 right-3 text-textSoft hover:text-textMain text-lg"
-                >
-                 ✕
-                </button>
+                  <h2 className="text-xl font-bold text-textMain mb-4">
+                    Terms & Conditions
+                  </h2>
 
-                <h2 className="text-xl font-bold text-textMain mb-4">
-                 Terms & Conditions
-                </h2>
-
-                <div className="text-textSoft text-sm space-y-3 max-h-64 overflow-y-auto pr-2">
-                    <p>By using EduMetric, you agree to our platform rules...</p>
+                  <div className="text-textSoft text-sm space-y-3 max-h-64 overflow-y-auto pr-2">
+                    <p>
+                      By using EduMetric, you agree to our platform rules...
+                    </p>
                     <p>You are responsible for your account security.</p>
                     <p>We protect your data and privacy.</p>
                     <p>Any misuse may lead to account termination.</p>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex justify-between items-center mt-6">
+                    <Link
+                      to="/terms"
+                      className="text-primary text-sm hover:underline"
+                    >
+                      View full page
+                    </Link>
+
+                    <button
+                      onClick={() => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          agree: true,
+                        }));
+
+                        setShowTerms(false);
+                      }}
+                      className="bg-primary text-white px-4 py-2 rounded-xl hover:bg-primaryLight"
+                    >
+                      I Agree
+                    </button>
+                  </div>
                 </div>
-
-               {/* Actions */}
-            <div className="flex justify-between items-center mt-6">
-
-                <Link
-                to="/terms"
-                className="text-primary text-sm hover:underline"
-                >
-                View full page
-                </Link>
-
-                <button
-                 onClick={() => {
-                  setFormData(prev => ({
-                   ...prev,
-                   agree: true
-                 }));
-
-                setShowTerms(false);
-                }}
-
-                className="bg-primary text-white px-4 py-2 rounded-xl hover:bg-primaryLight"
-                >
-                I Agree
-                </button>
-
-            </div>
-
-        </div>
-    </div>
-)} 
+              </div>
+            )}
 
             {/* Button */}
             <button
@@ -402,7 +379,10 @@ export default function Register() {
 
           <p className="text-center text-textSoft mt-6">
             Already have an account?{" "}
-            <Link to="/login" className="text-primary font-semibold hover:underline">
+            <Link
+              to="/login"
+              className="text-primary font-semibold hover:underline"
+            >
               Sign in
             </Link>
           </p>

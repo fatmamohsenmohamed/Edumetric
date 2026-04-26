@@ -13,7 +13,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => { 
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     setError("");
@@ -55,9 +55,9 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("token", data.token);
       setTimeout(() => {
-       window.location.href = "/dashboard";
+        window.location.href =
+          data.user_type === "teacher" ? "/teacher" : "/student";
       }, 1200);
-
 
       // optional redirect
       // window.location.href = "/dashboard";
@@ -129,7 +129,10 @@ export default function Login() {
                 <input type="checkbox" className="accent-primary" />
                 Remember me
               </label>
-              <Link to="/forgot-password" className="text-primary hover:underline">
+              <Link
+                to="/forgot-password"
+                className="text-primary hover:underline"
+              >
                 Forgot password?
               </Link>
             </div>
