@@ -3,7 +3,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.utils import timezone
+from django.utils import timezone# this gives us the current time
+from datetime import timedelta 
 
 
 class Profile(models.Model):
@@ -30,14 +31,13 @@ def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
 
 
-
+    
 #add the token model for password reset functionality
 
 class PasswordResetToken(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # lazem a5do FK   # on_delete=CASCADE means if user is deleted, delete their tokens too
     token = models.CharField(max_length=100, unique=True)  
     created_at = models.DateTimeField(auto_now_add=True)   # automatically saves when the token was created
-   
     def is_valid(self):
         return timezone.now() < self.created_at + timedelta(hours=1)  # token expires after 1 hour for security
     
@@ -48,4 +48,4 @@ class EmailConfirmationToken(models.Model):
     created_at = models.DateTimeField(auto_now_add=True) # automatically saves when token was created
     
     def is_valid(self):
-        return timezone.now() < self.created_at + timedelta(hours=24) # token expires after 24 hours hna hanzawd el wa2t shwya
+        return timezone.now() < self.created_at + timedelta(hours=24) # token expires after 24 hours hna hanzawd el wa2t shwya 

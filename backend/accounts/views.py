@@ -11,7 +11,8 @@ from django.contrib.auth.hashers import check_password
 #tokens imorts
 import uuid # this generates random unique codes
 from django.core.mail import send_mail
-from .models import PasswordResetToken
+from .models import PasswordResetToken,EmailConfirmationToken
+
 
 
 
@@ -55,7 +56,7 @@ def register(request):
         if user_type not in ("student", "teacher"):
             return JsonResponse({"error": "Invalid user type"}, status=400)
 
-        # Create user inactive until email verified
+
         user = User.objects.create_user(
             username=email,
             email=email,
@@ -81,13 +82,13 @@ def register(request):
             from_email="edumetric.plattform2026@gmail.com",
             recipient_list=[email],
         )
-
         return JsonResponse({
             "message": "Account created! Check your email to confirm your account.",
         })
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
 
 
 @csrf_exempt
@@ -108,6 +109,10 @@ def login(request):
         user = authenticate(request, username=email, password=password)
         if user is None:
             return JsonResponse({"error": "Invalid email or password"}, status=400)
+        
+        #hna b check lw el user da lsa m4 a confirm el email bta3to w 2olo en y confirm el email bta3to 34an y2dar ya3ml login ba3d kda
+        if not user.is_active:
+            return JsonResponse({"error": "Please confirm your email before logging in"}, status=400)
 
         auth_login(request, user)
 
@@ -168,7 +173,7 @@ def forgot_password(request):
         PasswordResetToken.objects.create(user=user, token=token)
         
         # # build the reset link
-        reset_link = f"http://localhost:3000/reset-password/{token}" # ha8yer el esm lw 3amlo el page b 7aga tanya
+        reset_link = f"http://localhost:3000/reset_password?token={token}" # ha8yer el esm lw 3amlo el page b 7aga tanya
         
         # send the email
         send_mail(
@@ -185,7 +190,6 @@ def forgot_password(request):
 
 
 #  eh el user hy3mlo b3d ma y click 3la el link hay3ml new password f page el reset password
-
 @csrf_exempt
 def reset_password(request):
     if request.method != "POST":
@@ -220,7 +224,7 @@ def reset_password(request):
         
         return JsonResponse({"message": "Password reset successfully!",
                              "redirect": "/login" # h5ly el user yroh ll login page 3la tool b3d ma y3ml reset ll password bta3o
-                             })
+                         })
 
     except Exception as e: 
         return JsonResponse({"error": str(e)}, status=500)

@@ -92,6 +92,7 @@ export default function Register() {
     }
 
     setSuccess("Account created! check your email.");
+    // setSuccess("Account created successfully 🎉");
 
     // setTimeout(() => {
     //   window.location.href =
@@ -99,6 +100,8 @@ export default function Register() {
     //       ? "/teacher"
     //       : "/student-dashboard";
     // }, 1200);
+
+    //hna 34an a3ml confirmation ll email w b3d kda aro7 ll login
   };
   // ================= TERMS =================
   const [showTerms, setShowTerms] = useState(false);
@@ -250,7 +253,6 @@ export default function Register() {
               >
                 <option value="student">Student</option>
                 <option value="teacher">Teacher</option>
-                <option value="institution">Institution</option>
               </select>
             </div>
 

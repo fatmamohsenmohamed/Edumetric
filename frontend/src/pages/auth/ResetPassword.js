@@ -40,7 +40,7 @@ export default function ResetPassword() {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/reset-password/",
+        "http://127.0.0.1:8000/api/reset_password/",
         {
           method: "POST",
           headers: {
