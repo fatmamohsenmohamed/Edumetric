@@ -1,18 +1,29 @@
-# from django.db import models
-# from questions.models import Question
+# exams/models.py
+from django.db import models
+from django.contrib.auth.models import User
+from questions.models import Question, Choice
 
-# # Create your models here.
-# class Exam(models.Model):
-#     title = models.CharField(max_length=255)
-#     teacher = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
-#     created_at = models.DateTimeField(auto_now_add=True)
+class Exam(models.Model):
+    title = models.CharField(max_length=255)
+    instructor = models.ForeignKey(User, on_delete=models.CASCADE)
+    questions = models.ManyToManyField(Question)
+    duration_minutes = models.IntegerField()
+    max_attempts = models.IntegerField(default=1)
+    shuffle_questions = models.BooleanField(default=True)
+    shuffle_choices = models.BooleanField(default=True)
+    is_published = models.BooleanField(default=False)
 
 
 
-# class ExamQuestion(models.Model):
-#     exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
-#     question = models.ForeignKey(Question, on_delete=models.CASCADE)
+class Submission(models.Model):
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    score = models.FloatField(null=True, blank=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
 
-#     # optional customization per exam
-#     marks = models.IntegerField(default=1)
-#     order = models.IntegerField()
+
+class Answer(models.Model):
+    submission = models.ForeignKey(Submission, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    selected_choice = models.ForeignKey(Choice, null=True, on_delete=models.SET_NULL)
+    tf_answer = models.BooleanField(null=True)

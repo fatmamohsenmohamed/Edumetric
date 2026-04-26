@@ -41,12 +41,14 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'questions.apps.QuestionsConfig',
     'teacher.apps.TeacherConfig',
+    'exams.apps.ExamsConfig',
     'rest_framework',
     'corsheaders',
 
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -54,7 +56,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware', # goz2 el session 3shan a5ly el session y5ly el user m3aya 3la tool lma y3ml login
 ]
 

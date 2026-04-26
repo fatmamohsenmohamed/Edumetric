@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Result</title>
+  </head>
+  <body>
+    <h1>Exam Result</h1>
+
+    <p>Score: {{ submission.score }}%</p>
+
+    <h3>Answers:</h3>
+
+    <ul>
+      {% for answer in answers %}
+      <li>
+        {{ answer.question.text }} <br />
+
+        {% if answer.selected_choice %} Your answer: {{
+        answer.selected_choice.text }} {% elif answer.tf_answer != None %} Your
+        answer: {{ answer.tf_answer }} {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>
