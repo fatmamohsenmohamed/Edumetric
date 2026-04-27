@@ -54,9 +54,9 @@ export default function Login() {
       setSuccess("Logged in successfully 🔥");
       // localStorage.setItem("user", JSON.stringify(data.user));
       // localStorage.setItem("token", data.token);
-      setTimeout(() => { 
+      setTimeout(() => {
         window.location.href =
-          data.user_type === "teacher" ? "/teacher" : "/student";
+          data.user_type === "teacher" ? "/instructordashboard" : "/student";
       }, 1200);
 
       // optional redirect

@@ -11,7 +11,7 @@ import Checkout from "./pages/common/Checkout";
 import ConfirmEmail from "./pages/ConfirmEmail";
 // import ImportQuestions from "./pages/instructor/ImportQuestions";
 // import CreateExam from "./pages/instructor/CreateExam";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/student/Dashboard";
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";
 
 function App() {
