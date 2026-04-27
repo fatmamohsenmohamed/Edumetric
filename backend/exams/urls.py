@@ -2,7 +2,8 @@ from django.urls import path
 from . import views
 from django.urls import path
 from . import views
-from .analytics_views import dashboard_stats, recent_exams, performance_over_time, difficulty_distribution  
+from .analytics_views import (dashboard_stats, recent_exams, performance_over_time, difficulty_distribution 
+,teacher_difficulty,teacher_stats, teacher_recent_exams, teacher_performance_over_time  )
 
 urlpatterns = [
     path("create/", views.create_exam, name="create_exam"),
@@ -14,4 +15,9 @@ urlpatterns = [
     path("analytics/recent-exams/", recent_exams),
     path("analytics/performance-over-time/", performance_over_time),
     path("analytics/difficulty/", difficulty_distribution),
+    path("teacher/analytics/stats/",                teacher_stats),
+    path("teacher/analytics/recent-exams/",         teacher_recent_exams),
+    path("teacher/analytics/performance-over-time/", teacher_performance_over_time),
+    path("teacher/analytics/difficulty/",            teacher_difficulty),
+
 ]
