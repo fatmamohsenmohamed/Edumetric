@@ -123,7 +123,7 @@ export default function TeacherDashboard() {
     } catch (err) {
         console.error("Logout error:", err);
     }
-    navigate("/login");
+    navigate("/login"); //han8yarha ll home page b3d ma y3mloha MOHEMMMM
 };
 
 
@@ -245,7 +245,7 @@ export default function TeacherDashboard() {
         </nav>
         <div className="px-4 py-6 border-t border-slate-200">
           <button
-            onClick={() => navigate("/login")}
+            onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-[#1e3a8a]/5 border border-slate-200 hover:bg-[#1e3a8a]/10 transition-all"
           >
             <div className="w-8 h-8 rounded-full bg-[#1e3a8a] text-white flex items-center justify-center text-xs font-bold">
