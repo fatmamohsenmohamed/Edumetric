@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from .models import Submission
 from questions.models import Question
+from exams.models import Exam, Submission, Answer
 
 
 @login_required
