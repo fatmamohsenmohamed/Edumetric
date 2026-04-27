@@ -16,9 +16,7 @@ from .models import PasswordResetToken,EmailConfirmationToken
 
 
 
-
 import json
-import uuid
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login as auth_login
 from django.core.mail import send_mail
@@ -178,7 +176,7 @@ def forgot_password(request):
         # send the email
         send_mail(
             subject="Reset Your account Password",
-            message=f"Hello {user.full_name},\n\nClick the link below to reset your password:\n{reset_link}\n\nThis link expires in 1 hour.\n\nIf you didn't request this, ignore this email.",
+            message=f"Hello {user.first_name},\n\nClick the link below to reset your password:\n{reset_link}\n\nThis link expires in 1 hour.\n\nIf you didn't request this, ignore this email.",
             from_email="edumetric.plattform2026@gmail.com",  # el email el 3amlto f settings.py
             recipient_list=[user.email],
         )
@@ -216,8 +214,8 @@ def reset_password(request):
         
         # lazem a match el token b el user 34an a3ml reset ll password bta3t el user da
         user = reset_token.user
-        user.password = make_password(new_password)
-        user.save()
+        user.set_password(new_password)
+        user.save()  #34an tem4y m3 django built in user model w el password hashing bta3to
         
         # lazem amsa7 el token f a5er el process 34an m4 y3ml reset tany b nafs el token da
         reset_token.delete()
@@ -262,6 +260,38 @@ def confirm_email(request):
         confirm_token.delete()
         
         return JsonResponse({"message": "Email confirmed successfully! You can now login."})
+    
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
+
+
+
+# contact page view
+@csrf_exempt
+def contact(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        
+        name    = data.get("name", "").strip()
+        email   = data.get("email", "").strip()
+        subject = data.get("subject", "").strip()
+        message = data.get("message", "").strip()
+        
+        if not name or not email or not subject or not message:
+            return JsonResponse({"error": "All fields are required"}, status=400)
+        
+        send_mail(
+            subject=f"Contact Form: {subject}",
+            message=f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}",
+            from_email="edumetric.plattform2026@gmail.com",
+            recipient_list=["edumetric.plattform2026@gmail.com"],
+        )
+        
+        return JsonResponse({"message": "Message sent successfully!"})
     
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
