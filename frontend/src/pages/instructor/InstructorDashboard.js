@@ -114,6 +114,19 @@ export default function TeacherDashboard() {
   const [difficulty, setDifficulty] = useState([]); // ← add
   const navigate = useNavigate();
 
+  const handleLogout = async () => {
+    try {
+        await fetch("http://localhost:8000/api/logout/", {
+            method: "POST",
+            credentials: "include",
+        });
+    } catch (err) {
+        console.error("Logout error:", err);
+    }
+    navigate("/login");
+};
+
+
   useEffect(() => {
     fetch("http://localhost:8000/api/me/", {
       credentials: "include",
