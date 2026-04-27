@@ -265,8 +265,6 @@ def confirm_email(request):
         return JsonResponse({"error": str(e)}, status=500)
     
 
-
-
 # contact page view
 @csrf_exempt
 def contact(request):
