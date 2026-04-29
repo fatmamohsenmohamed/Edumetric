@@ -42,6 +42,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='question',
-            constraint=models.CheckConstraint(check=models.Q(models.Q(('correct_tf_answer__isnull', False), ('question_type', 'tf')), ('question_type', 'mcq'), _connector='OR'), name='tf_answer_required'),
+            constraint=models.CheckConstraint(condition=models.Q(models.Q(('correct_tf_answer__isnull', False), ('question_type', 'tf')), ('question_type', 'mcq'), _connector='OR'), name='tf_answer_required'),
         ),
     ]

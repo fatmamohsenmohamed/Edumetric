@@ -44,7 +44,7 @@ class Question(models.Model):
         constraints = [
             models.CheckConstraint(
                 name="tf_answer_required",
-                check=(
+                condition=(
                     Q(question_type="tf", correct_tf_answer__isnull=False) |
                     Q(question_type="mcq")
                 )

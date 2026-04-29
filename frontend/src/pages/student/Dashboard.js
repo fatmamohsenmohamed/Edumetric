@@ -141,6 +141,18 @@ export default function Dashboard() {
   const [exams, setExams] = useState([]);
   const [difficulty, setDifficulty] = useState([]);
   const [user, setUser] = useState(null);
+
+  const handleLogout = async () => {
+    try {
+        await fetch("http://localhost:8000/api/logout/", {
+            method: "POST",
+            credentials: "include",
+        });
+    } catch (err) {
+        console.error("Logout error:", err);
+    }
+    navigate("/login"); // han3del dy bardo lma y3mlo el home page MOHEMMM
+};
   useEffect(() => {
     fetch("http://localhost:8000/api/me/", {
       credentials: "include",
@@ -327,7 +339,7 @@ export default function Dashboard() {
         </nav>
         <div className="px-4 py-6 border-t border-slate-200">
           <button
-            onClick={() => navigate("/login")}
+            onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-[#1e3a8a]/5 border border-slate-200 hover:bg-[#1e3a8a]/10 transition-all"
           >
             <div className="w-8 h-8 rounded-full bg-[#1e3a8a] text-white flex items-center justify-center text-xs font-bold">
