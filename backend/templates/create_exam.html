@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Create Exam</title>
+  </head>
+  <body>
+    <h1>Create Exam</h1>
+
+    {% if error %}
+    <p style="color: red">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <label>Exam Title:</label><br />
+      <input type="text" name="title" required /><br /><br />
+
+      <label>Duration (minutes):</label><br />
+      <input type="number" name="duration_minutes" value="60" /><br /><br />
+
+      <label>Max Attempts:</label><br />
+      <input type="number" name="max_attempts" value="1" /><br /><br />
+
+      <h3>Number of Questions by Difficulty</h3>
+
+      <label>Easy:</label>
+      <input type="number" name="easy_count" value="0" /><br /><br />
+
+      <label>Medium:</label>
+      <input type="number" name="medium_count" value="0" /><br /><br />
+
+      <label>Hard:</label>
+      <input type="number" name="hard_count" value="0" /><br /><br />
+
+      <h3>Options</h3>
+
+      <label>
+        <input type="checkbox" name="shuffle_questions" />
+        Shuffle Questions </label
+      ><br /><br />
+
+      <label>
+        <input type="checkbox" name="shuffle_choices" />
+        Shuffle Choices </label
+      ><br /><br />
+
+      <button type="submit">Create Exam</button>
+    </form>
+  </body>
+</html>

@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        font-family: Arial;
+      }
+      h1 {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>{{ submission.exam.title }}</h1>
+
+    <p><strong>Student:</strong> {{ submission.student.username }}</p>
+    <p><strong>Score:</strong> {{ submission.score }}%</p>
+
+    <hr />
+
+    {% for answer in answers %}
+    <p><strong>Q:</strong> {{ answer.question.text }}</p>
+
+    {% if answer.selected_choice %}
+    <p>Your Answer: {{ answer.selected_choice.text }}</p>
+    {% elif answer.tf_answer != None %}
+    <p>Your Answer: {{ answer.tf_answer }}</p>
+    {% endif %}
+
+    <hr />
+    {% endfor %}
+  </body>
+</html>

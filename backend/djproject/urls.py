@@ -8,7 +8,9 @@ urlpatterns = [
     path("api/", include("edu.urls")),
     path('api/', include('accounts.urls')),
     path('api/', include('questions.urls')),
-    path('api/', include('teacher.urls')),
+    path ('api/', include('exams.urls')),
+    path("auth/",   include("accounts.urls")),
+    # path('api/', include('teacher.urls')),
     
 
 ]

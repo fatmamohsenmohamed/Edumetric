@@ -16,6 +16,15 @@ from .models import PasswordResetToken,EmailConfirmationToken
 
 
 
+import json
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login as auth_login
+from django.core.mail import send_mail
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from .models import EmailConfirmationToken
+
 
 @csrf_exempt
 def register(request):
@@ -23,84 +32,64 @@ def register(request):
         return JsonResponse({"error": "Only POST method allowed"}, status=405)
 
     try:
-        data = json.loads(request.body) 
-        # 3shan a5ly el json dictionary
-        # hgib kol el data mn el form w a5lyha variables  
-        full_name = data.get("fullName") 
-        email = data.get("email")
-        user_type = data.get("userType")
-        password = data.get("password")
+        data = json.loads(request.body)
 
-    
+        full_name        = data.get("fullName", "").strip()
+        email            = data.get("email", "").strip().lower()
+        phone            = data.get("phone", "").strip()
+        country_code     = data.get("countryCode", "+20").strip()
+        user_type        = data.get("userType", "student").strip()
+        password         = data.get("password", "")
+        confirm_password = data.get("confirmPassword", "")
 
-        required_fields = [full_name, email, user_type, password, data.get("confirmPassword")]
-        #  w h3ml loop hna 3shan alf 3la kol el fields w lw haga fadya hytl3 error 
-        if any(field is None or field == "" for field in required_fields):
+        if not all([full_name, email, password, confirm_password]):
             return JsonResponse({"error": "All fields are required"}, status=400)
 
-        # Check if user already exists
-        if User.objects.filter(email=email).exists():
-            return JsonResponse({"error": "Email already exists"}, status=400)
-        
-        if data.get("password") != data.get("confirmPassword"):
+        if password != confirm_password:
             return JsonResponse({"error": "Passwords do not match"}, status=400)
-        
-        # if len(password) < 8:
-        #     return JsonResponse({"error": "Password must be at least 8 characters"}, status=400)
-        
-        # if not re.search(r"[A-Z]", password):
-        #     return JsonResponse({"error": "Password must contain at least one uppercase letter"}, status=400)
 
-        # if not re.search(r"[0-9]", password):
-        #     return JsonResponse({"error": "Password must contain at least one number"}, status=400)
+        if User.objects.filter(username=email).exists():
+            return JsonResponse({"error": "Email already registered"}, status=400)
+
+        if user_type not in ("student", "teacher"):
+            return JsonResponse({"error": "Invalid user type"}, status=400)
 
 
-
-        # Save to database
-        user = User.objects.create(
-            full_name=full_name.strip(),
-            email=email.strip().lower(),
-            user_type=user_type,
-            password=make_password(password), # Hash the password before saving
-
-            is_active=False,  # keep the user inactive until they verify their email m4 ha3ml save ll data bta3to 8er lma y2aked el email
-
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            password=password,
+            first_name=full_name,
+            is_active=False,
         )
 
-        # generate a random token
-        token = str(uuid.uuid4())
+        # Save profile
+        profile           = user.profile
+        profile.phone     = f"{country_code}{phone}"
+        profile.user_type = user_type
+        profile.save()
 
-        # save the token in the database
+        # Generate token and send email
+        token        = str(uuid.uuid4())
         EmailConfirmationToken.objects.create(user=user, token=token)
+        confirm_link = f"http://localhost:3000/confirm-email?token={token}"
 
-        # build the confirmation link
-        confirm_link = f"http://localhost:3000/confirm_email?token={token}" # han3ml page ll confirmation f el frontend w h5ly el link da yro7 l page di w yb3tlha el token 34an a3rf a confirm el email bta3t el user da aw la2
-
-        # send confirmation email
         send_mail(
             subject="Confirm Your EduMetric Email",
-            message=f"Hello {user.full_name},\n\nPlease confirm your email by clicking the link below:\n{confirm_link}\n\nThis link expires in 24 hours.\n\nIf you didn't register, ignore this email.",
+            message=f"Hello {full_name},\n\nPlease confirm your email by clicking the link below:\n{confirm_link}\n\nThis link expires in 24 hours.\n\nIf you didn't register, ignore this email.",
             from_email="edumetric.plattform2026@gmail.com",
-            recipient_list=[user.email],
+            recipient_list=[email],
         )
-
         return JsonResponse({
-            "message": "Registration successful! Please check your email to confirm your account.",
+            "message": "Account created! Check your email to confirm your account.",
         })
-
-
-    except json.JSONDecodeError:
-        return JsonResponse({"error": "Invalid JSON"}, status=400)
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-    
-########################################################################################################
-# login view #
+
+
 
 @csrf_exempt
-# ❌ CSRF protection blocking your POST request
-# Django by default blocks POST requests from frontend unless CSRF is handled.
 def login(request):
     if request.method != "POST":
         return JsonResponse({"error": "Only POST method allowed"}, status=405)
@@ -108,51 +97,47 @@ def login(request):
     try:
         data = json.loads(request.body)
 
-        email = data.get("email")
-        password = data.get("password")
-        required= [email, password]
-        remember_me = data.get("remember_me")  #  lw 3ml check 3la remember me h5ly el session yfdl b3d ma y2fl el browser w lw msh 3ml check h5ly el session kill lma y2fl el browser bs
+        email       = data.get("email", "").strip().lower()
+        password    = data.get("password", "")
+        remember_me = data.get("remember_me")
 
-        #  w btdo loop hna 
-        if email:
-            email = email.strip().lower()
-            required = [email, password]
-
-        if any(x is None or x == "" for x in required):
+        if not email or not password:
             return JsonResponse({"error": "Email and password are required"}, status=400)
 
-        # check user lw ml2nash el email hn2ol fy moshkle either d el pass aw fel email
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
+        user = authenticate(request, username=email, password=password)
+        if user is None:
             return JsonResponse({"error": "Invalid email or password"}, status=400)
         
         #hna b check lw el user da lsa m4 a confirm el email bta3to w 2olo en y confirm el email bta3to 34an y2dar ya3ml login ba3d kda
         if not user.is_active:
             return JsonResponse({"error": "Please confirm your email before logging in"}, status=400)
 
-        #lw el password msh sah 2oly brdo eno el 8alat fel email aw el password
-        if not check_password(password, user.password):
-            return JsonResponse({"error": "Invalid email or password"}, status=400)
+        auth_login(request, user)
 
-
-        #remember me checkbox 
-        request.session['user_id'] = user.id # 3shan a5ly el session y5ly el user m3aya 3la tool lma y3ml login
         if remember_me:
             request.session.set_expiry(1209600)  # 2 weeks
         else:
             request.session.set_expiry(0)  # expires on browser close
 
         return JsonResponse({
-            "message": "Login successful",
-            "user_id": user.id,
-            "email": user.email,
-            "user_type": user.user_type,
-            "redirect": "/teacher_dashboard" if user.user_type == "teacher" else "/login" #shwya w h5lih yroh ll student dashboard bs lma n3mlha
+            "message":   "Login successful",
+            "full_name": user.first_name,
+            "user_type": user.profile.user_type,
         })
 
-    except json.JSONDecodeError:
-        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+@login_required
+def me(request):
+    return JsonResponse({
+        "full_name": request.user.first_name,
+        "email":     request.user.email,
+        "user_type": request.user.profile.user_type,
+    })
+
 
 #############################
 #reset password view#
@@ -191,7 +176,7 @@ def forgot_password(request):
         # send the email
         send_mail(
             subject="Reset Your account Password",
-            message=f"Hello {user.full_name},\n\nClick the link below to reset your password:\n{reset_link}\n\nThis link expires in 1 hour.\n\nIf you didn't request this, ignore this email.",
+            message=f"Hello {user.first_name},\n\nClick the link below to reset your password:\n{reset_link}\n\nThis link expires in 1 hour.\n\nIf you didn't request this, ignore this email.",
             from_email="edumetric.plattform2026@gmail.com",  # el email el 3amlto f settings.py
             recipient_list=[user.email],
         )
@@ -229,15 +214,15 @@ def reset_password(request):
         
         # lazem a match el token b el user 34an a3ml reset ll password bta3t el user da
         user = reset_token.user
-        user.password = make_password(new_password)
-        user.save()
+        user.set_password(new_password)
+        user.save()  #34an tem4y m3 django built in user model w el password hashing bta3to
         
         # lazem amsa7 el token f a5er el process 34an m4 y3ml reset tany b nafs el token da
         reset_token.delete()
         
         return JsonResponse({"message": "Password reset successfully!",
                              "redirect": "/login" # h5ly el user yroh ll login page 3la tool b3d ma y3ml reset ll password bta3o
-                             })
+                         })
 
     except Exception as e: 
         return JsonResponse({"error": str(e)}, status=500)
@@ -278,3 +263,43 @@ def confirm_email(request):
     
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+
+# contact page view
+@csrf_exempt
+def contact(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        name    = data.get("name", "").strip()
+        email   = data.get("email", "").strip()
+        subject = data.get("subject", "").strip()
+        message = data.get("message", "").strip()
+        
+        if not name or not email or not subject or not message:
+            return JsonResponse({"error": "All fields are required"}, status=400)
+        
+        send_mail(
+            subject=f"Contact Form: {subject}",
+            message=f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}",
+            from_email="edumetric.plattform2026@gmail.com",
+            recipient_list=["edumetric.plattform2026@gmail.com"],
+        )
+    
+        return JsonResponse({"message": "Message sent successfully!"})
+    
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
+#logout view
+from django.contrib.auth import logout as auth_logout # function built in bthandel el el logout
+
+@csrf_exempt
+def logout(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
+    
+    auth_logout(request) #built in fun bt delete el session mn el database w btms7 el session cookie mn el brawser w el token n el database
+    return JsonResponse({"message": "Logged out successfully"})

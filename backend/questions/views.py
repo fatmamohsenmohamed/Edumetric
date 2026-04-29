@@ -29,7 +29,7 @@ def create_question(request):
             question_type=request.POST["question_type"],
             difficulty=request.POST["difficulty"],
             chapter_id=request.POST["chapter"],
-            created_by=request.user
+            # created_by=request.user
         )
         return redirect("question_list")
 
@@ -37,20 +37,32 @@ def create_question(request):
         "chapters": chapters
     })
 
-def add_choices(request, question_id):
+def add_choices(request, question_id): #hd5l 4 choices for every question id if its mcq 
     question = get_object_or_404(Question, id=question_id)
 
     # TF questions msh hnaa ana 3amla column esmo correct_tf_answer 3shan h7ot hna answer ay so2al t& f
     if question.question_type == "tf":
         return redirect("set_tf_answer", question_id=question.id)
 
-    if request.method == "POST":
+    if request.method == "POST": #delw2ty lw el teacher 3aml submit ll 4 choices ha5od choices mn el column el hwa choices_text w ha5od index el correct mn el column el hwa correct
         choices_text = request.POST.getlist("choices")
+        if len(choices_text) < 2:
+            return render(request, "d", {
+                "question": question,
+                "error": "You must enter at least 2 choices."
+        })
+
         correct_index = int(request.POST["correct"])
+
+        if correct_index >= len(choices_text):
+            return render(request, "d", {
+                "question": question,
+                "error": "Invalid correct answer."
+        })
 
         
         Choice.objects.filter(question=question).update(is_correct=False)
-
+#ha loop 3laq el choices_text el hya k2nha list delw2ty zy kda choices_text = ["A", "B", "C", "D"]  w bosy b2a leffff 3la el id bta3hom el hwa hwa el index
         for i, text in enumerate(choices_text):
             Choice.objects.create(
                 question=question,
