@@ -16,6 +16,7 @@ class Profile(models.Model):
     user      = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     phone     = models.CharField(max_length=20, blank=True)
     user_type = models.CharField(max_length=20, choices=USER_TYPE_CHOICES, default="student")
+    # account_type = models.CharField(max_length=20, default="free")
 
     def __str__(self):
         return f"{self.user.username} — {self.user_type}"
@@ -49,3 +50,11 @@ class EmailConfirmationToken(models.Model):
     
     def is_valid(self):
         return timezone.now() < self.created_at + timedelta(hours=24) # token expires after 24 hours hna hanzawd el wa2t shwya 
+    
+# class Institution(models.Model):
+#     name = models.CharField(max_length=255)
+
+# class InstitutionMember(models.Model):
+#     user = models.OneToOneField(User, on_delete=models.CASCADE)
+#     institution_id = models.CharField(max_length=50, unique=True)
+#     is_verified = models.BooleanField(default=False)

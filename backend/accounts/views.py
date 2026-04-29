@@ -55,6 +55,25 @@ def register(request):
             return JsonResponse({"error": "Invalid user type"}, status=400)
 
 
+        # if account_type not in ("free", "institution"):
+        #     return JsonResponse({"error": "Invalid account type"}, status=400)
+
+        # # Institution validation (ONLY if institution account)
+        # if account_type == "institution":
+        #     if not institution_id:
+        #         return JsonResponse({"error": "Institution ID is required"}, status=400)
+
+        #     try:
+        #         institution = Institution.objects.get(name=institution_name)
+        #     except Institution.DoesNotExist:
+        #         return JsonResponse({"error": "Invalid institution"}, status=400)
+
+        #     # check if ID exists (your logic can evolve later)
+        #     if InstitutionMember.objects.filter(institution_id=institution_id).exists():
+        #         return JsonResponse({"error": "Institution ID already used"}, status=400)
+
+
+
         user = User.objects.create_user(
             username=email,
             email=email,
@@ -68,7 +87,15 @@ def register(request):
         profile.phone     = f"{country_code}{phone}"
         profile.user_type = user_type
         profile.save()
-
+        
+#3mlt model lldata bta3t el institution lma y3mlo el fields b2a hb2a afth el comment
+        # if account_type == "institution":
+        #     InstitutionMember.objects.create(
+        #         user=user,
+        #         institution=institution,
+        #         institution_id=institution_id,
+        #         is_verified=True  # or False if you want admin approval later
+        #     )
         # Generate token and send email
         token        = str(uuid.uuid4())
         EmailConfirmationToken.objects.create(user=user, token=token)
@@ -293,3 +320,5 @@ def contact(request):
     
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+
