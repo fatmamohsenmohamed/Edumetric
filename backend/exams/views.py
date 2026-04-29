@@ -9,23 +9,36 @@ from xhtml2pdf import pisa
 from io import BytesIO
 from django.contrib.auth.models import User
 
-# @login_required
-def create_exam(request):
-    if request.method == "POST":
+import random
+from django.http import JsonResponse
+from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
 
-        easy_count   = int(request.POST.get("easy_count", 0))
+@csrf_exempt
+# @login_required
+
+
+def create_exam(request):
+    try:
+
+        if request.method != "POST":
+            return JsonResponse({"error": "Only POST allowed"}, status=405)
+
+        easy_count = int(request.POST.get("easy_count", 0))
         medium_count = int(request.POST.get("medium_count", 0))
-        hard_count   = int(request.POST.get("hard_count", 0))
+        hard_count = int(request.POST.get("hard_count", 0))
 
         if easy_count + medium_count + hard_count == 0:
-            return render(request, "create_exam.html", {
-                "error": "Select at least one question"
-            })
+            return JsonResponse({"error": "Select at least one question"}, status=400)
+
+        subject = request.POST.get("subject")
 
         exam = Exam.objects.create(
             title=request.POST.get("title"),
-            instructor=request.user if request.user.is_authenticated else User.objects.first(),  # ← fix for anonymous user
-            duration_minutes=int(request.POST.get("duration_minutes", 60)),
+            instructor=request.user if request.user.is_authenticated else User.objects.first(),
+            duration=int(request.POST.get("duration", 60)),
+            subject = request.POST.get("subject"),
             max_attempts=int(request.POST.get("max_attempts", 1)),
             shuffle_questions=request.POST.get("shuffle_questions") == "on",
             shuffle_choices=request.POST.get("shuffle_choices") == "on",
@@ -41,21 +54,37 @@ def create_exam(request):
             ("hard", hard_count)
         ]:
             if count > 0:
-                pool = list(Question.objects.filter(difficulty=difficulty))
+                pool = Question.objects.filter(
+                    difficulty=difficulty,
+                    chapter__subject=subject
+                )
 
                 available = [q for q in pool if q.id not in picked_ids]
 
+                if len(available) == 0:
+                    continue
+
                 selected = random.sample(available, min(count, len(available)))
 
+                # ✅ FIX: you were missing this
                 picked.extend(selected)
                 picked_ids.update(q.id for q in selected)
 
         exam.questions.set(picked)
 
-        return redirect("take_exam", exam_id=exam.id)
+        return JsonResponse({
+            "success": True,
+            "exam_id": exam.id
+        })
 
-    return render(request, "create_exam.html")
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())  # 👈 shows real error in terminal
 
+        return JsonResponse({
+            "success": False,
+            "error": str(e)
+        }, status=500)
 # @login_required
 def take_exam(request, exam_id):
     exam = get_object_or_404(Exam, id=exam_id)

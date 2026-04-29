@@ -116,16 +116,15 @@ export default function TeacherDashboard() {
 
   const handleLogout = async () => {
     try {
-        await fetch("http://localhost:8000/api/logout/", {
-            method: "POST",
-            credentials: "include",
-        });
+      await fetch("http://localhost:8000/api/logout/", {
+        method: "POST",
+        credentials: "include",
+      });
     } catch (err) {
-        console.error("Logout error:", err);
+      console.error("Logout error:", err);
     }
     navigate("/login"); //han8yarha ll home page b3d ma y3mloha MOHEMMMM
-};
-
+  };
 
   useEffect(() => {
     fetch("http://localhost:8000/api/me/", {
@@ -236,7 +235,12 @@ export default function TeacherDashboard() {
           {NAV.map(({ label, icon: Icon, active }) => (
             <button
               key={label}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${active ? "bg-[#1e3a8a] text-white shadow-lg" : "text-slate-600 hover:text-slate-900 hover:bg-[#1e3a8a]/10"}`}
+              onClick={() => {
+                if (label === "Create Exam") {
+                  navigate("/createexam");
+                }
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-slate-600 hover:text-slate-900 hover:bg-[#1e3a8a]/10"
             >
               <Icon size={18} />
               {label}
@@ -430,7 +434,10 @@ export default function TeacherDashboard() {
               Quick Actions
             </h2>
             <div className="flex flex-wrap gap-3">
-              <button className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#1e40af] text-white hover:shadow-lg transition-all">
+              <button
+                onClick={() => navigate("/createexam")}
+                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#1e40af] text-white hover:shadow-lg transition-all"
+              >
                 <MdCreate size={16} />
                 Create New Exam
               </button>

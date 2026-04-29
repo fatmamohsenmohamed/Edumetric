@@ -68,8 +68,7 @@ const validate = (data, step) => {
 
   if (step === 1) {
     if (!data.title) errors.title = "Title is required";
-    else if (data.title.length < 3)
-      errors.title = "Minimum 3 characters";
+    else if (data.title.length < 3) errors.title = "Minimum 3 characters";
 
     if (!data.subject) errors.subject = "Subject is required";
 
@@ -83,8 +82,7 @@ const validate = (data, step) => {
       Number(data.medium_count) +
       Number(data.hard_count);
 
-    if (total === 0)
-      errors.questions = "Add at least one question";
+    if (total === 0) errors.questions = "Add at least one question";
   }
 
   return errors;
@@ -109,9 +107,7 @@ function Step1({ data, onChange, errors }) {
         {errors.title ? (
           <p className="text-red-500 text-xs">{errors.title}</p>
         ) : (
-          data.title && (
-            <p className="text-green-600 text-xs">Looks good ✓</p>
-          )
+          data.title && <p className="text-green-600 text-xs">Looks good ✓</p>
         )}
       </div>
 
@@ -174,10 +170,7 @@ function Step2({ data, onChange, errors }) {
 
       <Card className="p-4 bg-blue-50">
         <p className="text-sm">
-          Total:{" "}
-          <b>
-            {data.easy_count + data.medium_count + data.hard_count}
-          </b>
+          Total: <b>{data.easy_count + data.medium_count + data.hard_count}</b>
         </p>
       </Card>
     </div>
@@ -190,7 +183,7 @@ function Step3({ data, onChange }) {
     <div className="space-y-6">
       <h3 className="font-bold text-lg">Settings</h3>
 
-       <Label>Max Attempts</Label>
+      <Label>Max Attempts</Label>
       <input
         type="number"
         name="max_attempts"
@@ -229,15 +222,10 @@ function Step4({ data, errors }) {
     Number(data.medium_count) +
     Number(data.hard_count);
 
-  const isReady =
-    data.title &&
-    data.subject &&
-    data.duration > 0 &&
-    total > 0;
+  const isReady = data.title && data.subject && data.duration > 0 && total > 0;
 
   return (
     <div className="space-y-6">
-
       {/* HEADER STATUS */}
       <Card className="p-6">
         <h3 className="font-bold text-xl">Preview</h3>
@@ -247,9 +235,7 @@ function Step4({ data, errors }) {
             isReady ? "text-green-600" : "text-red-500"
           }`}
         >
-          {isReady
-            ? "✔ Ready to publish"
-            : "⚠ Missing required information"}
+          {isReady ? "✔ Ready to publish" : "⚠ Missing required information"}
         </p>
       </Card>
 
@@ -257,44 +243,41 @@ function Step4({ data, errors }) {
       <Card className="p-5 space-y-2">
         <h4 className="font-semibold text-gray-700">Basic Info</h4>
 
-        <p><b>Title:</b> {data.title || "—"}</p>
-        <p><b>Subject:</b> {data.subject || "—"}</p>
-        <p><b>Duration:</b> {data.duration || 0} min</p>
+        <p>
+          <b>Title:</b> {data.title || "—"}
+        </p>
+        <p>
+          <b>Subject:</b> {data.subject || "—"}
+        </p>
+        <p>
+          <b>Duration:</b> {data.duration || 0} min
+        </p>
       </Card>
 
       {/* QUESTIONS BREAKDOWN */}
       <Card className="p-5 space-y-3">
-        <h4 className="font-semibold text-gray-700">
-          Questions Breakdown
-        </h4>
+        <h4 className="font-semibold text-gray-700">Questions Breakdown</h4>
 
         <div className="grid grid-cols-3 gap-3 text-center">
           <div className="bg-green-50 p-3 rounded-lg">
             <p className="text-xs text-gray-500">Easy</p>
-            <p className="font-bold text-green-600">
-              {data.easy_count}
-            </p>
+            <p className="font-bold text-green-600">{data.easy_count}</p>
           </div>
 
           <div className="bg-yellow-50 p-3 rounded-lg">
             <p className="text-xs text-gray-500">Medium</p>
-            <p className="font-bold text-yellow-600">
-              {data.medium_count}
-            </p>
+            <p className="font-bold text-yellow-600">{data.medium_count}</p>
           </div>
 
           <div className="bg-red-50 p-3 rounded-lg">
             <p className="text-xs text-gray-500">Hard</p>
-            <p className="font-bold text-red-600">
-              {data.hard_count}
-            </p>
+            <p className="font-bold text-red-600">{data.hard_count}</p>
           </div>
         </div>
 
         <div className="pt-2 border-t text-center">
           <p className="text-sm text-gray-600">
-            Total Questions:{" "}
-            <span className="font-bold">{total}</span>
+            Total Questions: <span className="font-bold">{total}</span>
           </p>
         </div>
       </Card>
@@ -308,13 +291,11 @@ function Step4({ data, errors }) {
         </p>
 
         <p>
-          <b>Shuffle Questions:</b>{" "}
-          {data.shuffle_questions ? "Yes" : "No"}
+          <b>Shuffle Questions:</b> {data.shuffle_questions ? "Yes" : "No"}
         </p>
 
         <p>
-          <b>Shuffle Choices:</b>{" "}
-          {data.shuffle_choices ? "Yes" : "No"}
+          <b>Shuffle Choices:</b> {data.shuffle_choices ? "Yes" : "No"}
         </p>
       </Card>
 
@@ -340,15 +321,63 @@ export default function CreateExam() {
   const [examData, setExamData] = useState(INITIAL_EXAM_DATA);
   const [errors, setErrors] = useState({});
 
+  const getCSRFToken = () => {
+    return document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("csrftoken"))
+      ?.split("=")[1];
+  };
+
+  const handlePublish = async () => {
+    const err1 = validate(examData, 1);
+    const err2 = validate(examData, 2);
+
+    const all = { ...err1, ...err2 };
+    if (Object.keys(all).length > 0) {
+      setErrors(all);
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+
+      Object.keys(examData).forEach((key) => {
+        let value = examData[key];
+
+        // Django expects "on" for checkboxes
+        if (typeof value === "boolean") {
+          value = value ? "on" : "";
+        }
+
+        formData.append(key, value);
+      });
+
+      const response = await fetch("http://localhost:8000/api/create/", {
+        method: "POST",
+        body: formData,
+        credentials: "include", // 🔥 VERY IMPORTANT
+        // headers: {
+        //   "X-CSRFToken": getCSRFToken(),
+        // },
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        navigate("/instructordashboard");
+      } else {
+        alert(data.error || "Something went wrong");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Server error");
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
     const val =
-      type === "checkbox"
-        ? checked
-        : type === "number"
-        ? Number(value)
-        : value;
+      type === "checkbox" ? checked : type === "number" ? Number(value) : value;
 
     const newData = { ...examData, [name]: val };
     setExamData(newData);
@@ -375,23 +404,17 @@ export default function CreateExam() {
     if (n <= maxStep) setStep(n);
   };
 
-  const handlePublish = () => {
-    const err1 = validate(examData, 1);
-    const err2 = validate(examData, 2);
+  // const all = { ...err1, ...err2 };
+  // if (Object.keys(all).length > 0) {
+  //   setErrors(all);
+  //   return;
+  // }
 
-    const all = { ...err1, ...err2 };
-    if (Object.keys(all).length > 0) {
-      setErrors(all);
-      return;
-    }
-
-    alert("🎉 Exam created successfully!");
-    navigate("/instructordashboard");
-  };
+  // alert("🎉 Exam created successfully!");
+  // navigate("/instructordashboard");
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
-
       <ProgressBar
         step={step}
         total={TOTAL_STEPS}
@@ -400,7 +423,6 @@ export default function CreateExam() {
       />
 
       <Card className="p-6">
-
         {step === 1 && (
           <Step1 data={examData} onChange={handleChange} errors={errors} />
         )}
@@ -409,23 +431,17 @@ export default function CreateExam() {
           <Step2 data={examData} onChange={handleChange} errors={errors} />
         )}
 
-        {step === 3 && (
-          <Step3 data={examData} onChange={handleChange} />
-        )}
+        {step === 3 && <Step3 data={examData} onChange={handleChange} />}
 
         {step === 4 && <Step4 data={examData} />}
 
         <div className="flex justify-between mt-6">
           {step > 1 && <Button onClick={back}>Back</Button>}
 
-          {step < TOTAL_STEPS && (
-            <Button onClick={next}>Next</Button>
-          )}
+          {step < TOTAL_STEPS && <Button onClick={next}>Next</Button>}
 
           {step === TOTAL_STEPS && (
-            <Button onClick={handlePublish}>
-              Publish
-            </Button>
+            <Button onClick={handlePublish}>Publish</Button>
           )}
         </div>
       </Card>
