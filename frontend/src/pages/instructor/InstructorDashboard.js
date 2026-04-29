@@ -236,9 +236,8 @@ export default function TeacherDashboard() {
             <button
               key={label}
               onClick={() => {
-                if (label === "Create Exam") {
-                  navigate("/createexam");
-                }
+                if (label === "Create Exam") navigate("/createexam");
+                if (label === "Question Bank") navigate("/questionbank");
               }}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-slate-600 hover:text-slate-900 hover:bg-[#1e3a8a]/10"
             >
@@ -441,7 +440,10 @@ export default function TeacherDashboard() {
                 <MdCreate size={16} />
                 Create New Exam
               </button>
-              <button className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#1e40af] text-white hover:shadow-lg transition-all">
+              <button
+                onClick={() => navigate("/questionbank")}
+                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#1e40af] text-white hover:shadow-lg transition-all"
+              >
                 <MdLibraryBooks size={16} />
                 Question Bank
               </button>

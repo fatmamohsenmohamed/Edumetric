@@ -14,137 +14,128 @@ from django.db import transaction
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Question, Choice, Chapter
 
-# def question_list(request):
-#     questions = Question.objects.all().order_by("-created_at")
-#     return render(request, "questions/question_list.html", {
-#         "questions": questions
-#     })
+@csrf_exempt
+def questions_list_api(request):
+    questions = Question.objects.all().order_by("-id")
+    data = []
+    for q in questions:
+        choices = list(q.choices.values("id", "text", "is_correct"))
+        correct = next((c["text"] for c in choices if c["is_correct"]), "")
+        data.append({
+            "id":         q.id,
+            "question":   q.text,
+            "type":       q.question_type.upper(),
+            "difficulty": q.difficulty.capitalize(),
+            "chapter":    q.chapter.name if q.chapter else "",
+            "subject":    q.chapter.subject if q.chapter else "",
+            "options":    [c["text"] for c in choices],
+            "answer":     correct if q.question_type == "mcq" else str(q.correct_tf_answer),
+        })
+    return JsonResponse(data, safe=False)
 
-def create_question(request):
-    chapters = Chapter.objects.all()
 
-    if request.method == "POST":
-        Question.objects.create(
-            text=request.POST["text"],
-            question_type=request.POST["question_type"],
-            difficulty=request.POST["difficulty"],
-            chapter_id=request.POST["chapter"],
-            # created_by=request.user
+@csrf_exempt
+def create_question_api(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST only"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+
+        chapter_name = data.get("chapter", "").strip()
+        subject      = data.get("subject", "").strip()
+        q_type       = data.get("type", "MCQ").lower()
+        difficulty   = data.get("difficulty", "Easy").lower()
+
+        chapter, _ = Chapter.objects.get_or_create(
+            name=chapter_name,
+            subject=subject
         )
-        return redirect("question_list")
 
-    return render(request, "questions/create_question.html", {
-        "chapters": chapters
-    })
+        question = Question.objects.create(
+            text=data.get("question", "").strip(),
+            question_type=q_type,
+            difficulty=difficulty,
+            chapter=chapter,
+        )
 
-def add_choices(request, question_id): #hd5l 4 choices for every question id if its mcq 
-    question = get_object_or_404(Question, id=question_id)
+        if q_type == "mcq":
+            options       = data.get("options", [])
+            correct_index = data.get("correctIndex", 0)
+            for i, text in enumerate(options):
+                if text.strip():
+                    Choice.objects.create(
+                        question=question,
+                        text=text.strip(),
+                        is_correct=(i == correct_index)
+                    )
 
-    # TF questions msh hnaa ana 3amla column esmo correct_tf_answer 3shan h7ot hna answer ay so2al t& f
-    if question.question_type == "tf":
-        return redirect("set_tf_answer", question_id=question.id)
+        elif q_type == "tf":
+            answer = data.get("answer", "True")
+            question.correct_tf_answer = answer.lower() == "true"
+            question.save()
 
-    if request.method == "POST": #delw2ty lw el teacher 3aml submit ll 4 choices ha5od choices mn el column el hwa choices_text w ha5od index el correct mn el column el hwa correct
-        choices_text = request.POST.getlist("choices")
-        if len(choices_text) < 2:
-            return render(request, "d", {
-                "question": question,
-                "error": "You must enter at least 2 choices."
-        })
+        return JsonResponse({"message": "Question created", "id": question.id})
 
-        correct_index = int(request.POST["correct"])
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
-        if correct_index >= len(choices_text):
-            return render(request, "d", {
-                "question": question,
-                "error": "Invalid correct answer."
-        })
 
-        
-        Choice.objects.filter(question=question).update(is_correct=False)
-#ha loop 3laq el choices_text el hya k2nha list delw2ty zy kda choices_text = ["A", "B", "C", "D"]  w bosy b2a leffff 3la el id bta3hom el hwa hwa el index
-        for i, text in enumerate(choices_text):
-            Choice.objects.create(
-                question=question,
-                text=text,
-                is_correct=(i == correct_index)
-            )
+@csrf_exempt
+def update_question_api(request, question_id):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST only"}, status=405)
 
-        return redirect("question_detail", question_id=question.id)
+    try:
+        data     = json.loads(request.body)
+        question = get_object_or_404(Question, id=question_id)
 
-    return render(request, "d", {
-        "question": question
-    })
-def set_tf_answer(request, question_id):
-    question = get_object_or_404(Question, id=question_id)
+        chapter_name = data.get("chapter", "").strip()
+        subject      = data.get("subject", "").strip()
+        q_type       = data.get("type", "MCQ").lower()
 
-    if question.question_type != "tf":
-        return redirect("question_detail", question_id=question.id)
+        chapter, _ = Chapter.objects.get_or_create(
+            name=chapter_name,
+            subject=subject
+        )
 
-    if request.method == "POST":
-        answer = request.POST.get("answer")
-
-        # Convert string → boolean
-        question.correct_tf_answer = (answer.lower() == "true")
+        question.text          = data.get("question", "").strip()
+        question.question_type = q_type
+        question.difficulty    = data.get("difficulty", "Easy").lower()
+        question.chapter       = chapter
         question.save()
 
-        return redirect("question_detail", question_id=question.id)
+        if q_type == "mcq":
+            question.choices.all().delete()
+            options       = data.get("options", [])
+            correct_index = data.get("correctIndex", 0)
+            for i, text in enumerate(options):
+                if text.strip():
+                    Choice.objects.create(
+                        question=question,
+                        text=text.strip(),
+                        is_correct=(i == correct_index)
+                    )
 
-    return render(request, "r", {
-        "question": question
-    })
+        elif q_type == "tf":
+            answer = data.get("answer", "True")
+            question.correct_tf_answer = answer.lower() == "true"
+            question.save()
 
-def question_detail(request, question_id):
+        return JsonResponse({"message": "Question updated"})
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+def delete_question_api(request, question_id):
+    if request.method != "DELETE":
+        return JsonResponse({"error": "DELETE only"}, status=405)
+
     question = get_object_or_404(Question, id=question_id)
-    choices = question.choices.all()
-
-    return render(request, "q", {
-        "question": question,
-        "choices": choices
-    })
-
-def update_question(request, question_id):
-    question = get_object_or_404(Question, id=question_id, created_by=request.user)
-
-    if request.method == "POST":
-        question.text = request.POST["text"]
-        question.difficulty = request.POST["difficulty"]
-        question.chapter_id = request.POST["chapter"]
-        question.save()
-
-        return redirect("teacher")
-
-    chapters = Chapter.objects.all()
-
-    return render(request, "q", {
-        "question": question,
-        "chapters": chapters
-    })
-def delete_question(request, question_id):
-    question = get_object_or_404(Question, id=question_id, created_by=request.user)
     question.delete()
-    return redirect("teacher")
-
-def filter_questions(request):
-    questions = Question.objects.all()
-
-    subject = request.GET.get("subject")
-    q_type = request.GET.get("type")
-    difficulty = request.GET.get("difficulty")
-
-    if subject:
-        questions = questions.filter(subject=subject)
-
-    if q_type:
-        questions = questions.filter(question_type=q_type)
-
-    if difficulty:
-        questions = questions.filter(difficulty=difficulty)
-
-    return render(request, "r", {
-        "questions": questions
-    })
-
+    return JsonResponse({"message": "Question deleted"})
 
 
 
@@ -160,37 +151,18 @@ def upload_questions(request):
         ext = os.path.splitext(file.name)[1].lower()
 
         try:
-
-            # if ext == ".csv":
-            #     decoded = file.read().decode("utf-8").splitlines()
-            #     reader = csv.DictReader(decoded)
-
-            #     for row in reader:
-            #         process_row(row, request.user)
-
-            # elif ext in [".xlsx", ".xls"]:
-            #     df = pd.read_excel(file)
-
-            #     for _, row in df.iterrows():
-            #         process_row(row.to_dict(), request.user) 
-#hh3ml taht function el parsing 3shan y3rf y2ra mn el docx
             if ext == ".docx":
                 document = Document(file)
-
                 full_text = []
                 for para in document.paragraphs:
                     full_text.append(para.text)
-
                 text = "\n".join(full_text)
-
                 questions = text.split("---")
-
                 for i, q in enumerate(questions):
                     if not q.strip():
                         continue
                     row = parse_docx_question(q)
-                    process_row(row, request.user) #nsaveee as dict b2a 3shan el process row y2ra mnha w y3mlha save 
-            
+                    process_row(row, request.user)
 
             else:
                 return JsonResponse(
@@ -201,10 +173,10 @@ def upload_questions(request):
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
-        return redirect("question_list")
+        # ← changed from redirect to JsonResponse
+        return JsonResponse({"message": "Questions uploaded successfully"})
 
-    return render(request, "upload.html")
-
+    return JsonResponse({"error": "POST only"}, status=405)
 
 def process_row(row, user):
     chapter_name = str(row["chapter"]).strip()
@@ -219,8 +191,7 @@ def process_row(row, user):
         text=row["text"],
         question_type=row["question_type"],
         difficulty=row["difficulty"],
-        chapter=chapter,   # blashhh n5liha bl idddd
-        # created_by=user
+        chapter=chapter,
     )
 
     if row["question_type"] == "mcq":
@@ -244,6 +215,33 @@ def process_row(row, user):
     elif row["question_type"] == "tf":
         question.correct_tf_answer = str(row["correct"]).lower() == "true"
         question.save()
+
+
+def parse_docx_question(text_block):
+    lines = text_block.strip().split("\n")
+    data = {}
+
+    for line in lines:
+        if ":" not in line:
+            continue
+
+        key, value = line.split(":", 1)
+        data[key.strip().lower()] = value.strip()
+
+    return {
+        "text":          data.get("question"),
+        "question_type": data.get("type"),
+        "difficulty":    data.get("difficulty"),
+        "chapter":       data.get("chapter"),
+        "subject":       data.get("subject"),
+        "choice1":       data.get("choice1"),
+        "choice2":       data.get("choice2"),
+        "choice3":       data.get("choice3"),
+        "choice4":       data.get("choice4"),
+        "correct":       data.get("correct"),
+    }
+
+
 # hna de b2aa el finction el asasya ehna hnmshy 3la el format de  llmcq w tf w hhotha ll teacher
 # Question: What is 2+2?
 # Type: mcq
@@ -264,26 +262,3 @@ def process_row(row, user):
 # Subject: Science
 
 # Correct: false
-
-def parse_docx_question(text_block):
-    lines = text_block.strip().split("\n")
-    data = {}
-
-    for line in lines:
-        if ":" not in line:
-            continue
-
-        key, value = line.split(":", 1)
-        data[key.strip().lower()] = value.strip()
-    return {
-        "text": data.get("question"),
-        "question_type": data.get("type"),
-        "difficulty": data.get("difficulty"),
-        "chapter": data.get("chapter"),
-        "subject": data.get("subject"),
-        "choice1": data.get("choice1"),
-        "choice2": data.get("choice2"),
-        "choice3": data.get("choice3"),
-        "choice4": data.get("choice4"),
-        "correct": data.get("correct"),
-    }

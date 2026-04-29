@@ -17,7 +17,7 @@ import InstructorDashboard from "./pages/instructor/InstructorDashboard";
 import CreateExam from "./pages/instructor/CreateEXam";
 
 import Dashboard from "./pages/student/Dashboard";
-
+import QuestionBank from "./pages/instructor/QuestionBank";
 function App() {
   return (
     <BrowserRouter>
@@ -39,6 +39,7 @@ function App() {
         {/* Instructor */}
         <Route path="/instructordashboard" element={<InstructorDashboard />} />
         <Route path="/createexam" element={<CreateExam />} />
+        <Route path="/questionbank" element={<QuestionBank />} />
 
         {/* Student */}
         <Route path="/student" element={<Dashboard />} />
