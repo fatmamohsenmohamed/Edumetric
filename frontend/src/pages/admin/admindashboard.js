@@ -1,71 +1,9 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdDashboard, MdPeople, MdAssignment, MdBarChart, MdSettings, MdNotifications, MdSearch, MdTrendingUp, MdTrendingDown, MdVisibility, MdMenu, MdClose, MdLogout, MdPerson, MdEdit, MdDownload, MdHelp, MdCheckCircle, MdCancel, MdWarning, MdDeleteOutline } from "react-icons/md";
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
-const NAV = [
-  { label: "Dashboard", icon: MdDashboard, active: true },
-  { label: "Users", icon: MdPeople },
-  { label: "Exams", icon: MdAssignment },
-  { label: "Reports", icon: MdBarChart },
-  { label: "Settings", icon: MdSettings }
-];
 
-const STATS = [
-  { label: "Total Users", value: 1245, icon: MdPeople, trend: "+120 this month", up: true, color: "from-[#1e40af] to-[#1e3a8a]" },
-  { label: "Total Exams", value: 342, icon: MdAssignment, trend: "+45 this month", up: true, color: "from-[#1e40af] to-[#1e3a8a]" },
-  { label: "Active Exams", value: 87, icon: MdCheckCircle, trend: "+12 this month", up: true, color: "from-[#1e40af] to-[#1e3a8a]" },
-  { label: "System Health", value: "99.8%", icon: MdBarChart, trend: "All systems operational", up: true, color: "from-[#1e40af] to-[#1e3a8a]" }
-];
-
-const USERS = [
-  { name: "Ahmed Ali", email: "ahmed@example.com", role: "Student", date: "Apr 15, 2026", status: "active" },
-  { name: "Fatima Hassan", email: "fatima@example.com", role: "Teacher", date: "Apr 10, 2026", status: "active" },
-  { name: "Mohamed Karim", email: "mohamed@example.com", role: "Student", date: "Apr 6, 2026", status: "inactive" },
-  { name: "Layla Ibrahim", email: "layla@example.com", role: "Teacher", date: "Mar 30, 2026", status: "active" },
-  { name: "Omar Hassan", email: "omar@example.com", role: "Student", date: "Mar 24, 2026", status: "active" },
-  { name: "Noor Khalid", email: "noor@example.com", role: "Teacher", date: "Mar 18, 2026", status: "active" }
-];
-
-const EXAMS = [
-  { name: "Mathematics Final", teacher: "Fatima Hassan", students: 45, questions: 50, date: "Apr 15, 2026", status: "active" },
-  { name: "Physics Quiz", teacher: "Layla Ibrahim", students: 38, questions: 30, date: "Apr 10, 2026", status: "closed" },
-  { name: "Chemistry Test", teacher: "Fatima Hassan", students: 52, questions: 40, date: "Apr 6, 2026", status: "active" },
-  { name: "English Literature", teacher: "Layla Ibrahim", students: 41, questions: 35, date: "Mar 30, 2026", status: "closed" },
-  { name: "Data Structures", teacher: "Ahmed Karim", students: 36, questions: 45, date: "Mar 24, 2026", status: "active" },
-  { name: "Linear Algebra", teacher: "Fatima Hassan", students: 48, questions: 50, date: "Mar 18, 2026", status: "closed" }
-];
-
-const CHART_DATA = [
-  { month: "Oct", users: 800 },
-  { month: "Nov", users: 920 },
-  { month: "Dec", users: 1050 },
-  { month: "Jan", users: 1120 },
-  { month: "Feb", users: 1180 },
-  { month: "Mar", users: 1210 },
-  { month: "Apr", users: 1245 }
-];
-
-const USER_ROLES = [
-  { name: "Students", value: 850, color: "#1e3a8a" },
-  { name: "Teachers", value: 320, color: "#10b981" },
-  { name: "Admins", value: 10, color: "#f59e0b" }
-];      
-
-const MENU_ITEMS = [
-  { label: "My Profile", icon: MdPerson },
-  { label: "Edit Profile", icon: MdEdit },
-  { label: "Settings", icon: MdSettings },
-  { label: "Download Reports", icon: MdDownload },
-  { label: "Help & Support", icon: MdHelp }
-];
-
-const NOTIFICATIONS = [
-  { id: 1, title: "New User Registration", message: "5 new users registered today", time: "2 hours ago", type: "success", icon: MdCheckCircle },
-  { id: 2, title: "Exam Created", message: "New exam 'Advanced Math' created by teacher", time: "5 hours ago", type: "info", icon: MdAssignment },
-  { id: 3, title: "System Alert", message: "Database backup completed successfully", time: "1 day ago", type: "warning", icon: MdWarning },
-  { id: 4, title: "Low Storage", message: "Server storage at 85% capacity", time: "1 day ago", type: "warning", icon: MdWarning }
-];
 
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
@@ -85,10 +23,69 @@ export default function AdminDashboard() {
   const [notifOpen, setNotifOpen] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    navigate("/login");
-  };
+  //  state variables dol badal el hard coded data 3shan n fetch el data mn el backend w n displayha
+ const [stats, setStats] = useState(null);
+ const [users, setUsers] = useState([]);
+ const [exams, setExams] = useState([]);
+ const [userGrowth, setUserGrowth] = useState([]);
+ const [userDistribution, setUserDistribution] = useState([]);
 
+//m4 fahma el code da awy bs harga3lo tany hwa by3ml fetch mn el backend l data elly 3ndna fe el dashboard zay el stats cards w el tables w el charts w by7ot el data di fe state variables 3shan n displayha fe el UI
+ useEffect(() => {
+    // fetch stats cards data
+    fetch("http://localhost:8000/api/admin/stats/", {
+        credentials: "include"
+    })
+    .then(res => res.json())
+    .then(data => setStats(data))
+    .catch(err => console.error("Stats error:", err));
+
+    // fetch users table data
+    fetch("http://localhost:8000/api/admin/users/", {
+        credentials: "include"
+    })
+    .then(res => res.json())
+    .then(data => setUsers(data))
+    .catch(err => console.error("Users error:", err));
+
+    // fetch exams table data
+    fetch("http://localhost:8000/api/admin/exams/", {
+        credentials: "include"
+    })
+    .then(res => res.json())
+    .then(data => setExams(data))
+    .catch(err => console.error("Exams error:", err));
+
+    // fetch user growth chart data
+    fetch("http://localhost:8000/api/admin/user-growth/", {
+        credentials: "include"
+    })
+    .then(res => res.json())
+    .then(data => setUserGrowth(data))
+    .catch(err => console.error("Growth error:", err));
+
+    // fetch user distribution pie data
+    fetch("http://localhost:8000/api/admin/user-distribution/", {
+        credentials: "include"
+    })
+    .then(res => res.json())
+    .then(data => setUserDistribution(data))
+    .catch(err => console.error("Distribution error:", err));
+
+}, []); // [] means run once when page loads
+
+const handleLogout = async () => {
+    try {
+        await fetch("http://localhost:8000/api/logout/", {
+            method: "POST",
+            credentials: "include",  // sends session cookie to Django
+        });
+    } catch (err) {
+        console.error("Logout error:", err);
+    }
+    navigate("/");  // redirect to home page after logout which e7na lsa ma3mlanaha444
+
+};
   const StatCard = ({ label, value, icon: Icon, trend, up, color }) => (
     <div className="bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6 hover:shadow-md hover:border-slate-300 transition-all">
       <div className="flex items-start justify-between mb-4">
@@ -237,7 +234,44 @@ export default function AdminDashboard() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-            {STATS.map(s => <StatCard key={s.label} {...s} />)}
+
+            //  Fixed — uses real data from backend code tany m4 fahmahh harga3lo
+    {stats && (
+    <>
+        <StatCard
+            label="Total Users"
+            value={stats.total_users}
+            icon={MdPeople}
+            trend=""
+            up={true}
+            color="from-[#1e40af] to-[#1e3a8a]"
+        />
+        <StatCard
+            label="Total Exams"
+            value={stats.total_exams}
+            icon={MdAssignment}
+            trend=""
+            up={true}
+            color="from-[#1e40af] to-[#1e3a8a]"
+        />
+        <StatCard
+            label="Active Exams"
+            value={stats.active_exams}
+            icon={MdCheckCircle}
+            trend=""
+            up={true}
+            color="from-[#1e40af] to-[#1e3a8a]"
+        />
+        <StatCard
+            label="System Health"
+            value={stats.system_health}
+            icon={MdBarChart}
+            trend="All systems operational"
+            up={true}
+            color="from-[#1e40af] to-[#1e3a8a]"
+        />
+    </>
+)}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -245,22 +279,27 @@ export default function AdminDashboard() {
               <h2 className="text-lg font-bold text-[#1e3a8a] mb-1">User Growth</h2>
               <p className="text-sm text-slate-500 mb-6">Monthly user registration trend</p>
               <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={CHART_DATA}>
+
+                 //Fixed — uses real data da el charts
+                <BarChart data={userGrowth}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(30,58,138,0.1)" />
                   <XAxis dataKey="month" stroke="rgba(30,58,138,0.5)" />
                   <YAxis stroke="rgba(30,58,138,0.5)" />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="users" fill="#1e3a8a" radius={[8, 8, 0, 0]} />
                 </BarChart>
+                
               </ResponsiveContainer>
             </div>
             <div className="lg:col-span-2 bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6">
               <h2 className="text-lg font-bold text-[#1e3a8a] mb-1">User Distribution</h2>
               <p className="text-sm text-slate-500 mb-6">Breakdown by role</p>
               <ResponsiveContainer width="100%" height={220}>
+
+                //hana bardo edit 34an nest3ml el data el bgd
                 <PieChart>
-                  <Pie data={USER_ROLES} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value">
-                    {USER_ROLES.map((e, i) => <Cell key={i} fill={e.color} />)}
+                  <Pie data={userDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value">
+                    {userDistribution.map((e, i) => <Cell key={i} fill={e.color} />)}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />
                   <Legend wrapperStyle={{ color: "#1e3a8a", paddingTop: "16px" }} />
@@ -280,7 +319,10 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-[2fr_1.5fr_1fr_70px_90px_60px] gap-3 px-4 py-3 mb-2 border-b border-slate-200">
               {["Name", "Email", "Role", "Date", "Status", "Action"].map((h, i) => <span key={h} className={`text-xs font-semibold uppercase text-slate-500 ${i === 1 ? "hidden sm:block" : ""}`}>{h}</span>)}
             </div>
-            {USERS.map((user, i) => <UserRow key={user.name} user={user} i={i} />)}
+
+            //edit tany 34an asta5den el data el7a2y2ya bl user id 34an e7na 8yarna l django users
+            {users.map((user, i) => <UserRow key={user.id} user={user} i={i} />)}
+
           </div>
 
           <div className="bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6">
@@ -294,7 +336,7 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-[2fr_1.5fr_70px_70px_90px_90px_60px] gap-3 px-4 py-3 mb-2 border-b border-slate-200">
               {["Exam Name", "Teacher", "Students", "Questions", "Date", "Status", "Action"].map((h, i) => <span key={h} className={`text-xs font-semibold uppercase text-slate-500 ${i === 4 ? "hidden sm:block" : ""}`}>{h}</span>)}
             </div>
-            {EXAMS.map((exam, i) => <ExamRow key={exam.name} exam={exam} i={i} />)}
+            {exams.map((exam, i) => <ExamRow key={i} exam={exam} i={i} />)}
           </div>
         </main>
       </div>
