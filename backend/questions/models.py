@@ -40,16 +40,16 @@ class Question(models.Model):
         null=False
     )
 
-    class Meta:
-        constraints = [
-            models.CheckConstraint(
-                name="tf_answer_required",
-                condition=(
-                    Q(question_type="tf", correct_tf_answer__isnull=False) |
-                    Q(question_type="mcq")
-                )
-            )
-        ]
+    # class Meta:
+    #     constraints = [
+    #         models.CheckConstraint(
+    #             name="tf_answer_required",
+    #             condition=(
+    #                 Q(question_type="tf", correct_tf_answer__isnull=False) |
+    #                 Q(question_type="mcq")
+    #             )
+    #         )
+    #     ]
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="choices") #related name de 3shan a2dar a3ml question.choices w ygebly el choices kolha elly m3mola ll question da bbsataaa de fk ll automatic id el byt3ml lkol question w byb2a esmo question_id
     text = models.CharField(max_length=255) # de el choices kolha
