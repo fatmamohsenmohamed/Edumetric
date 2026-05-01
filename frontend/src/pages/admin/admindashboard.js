@@ -235,7 +235,7 @@ const handleLogout = async () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
 
-            //  Fixed — uses real data from backend code tany m4 fahmahh harga3lo
+            {/* Fixed — uses real data from backend code tany m4 fahmahh harga3lo */}
     {stats && (
     <>
         <StatCard
@@ -280,7 +280,7 @@ const handleLogout = async () => {
               <p className="text-sm text-slate-500 mb-6">Monthly user registration trend</p>
               <ResponsiveContainer width="100%" height={220}>
 
-                 //Fixed — uses real data da el charts
+                 {/* Fixed — uses real data da el charts */}
                 <BarChart data={userGrowth}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(30,58,138,0.1)" />
                   <XAxis dataKey="month" stroke="rgba(30,58,138,0.5)" />
@@ -296,7 +296,7 @@ const handleLogout = async () => {
               <p className="text-sm text-slate-500 mb-6">Breakdown by role</p>
               <ResponsiveContainer width="100%" height={220}>
 
-                //hana bardo edit 34an nest3ml el data el bgd
+                {/* //hana bardo edit 34an nest3ml el data el bgd */}
                 <PieChart>
                   <Pie data={userDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value">
                     {userDistribution.map((e, i) => <Cell key={i} fill={e.color} />)}
@@ -320,7 +320,7 @@ const handleLogout = async () => {
               {["Name", "Email", "Role", "Date", "Status", "Action"].map((h, i) => <span key={h} className={`text-xs font-semibold uppercase text-slate-500 ${i === 1 ? "hidden sm:block" : ""}`}>{h}</span>)}
             </div>
 
-            //edit tany 34an asta5den el data el7a2y2ya bl user id 34an e7na 8yarna l django users
+            {/* //edit tany 34an asta5den el data el7a2y2ya bl user id 34an e7na 8yarna l django users */}
             {users.map((user, i) => <UserRow key={user.id} user={user} i={i} />)}
 
           </div>
