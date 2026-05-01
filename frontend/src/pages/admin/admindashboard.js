@@ -3,7 +3,29 @@ import { useNavigate } from "react-router-dom";
 import { MdDashboard, MdPeople, MdAssignment, MdBarChart, MdSettings, MdNotifications, MdSearch, MdTrendingUp, MdTrendingDown, MdVisibility, MdMenu, MdClose, MdLogout, MdPerson, MdEdit, MdDownload, MdHelp, MdCheckCircle, MdCancel, MdWarning, MdDeleteOutline } from "react-icons/md";
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
+// Add these back — these are UI constants not database data
+const NAV = [
+  { label: "Dashboard", icon: MdDashboard, active: true },
+  { label: "Users", icon: MdPeople },
+  { label: "Exams", icon: MdAssignment },
+  { label: "Reports", icon: MdBarChart },
+  { label: "Settings", icon: MdSettings }
+];
 
+const MENU_ITEMS = [
+  { label: "My Profile", icon: MdPerson },
+  { label: "Edit Profile", icon: MdEdit },
+  { label: "Settings", icon: MdSettings },
+  { label: "Download Reports", icon: MdDownload },
+  { label: "Help & Support", icon: MdHelp }
+];
+
+const NOTIFICATIONS = [
+  { id: 1, title: "New User Registration", message: "5 new users registered today", time: "2 hours ago", type: "success", icon: MdCheckCircle },
+  { id: 2, title: "Exam Created", message: "New exam created by teacher", time: "5 hours ago", type: "info", icon: MdAssignment },
+  { id: 3, title: "System Alert", message: "Database backup completed", time: "1 day ago", type: "warning", icon: MdWarning },
+  { id: 4, title: "Low Storage", message: "Server storage at 85%", time: "1 day ago", type: "warning", icon: MdWarning }
+];
 
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
@@ -101,7 +123,7 @@ const handleLogout = async () => {
   );
 
   const UserRow = ({ user, i }) => (
-    <div className={`grid grid-cols-[2fr_1.5fr_1fr_70px_90px_60px] gap-3 items-center px-4 py-4 rounded-xl hover:bg-[#1e3a8a]/5 text-sm ${i < USERS.length - 1 ? "border-b border-slate-200" : ""}`}>
+    <div className={`grid grid-cols-[2fr_1.5fr_1fr_70px_90px_60px] gap-3 items-center px-4 py-4 rounded-xl hover:bg-[#1e3a8a]/5 text-sm ${i < users.length - 1 ? "border-b border-slate-200" : ""}`}>
       <div className="font-medium text-[#1e3a8a]">{user.name}</div>
       <div className="text-xs text-slate-500 hidden sm:block">{user.email}</div>
       <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${user.role === "Teacher" ? "text-purple-700 bg-purple-100 border-purple-300" : "text-blue-700 bg-blue-100 border-blue-300"}`}>
@@ -120,7 +142,7 @@ const handleLogout = async () => {
   const ExamRow = ({ exam, i }) => {
     const active = exam.status === "active";
     return (
-      <div className={`grid grid-cols-[2fr_1.5fr_70px_70px_90px_90px_60px] gap-3 items-center px-4 py-4 rounded-xl hover:bg-[#1e3a8a]/5 text-sm ${i < EXAMS.length - 1 ? "border-b border-slate-200" : ""}`}>
+      <div className={`grid grid-cols-[2fr_1.5fr_70px_70px_90px_90px_60px] gap-3 items-center px-4 py-4 rounded-xl hover:bg-[#1e3a8a]/5 text-sm ${i < exams.length - 1 ? "border-b border-slate-200" : ""}`}>
         <div className="font-medium text-[#1e3a8a]">{exam.name}</div>
         <div className="text-xs text-slate-500 hidden sm:block">{exam.teacher}</div>
         <div className="text-sm text-slate-600">{exam.students}</div>

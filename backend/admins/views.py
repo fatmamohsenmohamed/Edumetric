@@ -70,6 +70,8 @@ def admin_user_growth(request):
     
 
 #user distribution
+
+@csrf_exempt
 def admin_user_distribution(request):
     if request.method != "GET":
         return JsonResponse({"error": "Only GET allowed"}, status=405)
@@ -167,15 +169,3 @@ def admin_exams(request):
     
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-
-
-#logout view
-from django.contrib.auth import logout as auth_logout # function built in bthandel el el logout
-
-@csrf_exempt
-def logout(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "Only POST allowed"}, status=405)
-    
-    auth_logout(request) #built in fun bt delete el session mn el database w btms7 el session cookie mn el brawser w el token n el database
-    return JsonResponse({"message": "Logged out successfully"})
