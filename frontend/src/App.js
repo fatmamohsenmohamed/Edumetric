@@ -18,6 +18,8 @@ import CreateExam from "./pages/instructor/CreateEXam";
 
 import Dashboard from "./pages/student/Dashboard";
 import QuestionBank from "./pages/instructor/QuestionBank";
+import AdminDashboard from "./pages/admin/Admindashboard";
+
 function App() {
   return (
     <BrowserRouter>
@@ -43,6 +45,9 @@ function App() {
 
         {/* Student */}
         <Route path="/student" element={<Dashboard />} />
+
+        {/* Admin */}
+        <Route path="/admindashboard" element={<AdminDashboard />} />
       </Routes>
     </BrowserRouter>
   );
