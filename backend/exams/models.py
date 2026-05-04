@@ -5,9 +5,10 @@ from questions.models import Question, Choice
 
 class Exam(models.Model):
     title = models.CharField(max_length=255)
+    subject = models.CharField(max_length=100, null=True, blank=True)
     instructor = models.ForeignKey(User, on_delete=models.CASCADE)
     questions = models.ManyToManyField(Question)
-    duration_minutes = models.IntegerField()
+    duration = models.IntegerField()
     max_attempts = models.IntegerField(default=1)
     shuffle_questions = models.BooleanField(default=True)
     shuffle_choices = models.BooleanField(default=True)

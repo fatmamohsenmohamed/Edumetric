@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   MdAddCircleOutline,
   MdSearch,
@@ -16,36 +16,13 @@ import {
 import * as XLSX from "xlsx";
 import mammoth from "mammoth";
 
-
-const SAMPLE_QUESTIONS = [
-  {
-    id: 1,
-    question: "What is React used for?",
-    type: "MCQ",
-    difficulty: "Easy",
-    chapter: "Frontend",
-    subject: "Web",
-    options: ["Backend", "UI", "Database", "OS"],
-    answer: "UI",
-  },
-  {
-    id: 2,
-    question: "The earth is flat",
-    type: "TF",
-    difficulty: "Easy",
-    chapter: "Geography",
-    subject: "Science",
-    answer: "False",
-  },
-];
-
 // ─── Upload Modal ─────────────────────────────────────────────
 function UploadModal({ open, onClose, onConfirm }) {
-  const fileRef                         = useRef();
-  const [preview, setPreview]           = useState([]);
-  const [error, setError]               = useState("");
-  const [fileName, setFileName]         = useState("");
-  const [loading, setLoading]           = useState(false);
+  const fileRef = useRef();
+  const [preview, setPreview] = useState([]);
+  const [error, setError] = useState("");
+  const [fileName, setFileName] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const reset = () => {
     setPreview([]);
@@ -76,39 +53,44 @@ function UploadModal({ open, onClose, onConfirm }) {
         const rows = text.split("\n").filter((r) => r.trim());
         const headers = rows[0].split(",").map((h) => h.trim().toLowerCase());
 
-        parsed = rows.slice(1).map((row, i) => {
-          const cols = row.split(",");
-          const get  = (key) => cols[headers.indexOf(key)]?.trim() || "";
-          return {
-            id:         Date.now() + i,
-            question:   get("question"),
-            type:       get("type")       || "MCQ",
-            difficulty: get("difficulty") || "Easy",
-            chapter:    get("chapter")    || "",
-            subject:    get("subject")    || "",
-            answer:     get("answer")     || "",
-            options:    get("options") ? get("options").split("|") : [],
-          };
-        }).filter((q) => q.question);
+        parsed = rows
+          .slice(1)
+          .map((row, i) => {
+            const cols = row.split(",");
+            const get = (key) => cols[headers.indexOf(key)]?.trim() || "";
+            return {
+              id: Date.now() + i,
+              question: get("question"),
+              type: get("type") || "MCQ",
+              difficulty: get("difficulty") || "Easy",
+              chapter: get("chapter") || "",
+              subject: get("subject") || "",
+              answer: get("answer") || "",
+              options: get("options") ? get("options").split("|") : [],
+            };
+          })
+          .filter((q) => q.question);
       }
 
       // ── XLSX / XLS ────────────────────────────────────────
       else if (ext === "xlsx" || ext === "xls") {
-        const buffer   = await file.arrayBuffer();
+        const buffer = await file.arrayBuffer();
         const workbook = XLSX.read(buffer);
-        const sheet    = workbook.Sheets[workbook.SheetNames[0]];
-        const json     = XLSX.utils.sheet_to_json(sheet);
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet);
 
-        parsed = json.map((row, i) => ({
-          id:         Date.now() + i,
-          question:   String(row.question  || row.Question  || ""),
-          type:       String(row.type      || row.Type      || "MCQ"),
-          difficulty: String(row.difficulty|| row.Difficulty|| "Easy"),
-          chapter:    String(row.chapter   || row.Chapter   || ""),
-          subject:    String(row.subject   || row.Subject   || ""),
-          answer:     String(row.answer    || row.Answer    || ""),
-          options:    row.options ? String(row.options).split("|") : [],
-        })).filter((q) => q.question);
+        parsed = json
+          .map((row, i) => ({
+            id: Date.now() + i,
+            question: String(row.question || row.Question || ""),
+            type: String(row.type || row.Type || "MCQ"),
+            difficulty: String(row.difficulty || row.Difficulty || "Easy"),
+            chapter: String(row.chapter || row.Chapter || ""),
+            subject: String(row.subject || row.Subject || ""),
+            answer: String(row.answer || row.Answer || ""),
+            options: row.options ? String(row.options).split("|") : [],
+          }))
+          .filter((q) => q.question);
       }
 
       // ── DOCX ──────────────────────────────────────────────
@@ -117,30 +99,37 @@ function UploadModal({ open, onClose, onConfirm }) {
         const result = await mammoth.extractRawText({ arrayBuffer: buffer });
         const blocks = result.value.split("---").filter((b) => b.trim());
 
-        parsed = blocks.map((block, i) => {
-          const lines = block.split("\n").filter((l) => l.includes(":"));
-          const data  = {};
-          lines.forEach((line) => {
-            const [key, ...rest] = line.split(":");
-            data[key.trim().toLowerCase()] = rest.join(":").trim();
-          });
-          return {
-            id:         Date.now() + i,
-            question:   data.question  || "",
-            type:       data.type      || "TF",
-            difficulty: data.difficulty|| "Easy",
-            chapter:    data.chapter   || "",
-            subject:    data.subject   || "",
-            answer:     data.correct   || data.answer || "",
-            options:    data.choice1
-              ? [data.choice1, data.choice2, data.choice3, data.choice4].filter(Boolean)
-              : [],
-          };
-        }).filter((q) => q.question);
-      }
-
-      else {
-        setError("Unsupported file type. Please upload CSV, Excel, or Word files.");
+        parsed = blocks
+          .map((block, i) => {
+            const lines = block.split("\n").filter((l) => l.includes(":"));
+            const data = {};
+            lines.forEach((line) => {
+              const [key, ...rest] = line.split(":");
+              data[key.trim().toLowerCase()] = rest.join(":").trim();
+            });
+            return {
+              id: Date.now() + i,
+              question: data.question || "",
+              type: data.type || "TF",
+              difficulty: data.difficulty || "Easy",
+              chapter: data.chapter || "",
+              subject: data.subject || "",
+              answer: data.correct || data.answer || "",
+              options: data.choice1
+                ? [
+                    data.choice1,
+                    data.choice2,
+                    data.choice3,
+                    data.choice4,
+                  ].filter(Boolean)
+                : [],
+            };
+          })
+          .filter((q) => q.question);
+      } else {
+        setError(
+          "Unsupported file type. Please upload CSV, Excel, or Word files.",
+        );
         setLoading(false);
         return;
       }
@@ -173,12 +162,13 @@ function UploadModal({ open, onClose, onConfirm }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
-
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b">
           <div className="flex items-center gap-2">
             <MdCloudUpload className="text-[#1e3a8a] text-2xl" />
-            <h2 className="text-lg font-bold text-[#1e3a8a]">Import Questions</h2>
+            <h2 className="text-lg font-bold text-[#1e3a8a]">
+              Import Questions
+            </h2>
           </div>
           <button
             onClick={handleClose}
@@ -189,15 +179,32 @@ function UploadModal({ open, onClose, onConfirm }) {
         </div>
 
         <div className="p-5 space-y-4 overflow-auto flex-1">
-
           {/* Supported formats */}
           <div className="grid grid-cols-3 gap-3">
             {[
-              { icon: <MdTableChart className="text-green-600 text-xl" />, label: "Excel", ext: ".xlsx, .xls", color: "bg-green-50 border-green-200" },
-              { icon: <MdDescription className="text-blue-600 text-xl" />, label: "CSV",   ext: ".csv",        color: "bg-blue-50 border-blue-200" },
-              { icon: <MdDescription className="text-indigo-600 text-xl" />, label: "Word", ext: ".docx",      color: "bg-indigo-50 border-indigo-200" },
+              {
+                icon: <MdTableChart className="text-green-600 text-xl" />,
+                label: "Excel",
+                ext: ".xlsx, .xls",
+                color: "bg-green-50 border-green-200",
+              },
+              {
+                icon: <MdDescription className="text-blue-600 text-xl" />,
+                label: "CSV",
+                ext: ".csv",
+                color: "bg-blue-50 border-blue-200",
+              },
+              {
+                icon: <MdDescription className="text-indigo-600 text-xl" />,
+                label: "Word",
+                ext: ".docx",
+                color: "bg-indigo-50 border-indigo-200",
+              },
             ].map(({ icon, label, ext, color }) => (
-              <div key={label} className={`flex items-center gap-2 p-3 rounded-xl border ${color}`}>
+              <div
+                key={label}
+                className={`flex items-center gap-2 p-3 rounded-xl border ${color}`}
+              >
                 {icon}
                 <div>
                   <p className="text-sm font-semibold">{label}</p>
@@ -234,12 +241,16 @@ function UploadModal({ open, onClose, onConfirm }) {
 
           {/* Format hint */}
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
-            <p className="text-xs font-semibold text-amber-700 mb-1">📋 Required Format</p>
+            <p className="text-xs font-semibold text-amber-700 mb-1">
+              📋 Required Format
+            </p>
             <p className="text-xs text-slate-600">
-              <strong>CSV/Excel columns:</strong> question, type (MCQ/TF), difficulty, chapter, subject, answer, options (separated by |)
+              <strong>CSV/Excel columns:</strong> question, type (MCQ/TF),
+              difficulty, chapter, subject, answer, options (separated by |)
             </p>
             <p className="text-xs text-slate-600 mt-1">
-              <strong>Word:</strong> Use the format: Question: ... / Type: ... / Difficulty: ... separated by ---
+              <strong>Word:</strong> Use the format: Question: ... / Type: ... /
+              Difficulty: ... separated by ---
             </p>
           </div>
 
@@ -263,7 +274,8 @@ function UploadModal({ open, onClose, onConfirm }) {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold text-slate-700">
-                  Preview — {preview.length} question{preview.length !== 1 ? "s" : ""} found
+                  Preview — {preview.length} question
+                  {preview.length !== 1 ? "s" : ""} found
                 </p>
                 <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
                   Ready to import
@@ -272,24 +284,33 @@ function UploadModal({ open, onClose, onConfirm }) {
 
               <div className="max-h-64 overflow-auto space-y-2 pr-1">
                 {preview.map((q, i) => (
-                  <div key={q.id} className="border border-slate-200 rounded-xl p-3 bg-slate-50">
+                  <div
+                    key={q.id}
+                    className="border border-slate-200 rounded-xl p-3 bg-slate-50"
+                  >
                     <div className="flex justify-between items-start gap-2">
                       <p className="text-sm font-medium text-slate-800">
                         {i + 1}. {q.question}
                       </p>
                       <div className="flex gap-1 shrink-0">
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          q.type === "MCQ"
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-purple-100 text-purple-700"
-                        }`}>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full ${
+                            q.type === "MCQ"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-purple-100 text-purple-700"
+                          }`}
+                        >
                           {q.type}
                         </span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          q.difficulty === "Easy"   ? "bg-green-100 text-green-700"  :
-                          q.difficulty === "Medium" ? "bg-yellow-100 text-yellow-700" :
-                                                      "bg-red-100 text-red-700"
-                        }`}>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full ${
+                            q.difficulty === "Easy"
+                              ? "bg-green-100 text-green-700"
+                              : q.difficulty === "Medium"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-red-100 text-red-700"
+                          }`}
+                        >
                           {q.difficulty}
                         </span>
                       </div>
@@ -334,48 +355,73 @@ function UploadModal({ open, onClose, onConfirm }) {
 
 // ─── Main Component ────────────────────────────────────────────
 export default function QuestionBank() {
-  const [questions, setQuestions]   = useState(SAMPLE_QUESTIONS);
-  const [search, setSearch]         = useState("");
-  const [openModal, setOpenModal]   = useState(false);
+  const [questions, setQuestions] = useState([]); // ← empty, loads from API
+  const [search, setSearch] = useState("");
+  const [openModal, setOpenModal] = useState(false);
   const [openUpload, setOpenUpload] = useState(false);
-  
+  const [loading, setLoading] = useState(true);
+
+  // ── Load questions from backend ──
+  useEffect(() => {
+    fetch("http://localhost:8000/api/questions/", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setQuestions(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, []);
 
   // Form state
-  const [editId, setEditId]           = useState(null);
-  const [text, setText]               = useState("");
-  const [type, setType]               = useState("MCQ");
-  const [chapter, setChapter]         = useState("");
-  const [subject, setSubject]         = useState("");
-  const [difficulty, setDifficulty]   = useState("Easy");
-  const [choices, setChoices]         = useState(["", "", "", ""]);
+  const [editId, setEditId] = useState(null);
+  const [text, setText] = useState("");
+  const [type, setType] = useState("MCQ");
+  const [chapter, setChapter] = useState("");
+  const [subject, setSubject] = useState("");
+  const [difficulty, setDifficulty] = useState("Easy");
+  const [choices, setChoices] = useState(["", "", "", ""]);
   const [correctIndex, setCorrectIndex] = useState(0);
-  const [tfAnswer, setTfAnswer]       = useState("True");
-
-  
+  const [tfAnswer, setTfAnswer] = useState("True");
 
   const filtered = questions.filter((q) => {
     const s = search.toLowerCase();
 
     return (
-        q.question.toLowerCase().includes(s) ||
-        q.subject.toLowerCase().includes(s) ||
-        q.difficulty.toLowerCase().includes(s)
+      q.question.toLowerCase().includes(s) ||
+      q.subject.toLowerCase().includes(s) ||
+      q.difficulty.toLowerCase().includes(s)
     );
-    });
+  });
 
   const resetForm = () => {
-    setText(""); setType("MCQ"); setChapter(""); setSubject("");
-    setDifficulty("Easy"); setChoices(["", "", "", ""]);
-    setCorrectIndex(0); setTfAnswer("True");
+    setText("");
+    setType("MCQ");
+    setChapter("");
+    setSubject("");
+    setDifficulty("Easy");
+    setChoices(["", "", "", ""]);
+    setCorrectIndex(0);
+    setTfAnswer("True");
   };
 
   const handleEdit = (q) => {
     setEditId(q.id);
-    setText(q.question); setType(q.type);
-    setChapter(q.chapter); setSubject(q.subject);
+    setText(q.question);
+    setType(q.type);
+    setChapter(q.chapter);
+    setSubject(q.subject);
     setDifficulty(q.difficulty);
     if (q.type === "MCQ") {
-      setChoices(q.options.length === 4 ? q.options : [...q.options, "", "", "", ""].slice(0, 4));
+      setChoices(
+        q.options.length === 4
+          ? q.options
+          : [...q.options, "", "", "", ""].slice(0, 4),
+      );
       setCorrectIndex(q.options.indexOf(q.answer));
     } else {
       setTfAnswer(q.answer);
@@ -383,42 +429,84 @@ export default function QuestionBank() {
     setOpenModal(true);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("Delete this question?")) {
-      setQuestions((prev) => prev.filter((q) => q.id !== id));
-    }
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this question?")) return;
+
+    await fetch(`http://localhost:8000/api/questions/${id}/delete/`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+
+    setQuestions((prev) => prev.filter((q) => q.id !== id));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!text.trim()) return;
-    const newQ = {
-      id:         editId || Date.now(),
-      question:   text,
-      type,
-      difficulty,
-      chapter,
-      subject,
-      options:    type === "MCQ" ? choices.filter((c) => c.trim()) : [],
-      answer:     type === "MCQ" ? choices[correctIndex] : tfAnswer,
+
+    const payload = {
+      question: text,
+      type: type,
+      difficulty: difficulty,
+      chapter: chapter,
+      subject: subject,
+      options: type === "MCQ" ? choices : [],
+      correctIndex: type === "MCQ" ? correctIndex : 0,
+      answer: type === "TF" ? tfAnswer : choices[correctIndex],
     };
-    setQuestions((prev) =>
-      editId ? prev.map((q) => (q.id === editId ? newQ : q)) : [newQ, ...prev]
-    );
+
+    const url = editId
+      ? `http://localhost:8000/api/questions/${editId}/update/`
+      : `http://localhost:8000/api/questions/create/`;
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      // Reload questions from backend
+      const updated = await fetch("http://localhost:8000/api/questions/", {
+        credentials: "include",
+      }).then((r) => r.json());
+      setQuestions(updated);
+    }
+
     setOpenModal(false);
     setEditId(null);
     resetForm();
   };
 
- 
-  const handleImport = (imported) => {
-    setQuestions((prev) => [...imported, ...prev]);
+  const handleImport = async (imported) => {
+    // Send each question to backend
+    for (const q of imported) {
+      await fetch("http://localhost:8000/api/questions/create/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          question: q.question,
+          type: q.type,
+          difficulty: q.difficulty,
+          chapter: q.chapter,
+          subject: q.subject,
+          options: q.options,
+          correctIndex: q.options?.indexOf(q.answer) ?? 0,
+          answer: q.answer,
+        }),
+      });
+    }
+
+    // Reload from backend
+    const updated = await fetch("http://localhost:8000/api/questions/", {
+      credentials: "include",
+    }).then((r) => r.json());
+
+    setQuestions(updated);
   };
-
   return (
-    
-    
     <div className="p-6 bg-white min-h-screen space-y-6">
-
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -431,7 +519,6 @@ export default function QuestionBank() {
         </div>
 
         <div className="flex gap-2">
-          
           <button
             onClick={() => setOpenUpload(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-[#1e3a8a] hover:bg-slate-200 transition font-medium"
@@ -441,7 +528,11 @@ export default function QuestionBank() {
           </button>
 
           <button
-            onClick={() => { setOpenModal(true); setEditId(null); resetForm(); }}
+            onClick={() => {
+              setOpenModal(true);
+              setEditId(null);
+              resetForm();
+            }}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1e3a8a] text-white hover:bg-[#1e40af] transition font-medium"
           >
             <MdAddCircleOutline />
@@ -462,7 +553,12 @@ export default function QuestionBank() {
       </div>
 
       {/* QUESTIONS LIST */}
-      {filtered.length === 0 ? (
+      {loading ? (
+        <div className="text-center py-16 text-slate-400">
+          <div className="w-8 h-8 border-2 border-[#1e3a8a] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+          <p>Loading questions...</p>
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="text-center py-16 text-slate-400">
           <MdLibraryBooks className="text-5xl mx-auto mb-2 opacity-30" />
           <p>No questions found</p>
@@ -496,15 +592,22 @@ export default function QuestionBank() {
 
               <div className="flex flex-wrap gap-2 mt-2">
                 {[q.type, q.chapter, q.subject].filter(Boolean).map((tag) => (
-                  <span key={tag} className="text-xs px-3 py-1 bg-slate-100 rounded-full">
+                  <span
+                    key={tag}
+                    className="text-xs px-3 py-1 bg-slate-100 rounded-full"
+                  >
                     {tag}
                   </span>
                 ))}
-                <span className={`text-xs px-3 py-1 rounded-full font-medium ${
-                  q.difficulty === "Easy"   ? "bg-emerald-100 text-emerald-700" :
-                  q.difficulty === "Medium" ? "bg-yellow-100 text-yellow-700"   :
-                                              "bg-red-100 text-red-700"
-                }`}>
+                <span
+                  className={`text-xs px-3 py-1 rounded-full font-medium ${
+                    q.difficulty === "Easy"
+                      ? "bg-emerald-100 text-emerald-700"
+                      : q.difficulty === "Medium"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-red-100 text-red-700"
+                  }`}
+                >
                   {q.difficulty}
                 </span>
               </div>
@@ -525,10 +628,11 @@ export default function QuestionBank() {
                           : "border-slate-200 text-slate-600"
                       }`}
                     >
-                      {opt === q.answer
-                        ? <MdCheckCircle className="shrink-0" />
-                        : <MdCancel className="shrink-0 text-slate-400" />
-                      }
+                      {opt === q.answer ? (
+                        <MdCheckCircle className="shrink-0" />
+                      ) : (
+                        <MdCancel className="shrink-0 text-slate-400" />
+                      )}
                       {opt}
                     </div>
                   ))}
@@ -548,7 +652,11 @@ export default function QuestionBank() {
                 {editId ? "Edit Question" : "Add New Question"}
               </h2>
               <button
-                onClick={() => { setOpenModal(false); setEditId(null); resetForm(); }}
+                onClick={() => {
+                  setOpenModal(false);
+                  setEditId(null);
+                  resetForm();
+                }}
                 className="p-1 hover:bg-slate-100 rounded-lg"
               >
                 <MdClose className="text-slate-500" />
@@ -623,7 +731,8 @@ export default function QuestionBank() {
                 >
                   {choices.map((c, i) => (
                     <option key={i} value={i}>
-                      Correct: Choice {i + 1}{c ? ` — ${c}` : ""}
+                      Correct: Choice {i + 1}
+                      {c ? ` — ${c}` : ""}
                     </option>
                   ))}
                 </select>
@@ -643,7 +752,11 @@ export default function QuestionBank() {
 
             <div className="flex justify-end gap-2 pt-2">
               <button
-                onClick={() => { setOpenModal(false); setEditId(null); resetForm(); }}
+                onClick={() => {
+                  setOpenModal(false);
+                  setEditId(null);
+                  resetForm();
+                }}
                 className="px-4 py-2 bg-slate-200 rounded-xl hover:bg-slate-300 transition"
               >
                 Cancel

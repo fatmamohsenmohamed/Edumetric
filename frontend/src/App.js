@@ -15,11 +15,12 @@ import ConfirmEmail from "./pages/ConfirmEmail";
 
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";
 import CreateExam from "./pages/instructor/CreateEXam";
-import QuestionBank from "./pages/instructor/QuestionBank";
 import Results from "./pages/instructor/Results";
 import ExamsManagement from "./pages/instructor/ExamsManagement";
 
 import Dashboard from "./pages/student/Dashboard";
+import QuestionBank from "./pages/instructor/QuestionBank";
+import AdminDashboard from "./pages/admin/Admindashboard";
 
 function App() {
   return (
@@ -43,10 +44,17 @@ function App() {
         <Route path="/instructordashboard" element={<InstructorDashboard />} />
         <Route path="/createexam" element={<CreateExam />} />
         <Route path="/questionbank" element={<QuestionBank />} />
+
         <Route path="/results" element={<Results />} />
         <Route path="/examsmanagement" element={<ExamsManagement />} />
+
+
+
         {/* Student */}
         <Route path="/student" element={<Dashboard />} />
+
+        {/* Admin */}
+        <Route path="/admindashboard" element={<AdminDashboard />} />
       </Routes>
     </BrowserRouter>
   );
