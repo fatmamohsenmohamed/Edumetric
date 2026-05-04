@@ -334,6 +334,7 @@ function Step4({ data, errors }) {
 export default function CreateExam() {
   const navigate = useNavigate();
 
+
   const [step, setStep] = useState(1);
   const [maxStep, setMaxStep] = useState(1);
 
@@ -384,7 +385,6 @@ export default function CreateExam() {
       setErrors(all);
       return;
     }
-
     alert("🎉 Exam created successfully!");
     navigate("/instructordashboard");
   };
