@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'exams.apps.ExamsConfig',
     'rest_framework',
     'corsheaders',
+    'admins.apps.AdminsConfig',
 
 ]
 
