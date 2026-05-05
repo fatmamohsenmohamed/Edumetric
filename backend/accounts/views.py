@@ -13,20 +13,34 @@ import uuid # this generates random unique codes
 from django.core.mail import send_mail
 from .models import PasswordResetToken,EmailConfirmationToken
 
-
-
+from django.contrib.auth import authenticate, login as auth_login
 
 import json
+import uuid
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login as auth_login
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
-from .models import EmailConfirmationToken
+from .models import (
+    EmailConfirmationToken,
+    Institution,
+    InstitutionMember,
+)
+from functools import wraps
+from django.http import JsonResponse
+
+
+def api_login_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({"error": "Authentication required"}, status=401)
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 
 @csrf_exempt
+
 def register(request):
     if request.method != "POST":
         return JsonResponse({"error": "Only POST method allowed"}, status=405)
@@ -42,6 +56,11 @@ def register(request):
         password         = data.get("password", "")
         confirm_password = data.get("confirmPassword", "")
 
+        # New fields
+        is_institutional = bool(data.get("isInstitutional", False))
+        institution_user_id = data.get("institutionUserId", "").strip()
+
+        # ─── BASIC VALIDATION ──────────────────────────────────
         if not all([full_name, email, password, confirm_password]):
             return JsonResponse({"error": "All fields are required"}, status=400)
 
@@ -54,61 +73,79 @@ def register(request):
         if user_type not in ("student", "teacher"):
             return JsonResponse({"error": "Invalid user type"}, status=400)
 
+        # ─── BUSINESS RULES ────────────────────────────────────
+        # Free users can ONLY be students
+        if not is_institutional and user_type == "teacher":
+            return JsonResponse(
+                {"error": "Teacher accounts require an institution. Please sign up as a Helwan University member."},
+                status=400
+            )
 
-        # if account_type not in ("free", "institution"):
-        #     return JsonResponse({"error": "Invalid account type"}, status=400)
+        # Institutional users must provide their university ID
+        if is_institutional and not institution_user_id:
+            return JsonResponse(
+                {"error": "Institution ID is required for Helwan University members"},
+                status=400
+            )
 
-        # # Institution validation (ONLY if institution account)
-        # if account_type == "institution":
-        #     if not institution_id:
-        #         return JsonResponse({"error": "Institution ID is required"}, status=400)
+        # If institutional, verify the ID isn't already taken
+        if is_institutional:
+            helwan = Institution.objects.first()
+            if not helwan:
+                return JsonResponse({"error": "No institution configured"}, status=500)
 
-        #     try:
-        #         institution = Institution.objects.get(name=institution_name)
-        #     except Institution.DoesNotExist:
-        #         return JsonResponse({"error": "Invalid institution"}, status=400)
+            if InstitutionMember.objects.filter(
+                institution=helwan,
+                institution_user_id=institution_user_id
+            ).exists():
+                return JsonResponse(
+                    {"error": "This institution ID is already registered"},
+                    status=400
+                )
 
-        #     # check if ID exists (your logic can evolve later)
-        #     if InstitutionMember.objects.filter(institution_id=institution_id).exists():
-        #         return JsonResponse({"error": "Institution ID already used"}, status=400)
-
-
-
+        # ─── CREATE THE USER ───────────────────────────────────
         user = User.objects.create_user(
             username=email,
             email=email,
             password=password,
             first_name=full_name,
-            is_active=False,
+            is_active=False,  # email confirmation pending
         )
 
-        # Save profile
-        profile           = user.profile
-        profile.phone     = f"{country_code}{phone}"
+        # Profile
+        profile = user.profile
+        profile.phone = f"{country_code}{phone}"
         profile.user_type = user_type
         profile.save()
-        
-#3mlt model lldata bta3t el institution lma y3mlo el fields b2a hb2a afth el comment
-        # if account_type == "institution":
-        #     InstitutionMember.objects.create(
-        #         user=user,
-        #         institution=institution,
-        #         institution_id=institution_id,
-        #         is_verified=True  # or False if you want admin approval later
-        #     )
-        # Generate token and send email
-        token        = str(uuid.uuid4())
+
+        # Institution membership (if applicable)
+        if is_institutional:
+            InstitutionMember.objects.create(
+                user=user,
+                institution=helwan,
+                institution_user_id=institution_user_id,
+            )
+
+        # ─── SEND CONFIRMATION EMAIL ───────────────────────────
+        token = str(uuid.uuid4())
         EmailConfirmationToken.objects.create(user=user, token=token)
         confirm_link = f"http://localhost:3000/confirm-email?token={token}"
 
         send_mail(
             subject="Confirm Your EduMetric Email",
-            message=f"Hello {full_name},\n\nPlease confirm your email by clicking the link below:\n{confirm_link}\n\nThis link expires in 24 hours.\n\nIf you didn't register, ignore this email.",
+            message=(
+                f"Hello {full_name},\n\n"
+                f"Please confirm your email by clicking the link below:\n{confirm_link}\n\n"
+                f"This link expires in 24 hours.\n\n"
+                f"If you didn't register, ignore this email."
+            ),
             from_email="edumetric.plattform2026@gmail.com",
             recipient_list=[email],
         )
+
         return JsonResponse({
             "message": "Account created! Check your email to confirm your account.",
+            "is_institutional": is_institutional,
         })
 
     except Exception as e:
@@ -117,6 +154,7 @@ def register(request):
 
 
 @csrf_exempt
+
 def login(request):
     if request.method != "POST":
         return JsonResponse({"error": "Only POST method allowed"}, status=405)
@@ -134,35 +172,50 @@ def login(request):
         user = authenticate(request, username=email, password=password)
         if user is None:
             return JsonResponse({"error": "Invalid email or password"}, status=400)
-        
-        #hna b check lw el user da lsa m4 a confirm el email bta3to w 2olo en y confirm el email bta3to 34an y2dar ya3ml login ba3d kda
+
         if not user.is_active:
             return JsonResponse({"error": "Please confirm your email before logging in"}, status=400)
 
         auth_login(request, user)
 
         if remember_me:
-            request.session.set_expiry(1209600)  # 2 weeks
+            request.session.set_expiry(1209600)
         else:
-            request.session.set_expiry(0)  # expires on browser close
+            request.session.set_expiry(0)
+
+        # Check if user belongs to an institution
+        membership = getattr(user, "institution_membership", None)
 
         return JsonResponse({
-            "message":   "Login successful",
-            "full_name": user.first_name,
-            "user_type": user.profile.user_type,
+            "message":          "Login successful",
+            "full_name":        user.first_name,
+            "user_type":        user.profile.user_type,
+            "is_institutional": membership is not None,
+            "institution":      membership.institution.name if membership else None,
         })
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
 
-@csrf_exempt
-@login_required
+from django.http import JsonResponse
+
+
 def me(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+
+    user = request.user
+    membership = getattr(user, "institution_membership", None)
+
     return JsonResponse({
-        "full_name": request.user.first_name,
-        "email":     request.user.email,
-        "user_type": request.user.profile.user_type,
+        "id":               user.id,
+        "full_name":        user.first_name,
+        "email":            user.email,
+        "user_type":        user.profile.user_type,
+        "is_institutional": membership is not None,
+        "institution":      membership.institution.name if membership else None,
+        "institution_user_id": membership.institution_user_id if membership else None,
     })
 
 

@@ -15,9 +15,11 @@ import ConfirmEmail from "./pages/ConfirmEmail";
 
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";
 import CreateExam from "./pages/instructor/CreateEXam";
+import QuestionBank from "./pages/instructor/QuestionBank";
 
 import Dashboard from "./pages/student/Dashboard";
-import QuestionBank from "./pages/instructor/QuestionBank";
+import TakeExam from "./pages/student/Takeexam";
+import AvailableExams from "./pages/Testexams";
 function App() {
   return (
     <BrowserRouter>
@@ -43,6 +45,8 @@ function App() {
 
         {/* Student */}
         <Route path="/student" element={<Dashboard />} />
+        <Route path="/takeexam/:id" element={<TakeExam />} />
+        <Route path="/testexam" element={<AvailableExams />} />
       </Routes>
     </BrowserRouter>
   );
