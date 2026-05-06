@@ -22,22 +22,22 @@ def about(request):
     return JsonResponse(data)
 
 
-@csrf_exempt
-def contact(request):
-    if request.method == "POST":
-        data = json.loads(request.body or "{}")
+# @csrf_exempt
+# def contact(request):
+#     if request.method == "POST":
+#         data = json.loads(request.body or "{}")
         
 
-        ContactMessage.objects.create(
-            name=data.get("name"),
-            email=data.get("email"),
-            subject=data.get("subject"),
-            message=data.get("message"),
-        )
+#         ContactMessage.objects.create(
+#             name=data.get("name"),
+#             email=data.get("email"),
+#             subject=data.get("subject"),
+#             message=data.get("message"),
+#         )
 
-        return JsonResponse({"message": "Saved successfully"})
+#         return JsonResponse({"message": "Saved successfully"})
 
-    return JsonResponse({"error": "Method not allowed"}, status=405)
+#     return JsonResponse({"error": "Method not allowed"}, status=405)
 
 
 @csrf_exempt
