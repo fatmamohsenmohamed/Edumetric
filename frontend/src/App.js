@@ -27,7 +27,7 @@ import Dashboard from "./pages/student/Dashboard";
 import TakeExam from "./pages/student/Takeexam";
 import AvailableExams from "./pages/Testexams";
 
-import AdminDashboard from "./pages/admin/Admindashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 
 function App() {
