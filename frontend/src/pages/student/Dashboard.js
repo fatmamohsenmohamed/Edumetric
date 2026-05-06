@@ -48,12 +48,12 @@ import {
 } from "recharts";
 
 const NAV = [
-  { label: "Dashboard", icon: MdDashboard, active: true },
-  { label: "Take Exam", icon: MdPlayArrow },
-  { label: "My Results", icon: MdHistory },
-  { label: "Analytics", icon: MdBarChart },
-  { label: "Resources", icon: MdLibraryBooks },
-  { label: "Settings", icon: MdSettings },
+  { label: "Dashboard", icon: MdDashboard, path: "/dashboard", active: true },
+  { label: "Available Exams", icon: MdPlayArrow, path: "/testexam" },
+  { label: "My Results", icon: MdHistory, path: "/my-results" },
+  { label: "Analytics", icon: MdBarChart, path: "/analytics" },
+  { label: "Resources", icon: MdLibraryBooks, path: "/resources" },
+  { label: "Settings", icon: MdSettings, path: "/settings" },
 ];
 const MENU_ITEMS = [
   { label: "My Profile", icon: MdPerson },
@@ -144,15 +144,15 @@ export default function Dashboard() {
 
   const handleLogout = async () => {
     try {
-        await fetch("http://localhost:8000/api/logout/", {
-            method: "POST",
-            credentials: "include",
-        });
+      await fetch("http://localhost:8000/api/logout/", {
+        method: "POST",
+        credentials: "include",
+      });
     } catch (err) {
-        console.error("Logout error:", err);
+      console.error("Logout error:", err);
     }
     navigate("/login"); // han3del dy bardo lma y3mlo el home page MOHEMMM
-};
+  };
   useEffect(() => {
     fetch("http://localhost:8000/api/me/", {
       credentials: "include",
@@ -327,9 +327,10 @@ export default function Dashboard() {
           </button>
         </div>
         <nav className="flex-1 px-4 py-6 space-y-2">
-          {NAV.map(({ label, icon: Icon, active }) => (
+          {NAV.map(({ label, icon: Icon, active, path }) => (
             <button
               key={label}
+              onClick={() => path && navigate(path)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${active ? "bg-[#1e3a8a] text-white shadow-lg" : "text-slate-600 hover:text-slate-900 hover:bg-[#1e3a8a]/10"}`}
             >
               <Icon size={18} />

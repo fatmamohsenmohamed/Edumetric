@@ -13,6 +13,7 @@ class Exam(models.Model):
     shuffle_questions = models.BooleanField(default=True)
     shuffle_choices = models.BooleanField(default=True)
     is_published = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=False)
 
 
 

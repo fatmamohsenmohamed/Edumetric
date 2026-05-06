@@ -19,7 +19,8 @@ export default function Register() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-
+  const [isInstitutional, setIsInstitutional] = useState(false);
+  const [institutionUserId, setInstitutionUserId] = useState("");
   useEffect(() => {
     const accepted = localStorage.getItem("acceptedTerms");
 
@@ -54,6 +55,13 @@ export default function Register() {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+
+    if (isInstitutional && !institutionUserId.trim()) {
+      newErrors.institutionUserId = "Helwan University ID is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   // ================= CHANGE =================
@@ -80,14 +88,18 @@ export default function Register() {
     const response = await fetch("http://localhost:8000/api/register/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
+      body: JSON.stringify({
+        ...formData,
+        isInstitutional,
+        institutionUserId: isInstitutional ? institutionUserId : "",
+      }),
     });
 
     const data = await response.json();
     setLoading(false);
 
     if (!response.ok) {
-      setError("Account already exists. Please login.");
+      setError(data.error || "Something went wrong"); // 👈 show actual backend message
       return;
     }
 
@@ -241,6 +253,7 @@ export default function Register() {
             </div>
 
             {/* User Type */}
+            {/* User Type */}
             <div className="flex flex-col gap-1">
               <label className="text-textSoft text-base font-medium">
                 I am a
@@ -248,7 +261,13 @@ export default function Register() {
               <select
                 name="userType"
                 value={formData.userType}
-                onChange={handleChange}
+                onChange={(e) => {
+                  handleChange(e);
+                  // Teachers must be institutional (Helwan only)
+                  if (e.target.value === "teacher") {
+                    setIsInstitutional(true);
+                  }
+                }}
                 className="border border-border rounded-xl p-3 bg-bg"
               >
                 <option value="student">Student</option>
@@ -256,6 +275,41 @@ export default function Register() {
               </select>
             </div>
 
+            {/* Helwan Membership */}
+            <div className="flex flex-col gap-2 p-4 rounded-xl border border-border bg-bg">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isInstitutional}
+                  onChange={(e) => setIsInstitutional(e.target.checked)}
+                  className="accent-primary cursor-pointer"
+                />
+                <span className="text-textMain text-sm font-medium">
+                  I am a Helwan University member
+                </span>
+              </label>
+
+              {isInstitutional && (
+                <div className="flex flex-col gap-1 mt-2">
+                  <label className="text-textSoft text-base font-medium">
+                    Helwan University ID
+                  </label>
+                  <input
+                    type="text"
+                    value={institutionUserId}
+                    onChange={(e) => setInstitutionUserId(e.target.value)}
+                    placeholder="e.g., 2024001234"
+                    className="border border-border rounded-xl p-3 bg-card 
+          focus:ring-2 focus:ring-primary/30 hover:border-primary/40 transition-all"
+                  />
+                  {errors.institutionUserId && (
+                    <p className="text-danger text-sm">
+                      {errors.institutionUserId}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
             {/* Password */}
             <div className="flex flex-col gap-1">
               <label className="text-textSoft text-base font-medium">
