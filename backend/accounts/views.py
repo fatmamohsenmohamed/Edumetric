@@ -198,7 +198,7 @@ def forgot_password(request):
         PasswordResetToken.objects.create(user=user, token=token)
         
         # # build the reset link
-        reset_link = f"http://localhost:3000/reset_password?token={token}" # ha8yer el esm lw 3amlo el page b 7aga tanya
+        reset_link = f"http://localhost:3000/reset-password?token={token}" 
         
         # send the email
         send_mail(
