@@ -312,7 +312,7 @@ def contact(request):
             subject=f"Contact Form: {subject}",
             message=f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}",
             from_email="edumetric.plattform2026@gmail.com",
-            recipient_list=["edumetric.plattform2026@gmail.com"],
+            recipient_list=["edumetric.admin48@gmail.com"],
         )
     
         return JsonResponse({"message": "Message sent successfully!"})
