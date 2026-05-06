@@ -63,7 +63,11 @@ code {
 .animate-slide-right {
   animation: slide-right 0.4s ease;
 }
-
-
+/* no print */
+@media print {
+  .no-print { 
+    display: none !important; 
+  }
+}
 
 
