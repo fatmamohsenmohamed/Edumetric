@@ -1,7 +1,7 @@
 import json # 🛑 OFTEN FORGOTTEN! Causes 500 error on random.shuffle()
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from .models import Exam, Submission, Answer
+from .models import Exam, Submission, Answer, Certificate, ExamPurchase
 from questions.models import Question, Choice
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404
@@ -272,12 +272,19 @@ def submit_exam(request, exam_id):
         submission.score = score
         submission.save()
 
+        #htl3 certificate ll free users for paid exams only 
+        if score >= 60 and exam.is_paid:
+            Certificate.objects.create(submission=submission)
+
         return JsonResponse({
             "score": score,
             "correct": correct,
             "total": total,
-            "submission_id": submission.id  # 🔥 Useful for results page
+            "submission_id": submission.id , # 🔥 Useful for results page
+            "passed": score >= 60,                                # 👈 add this too
+            "certificate_issued": score >= 60 and exam.is_paid
         })
+
 
     except Exception as e:
         return JsonResponse(
@@ -344,7 +351,7 @@ def available_exams(request):
                 instructor_id__in=instructor_ids,
             )
         else:
-            # Free user → only exams marked as public
+        
             exams_qs = Exam.objects.filter(
                 is_published=True,
                 is_public=True,
@@ -368,6 +375,13 @@ def available_exams(request):
                 "attempts_left": max(0, attempts_left),
                 "can_take": attempts_left > 0,
                 "instructor": exam.instructor.first_name or exam.instructor.username,
+                "is_paid": exam.is_paid,                                       # 👈 ADD
+                "price": float(exam.price) if exam.is_paid else 0,             # 👈 ADD
+                "is_purchased": (
+                        ExamPurchase.objects.filter(user=user, exam=exam).exists()
+                if exam.is_paid
+                else True
+    ),  
             })
 
         return JsonResponse({"exams": result})

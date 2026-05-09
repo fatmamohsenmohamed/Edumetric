@@ -1,9 +1,14 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
 export default function Pricing() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const examId = location.state?.examId;
+  const examTitle = location.state?.examTitle;
   useEffect(() => {
     AOS.init({ duration: 900, once: true, easing: "ease-out-cubic" });
   }, []);
@@ -12,11 +17,7 @@ export default function Pricing() {
     {
       title: "Basic",
       price: "$10/mo",
-      features: [
-        "Access to question bank",
-        "Basic analytics",
-        "Email support",
-      ],
+      features: ["Access to question bank", "Basic analytics", "Email support"],
       highlight: false,
     },
     {
@@ -42,11 +43,9 @@ export default function Pricing() {
       highlight: false,
     },
   ];
-   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-bg flex flex-col items-center justify-start p-10">
-
       {/* Header */}
       <div className="max-w-7xl w-full text-center mb-16" data-aos="fade-down">
         <h1 className="text-5xl font-extrabold text-textMain mb-4">
@@ -56,6 +55,16 @@ export default function Pricing() {
           Flexible pricing plans to suit every learner and educator
         </p>
       </div>
+      {examId && (
+        <div
+          className="bg-amber-50 border border-amber-200 rounded-xl px-6 py-4 mb-8 max-w-3xl text-center"
+          data-aos="fade-down"
+        >
+          <p className="text-amber-700 font-medium">
+            🎓 Subscribe to unlock: <strong>{examTitle}</strong>
+          </p>
+        </div>
+      )}
 
       {/* Cards */}
       <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-12 max-w-7xl items-center">
@@ -72,28 +81,23 @@ export default function Pricing() {
                 : "bg-card text-textMain border-border p-10 shadow-soft hover:scale-105 hover:shadow-xl"
             }`}
           >
+            <h2 className="text-3xl font-bold mb-5 z-10">{plan.title}</h2>
 
-            <h2 className="text-3xl font-bold mb-5 z-10">
-              {plan.title}
-            </h2>
-
-            <p className="text-4xl font-extrabold mb-8 z-10">
-              {plan.price}
-            </p>
+            <p className="text-4xl font-extrabold mb-8 z-10">{plan.price}</p>
 
             <ul className="flex-1 flex flex-col gap-4 mb-8 z-10">
               {plan.features.map((feature, j) => (
                 <li key={j} className="flex items-center gap-3">
-                  <span className="text-primary font-bold text-lg">
-                    ✔
-                  </span>
+                  <span className="text-primary font-bold text-lg">✔</span>
                   <span>{feature}</span>
                 </li>
               ))}
             </ul>
 
             <button
-              onClick={() => navigate("/checkout", { state: { plan } })}
+              onClick={() =>
+                navigate("/checkout", { state: { plan, examId, examTitle } })
+              }
               className={`py-4 rounded-xl font-semibold text-lg transition-all z-10 ${
                 plan.highlight
                   ? "bg-white text-primary hover:bg-white/90 hover:scale-105"

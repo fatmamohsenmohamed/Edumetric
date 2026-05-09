@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
+import Home from "./pages/student/Home";
 import Register from "./pages/auth/Register";
 import Login from "./pages/auth/Login";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -10,25 +10,24 @@ import Contact from "./pages/common/Contact";
 import Pricing from "./pages/common/Pricing";
 import Terms from "./pages/common/Terms";
 import Checkout from "./pages/common/Checkout";
-
 import ConfirmEmail from "./pages/ConfirmEmail";
 
+// Instructor
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";
 import CreateExam from "./pages/instructor/CreateEXam";
 import QuestionBank from "./pages/instructor/QuestionBank";
-
+// student
 import Dashboard from "./pages/student/Dashboard";
-
 import TakeExam from "./pages/student/Takeexam";
-import AvailableExams from "./pages/Testexams";
-
+import AvailableExams from "./pages/student/Availableexams";
+// admin
 import AdminDashboard from "./pages/admin/Admindashboard";
-
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<Home />} />
         {/* Auth */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
@@ -53,10 +52,8 @@ function App() {
         <Route path="/takeexam/:id" element={<TakeExam />} />
         <Route path="/testexam" element={<AvailableExams />} />
 
-
         {/* Admin */}
         <Route path="/admindashboard" element={<AdminDashboard />} />
-
       </Routes>
     </BrowserRouter>
   );
