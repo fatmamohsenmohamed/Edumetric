@@ -26,7 +26,7 @@ import TakeExam from "./pages/student/Takeexam";
 
 import AvailableExams from "./pages/student/Availableexams";
 // admin
-import AdminDashboard from "./pages/admin/Admindashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 
 
@@ -34,7 +34,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
         {/* Auth */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />

@@ -3,8 +3,8 @@ import {
   MdDashboard,
   MdCreate,
   MdLibraryBooks,
-  MdBarChart,
-  MdGroup,
+  MdAssignment,
+  MdAssessment,
   MdSettings,
   MdLogout,
   MdClose,
@@ -15,8 +15,8 @@ const NAV = [
   { label: "Dashboard", path: "/dashboard", icon: MdDashboard },
   { label: "Create Exam", path: "/create-exam", icon: MdCreate },
   { label: "Question Bank", path: "/question-bank", icon: MdLibraryBooks },
-  { label: "Analytics", path: "/analytics", icon: MdBarChart },
-  { label: "Students", path: "/students", icon: MdGroup },
+  { label: "Exams", path: "/exams", icon: MdAssignment },
+  { label: "Results", path: "/results", icon: MdAssessment },
   { label: "Settings", path: "/settings", icon: MdSettings },
 ];
 
