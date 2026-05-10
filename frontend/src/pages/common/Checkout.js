@@ -9,6 +9,8 @@ export default function Checkout() {
   const navigate = useNavigate();
 
   const plan = location.state?.plan;
+  const examId = location.state?.examId;
+  const examTitle = location.state?.examTitle;
 
   const [formData, setFormData] = useState({
     name: "",
@@ -39,12 +41,10 @@ export default function Checkout() {
   const isExpiryValid = /^(0[1-9]|1[0-2])\/\d{2}$/.test(formData.expiry);
   const isCvvValid = /^[0-9]{3,4}$/.test(formData.cvv);
 
-  const isFormValid =
-    isNameValid && isCardValid && isExpiryValid && isCvvValid;
+  const isFormValid = isNameValid && isCardValid && isExpiryValid && isCvvValid;
 
   // ================= FORMATTERS =================
-  const formatCardNumber = (value) =>
-    value.replace(/\D/g, "").slice(0, 16);
+  const formatCardNumber = (value) => value.replace(/\D/g, "").slice(0, 16);
 
   const formatExpiry = (value) => {
     let v = value.replace(/\D/g, "").slice(0, 4);
@@ -59,68 +59,35 @@ export default function Checkout() {
     setError("");
     setSuccess("");
 
-    if (!isFormValid) {
-      setError("Please complete all fields correctly");
-      return;
-    }
-
     setLoading(true);
 
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch("http://localhost:8000/api/checkout/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-        body: JSON.stringify({
-          plan_id: plan.id,
-          ...formData,
-        }),
-      });
-
-      const data = await response.json();
-
+    // Simulate payment processing
+    setTimeout(() => {
       setLoading(false);
-
-      if (!response.ok) {
-        setError(data.error || "Payment failed ❌");
-        return;
-      }
-
       setSuccess("Payment successful 🎉");
 
       setTimeout(() => {
-        navigate("/dashboard");
+        if (examId) {
+          navigate(`/takeexam/${examId}`);
+        } else {
+          navigate("/dashboard");
+        }
       }, 1500);
-
-    } catch (err) {
-      setLoading(false);
-      setError("Server error");
-    }
+    }, 1500);
   };
 
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center p-10">
-
       <div className="w-full max-w-6xl grid md:grid-cols-2 gap-10">
-
         {/* LEFT - PLAN */}
         <div
           data-aos="fade-right"
           className="bg-card border border-border rounded-3xl p-10 shadow-soft"
         >
-          <h2 className="text-2xl font-bold text-textMain mb-6">
-            Your Plan
-          </h2>
+          <h2 className="text-2xl font-bold text-textMain mb-6">Your Plan</h2>
 
           <div className="p-8 rounded-2xl bg-primary/10 border border-primary/20">
-
-            <h3 className="text-xl font-semibold text-primary">
-              {plan.title}
-            </h3>
+            <h3 className="text-xl font-semibold text-primary">{plan.title}</h3>
 
             <p className="text-3xl font-bold mt-3 text-textMain">
               {plan.price}
@@ -143,7 +110,6 @@ export default function Checkout() {
                 </div>
               ))}
             </div>
-
           </div>
         </div>
 
@@ -152,7 +118,6 @@ export default function Checkout() {
           data-aos="fade-left"
           className="bg-card border border-border rounded-3xl p-10 shadow-soft"
         >
-
           <h2 className="text-2xl font-bold text-textMain mb-6 flex items-center gap-3">
             <FaCreditCard className="text-primary" />
             Payment Details
@@ -174,7 +139,6 @@ export default function Checkout() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-
             {/* NAME */}
             <div className="relative">
               <input
@@ -211,7 +175,6 @@ export default function Checkout() {
 
             {/* EXPIRY + CVV */}
             <div className="grid grid-cols-2 gap-4">
-
               <div className="relative">
                 <input
                   placeholder="MM/YY"
@@ -247,7 +210,6 @@ export default function Checkout() {
                   <FaCheckCircle className="absolute right-3 top-4 text-green-500 animate-pulse" />
                 )}
               </div>
-
             </div>
 
             {/* BUTTON */}
@@ -257,7 +219,6 @@ export default function Checkout() {
             >
               {loading ? "Processing..." : "Pay Now"}
             </button>
-
           </form>
         </div>
       </div>

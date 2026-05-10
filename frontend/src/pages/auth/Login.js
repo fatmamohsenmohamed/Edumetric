@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FaEnvelope, FaLock, FaGoogle, FaFacebook } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ export default function Login() {
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,15 +54,14 @@ export default function Login() {
       // success
       setError("");
       setSuccess("Logged in successfully 🔥");
-      // localStorage.setItem("user", JSON.stringify(data.user));
-      // localStorage.setItem("token", data.token);
-      setTimeout(() => {
-        window.location.href =
-          data.user_type === "teacher" ? "/instructordashboard" : "/student";
-      }, 1200);
 
-      // optional redirect
-      // window.location.href = "/dashboard";
+      if (data.user_type === "teacher") {
+        navigate("/instructordashboard");
+      } else if (data.is_institutional) {
+        navigate("/student");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       setLoading(false);
       setError(err.message || "Server error. Try again later.");

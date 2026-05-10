@@ -19,5 +19,6 @@ urlpatterns = [
     path("teacher/analytics/recent-exams/",         teacher_recent_exams),
     path("teacher/analytics/performance-over-time/", teacher_performance_over_time),
     path("teacher/analytics/difficulty/",            teacher_difficulty),
+    path("available/", views.available_exams, name="available_exams"),
 
 ]

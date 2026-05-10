@@ -51,10 +51,34 @@ class EmailConfirmationToken(models.Model):
     def is_valid(self):
         return timezone.now() < self.created_at + timedelta(hours=24) # token expires after 24 hours hna hanzawd el wa2t shwya 
     
-# class Institution(models.Model):
-#     name = models.CharField(max_length=255)
+from django.db import models
+from django.contrib.auth.models import User
 
-# class InstitutionMember(models.Model):
-#     user = models.OneToOneField(User, on_delete=models.CASCADE)
-#     institution_id = models.CharField(max_length=50, unique=True)
-#     is_verified = models.BooleanField(default=False)
+
+class Institution(models.Model):
+    name = models.CharField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
+class InstitutionMember(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="institution_membership"
+    )
+    institution = models.ForeignKey(
+        Institution,
+        on_delete=models.CASCADE,
+        related_name="members"
+    )
+    institution_user_id = models.CharField(max_length=50)  # their Helwan student/staff ID
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("institution", "institution_user_id")
+
+    def __str__(self):
+        return f"{self.user.email} @ {self.institution.name}"
