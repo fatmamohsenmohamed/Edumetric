@@ -1,3 +1,5 @@
+from email.message import EmailMessage
+
 from .models import ContactMessage
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -38,6 +40,37 @@ def about(request):
 #         return JsonResponse({"message": "Saved successfully"})
 
 #     return JsonResponse({"error": "Method not allowed"}, status=405)
+
+#contact page bs hasta5dem class tany 8er send email 34an m4 sha8al
+@csrf_exempt
+def contact(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
+    
+    try:
+        data    = json.loads(request.body)
+        name    = data.get("name", "").strip()
+        email   = data.get("email", "").strip()
+        subject = data.get("subject", "").strip()
+        message = data.get("message", "").strip()
+        
+        if not name or not email or not subject or not message:
+            return JsonResponse({"error": "All fields are required"}, status=400)
+        
+        # EmailMessage is a class that gives more control than send_mail
+        email_message = EmailMessage(
+            subject=f"Contact Form: {subject}",
+            body=f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}",
+            from_email="edumetric.plattform2026@gmail.com",
+            to=["edumetric.plattform2026@gmail.com"],
+            reply_to=[email],  # ← when you reply it goes to the user's email
+        )
+        email_message.send()  # send() is a method on EmailMessage class
+        
+        return JsonResponse({"message": "Message sent successfully!"})
+    
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 @csrf_exempt
