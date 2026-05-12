@@ -71,3 +71,29 @@ code {
 }
 
 
+/* certificate page */
+@media print {
+
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    margin: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .cert-wrap {
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  .cert {
+    box-shadow: none !important;
+    border: none !important;
+    max-width: 100% !important;
+  }
+
+}
