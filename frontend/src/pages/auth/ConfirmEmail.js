@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import AuthLayout from "./components/auth/AuthLayout";
-import AuthAlert from "./components/auth/AuthAlert";
+import AuthLayout from "../components/auth/AuthLayout";
+import AuthAlert from "../components/auth/AuthAlert";
 
 export default function ConfirmEmail() {
     const [message, setMessage] = useState("");

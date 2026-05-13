@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./pages/student/Home";
+import Home from "./pages/common/Home";
 import Register from "./pages/auth/Register";
 import Login from "./pages/auth/Login";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -10,7 +10,7 @@ import Contact from "./pages/common/Contact";
 import Pricing from "./pages/common/Pricing";
 import Terms from "./pages/common/Terms";
 import Checkout from "./pages/common/Checkout";
-import ConfirmEmail from "./pages/ConfirmEmail";
+import ConfirmEmail from "./pages/auth/ConfirmEmail";
 
 // Instructor
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";

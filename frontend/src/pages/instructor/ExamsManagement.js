@@ -1,12 +1,23 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  MdAddCircleOutline, MdSearch, MdVisibility, MdEdit,
-  MdDelete, MdCheckCircle, MdCancel, MdLibraryBooks,
-  MdFilterList, MdClose, MdChevronLeft, MdChevronRight,
-  MdDashboard, MdTimer, MdQuiz,
+  MdAddCircleOutline, 
+  MdSearch,
+   MdVisibility, 
+   MdEdit,
+  MdDelete, 
+  MdCheckCircle, 
+  MdCancel, 
+  MdLibraryBooks,
+  MdFilterList, 
+  MdClose, 
+  MdChevronLeft, 
+  MdChevronRight,
+  MdTimer, 
+  MdQuiz,
+  MdMenu,
 } from "react-icons/md";
-
+import InstructorSidebar from "../components/InstructorSidebar";
 // ─── Mock Data  ─────────────────
 const SAMPLE_EXAMS = [
   {
@@ -340,256 +351,267 @@ export default function ExamsManagement() {
 
   const totalQuestions = (exam) =>
     exam.easy_count + exam.medium_count + exam.hard_count;
+   
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user] = useState(null);
 
   return (
-    <div className="min-h-screen bg-white p-6 space-y-6">
-
-      {/* ── HEADER ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate("/instructordashboard")}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition text-sm font-medium"
-          >
-            <MdDashboard /> Dashboard
-          </button>
-          <div>
-            <h1 className="text-2xl font-bold text-[#1e3a8a]">Exams Management</h1>
-            <p className="text-sm text-gray-500">
-              {exams.length} total · {publishedCount} published · {draftCount} drafts
-            </p>
-          </div>
-        </div>
-
-        <div className="flex gap-2">
-          <button
-            onClick={() => navigate("/questionbank")}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-[#1e3a8a] rounded-xl hover:bg-slate-200 transition text-sm font-medium"
-          >
-            <MdLibraryBooks /> Question Bank
-          </button>
-          <button
-            onClick={() => navigate("/createexam")}
-            className="flex items-center gap-2 px-4 py-2 bg-[#1e3a8a] text-white rounded-xl hover:bg-[#1e40af] transition text-sm font-medium"
-          >
-            <MdAddCircleOutline /> Create Exam
-          </button>
-        </div>
-      </div>
-
-      {/* ── STATS ── */}
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: "Total Exams",  value: exams.length,     color: "bg-blue-50  text-blue-700",   border: "border-blue-100" },
-          { label: "Published",    value: publishedCount,   color: "bg-green-50 text-green-700",  border: "border-green-100" },
-          { label: "Drafts",       value: draftCount,       color: "bg-slate-50 text-slate-600",  border: "border-slate-200" },
-        ].map(({ label, value, color, border }) => (
-          <div key={label} className={`p-4 rounded-2xl border ${border} ${color.split(" ")[0]}`}>
-            <p className="text-xs text-slate-500">{label}</p>
-            <p className={`text-2xl font-bold mt-1 ${color.split(" ")[1]}`}>{value}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* ── SEARCH + FILTER ── */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 flex-1">
-          <MdSearch className="text-slate-400 shrink-0" />
-          <input
-            placeholder="Search by title or subject..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); resetPage(); }}
-            className="bg-transparent w-full outline-none text-sm text-[#1e3a8a]"
+    <div className="flex min-h-screen">
+          <InstructorSidebar
+              isOpen={sidebarOpen}
+              onClose={() => setSidebarOpen(false)}
+              user={user}
           />
-          {search && (
-            <button onClick={() => { setSearch(""); resetPage(); }}>
-              <MdClose className="text-slate-400 text-sm" />
+      <div className="flex-1 bg-white p-6 space-y-6">
+
+        {/* ── HEADER ── */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition"
+            >
+              <MdMenu />
             </button>
-          )}
-        </div>
+            <div>
+              <h1 className="text-2xl font-bold text-[#1e3a8a]">Exams Management</h1>
+              <p className="text-sm text-gray-500">
+                {exams.length} total · {publishedCount} published · {draftCount} drafts
+              </p>
+            </div>
+          </div>
 
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition text-sm font-medium ${
-            filterStatus ? "bg-[#1e3a8a] text-white border-[#1e3a8a]" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-          }`}
-        >
-          <MdFilterList />
-          {filterStatus ? `Filter: ${filterStatus}` : "Filter"}
-        </button>
-      </div>
-
-      {/* ── FILTER PANEL ── */}
-      {showFilters && (
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-4">
-          <p className="text-sm font-medium text-slate-600">Status:</p>
           <div className="flex gap-2">
-            {["", "published", "draft"].map((val) => (
-              <button
-                key={val || "all"}
-                onClick={() => { setFilterStatus(val); resetPage(); }}
-                className={`px-4 py-1.5 rounded-xl text-sm capitalize transition ${
-                  filterStatus === val
-                    ? "bg-[#1e3a8a] text-white"
-                    : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
-                }`}
-              >
-                {val || "All"}
-              </button>
-            ))}
+            <button
+              onClick={() => navigate("/questionbank")}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-[#1e3a8a] rounded-xl hover:bg-slate-200 transition text-sm font-medium"
+            >
+              <MdLibraryBooks /> Question Bank
+            </button>
+            <button
+              onClick={() => navigate("/createexam")}
+              className="flex items-center gap-2 px-4 py-2 bg-[#1e3a8a] text-white rounded-xl hover:bg-[#1e40af] transition text-sm font-medium"
+            >
+              <MdAddCircleOutline /> Create Exam
+            </button>
           </div>
         </div>
-      )}
 
-      {/* ── EXAMS LIST ── */}
-      {filtered.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
-          <MdLibraryBooks className="text-5xl mx-auto mb-2 opacity-20" />
-          <p className="font-medium">No exams found</p>
-          <p className="text-sm mt-1">Try adjusting your search or filters</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {paginated.map((exam) => (
-            <div
-              key={exam.id}
-              className="border border-slate-200 rounded-2xl p-4 hover:shadow-md transition bg-white"
-            >
-              <div className="flex justify-between items-start gap-4">
-
-                {/* Left — Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold text-[#1e3a8a] truncate">{exam.title}</h3>
-                    <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium shrink-0 ${
-                      exam.published ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"
-                    }`}>
-                      {exam.published ? "Published" : "Draft"}
-                    </span>
-                  </div>
-
-                  <p className="text-sm text-gray-500 mt-0.5">{exam.subject}</p>
-
-                  {/* Meta pills */}
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <span className="flex items-center gap-1 text-xs px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full">
-                      <MdTimer className="text-sm" /> {exam.duration} min
-                    </span>
-                    <span className="flex items-center gap-1 text-xs px-2.5 py-1 bg-purple-50 text-purple-700 rounded-full">
-                      <MdQuiz className="text-sm" /> {totalQuestions(exam)} questions
-                    </span>
-                    <span className="text-xs px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full">
-                      {exam.max_attempts} attempt{exam.max_attempts !== 1 ? "s" : ""}
-                    </span>
-                    {exam.shuffle_questions && (
-                      <span className="text-xs px-2.5 py-1 bg-amber-50 text-amber-600 rounded-full">Shuffled</span>
-                    )}
-                  </div>
-
-                  {/* Questions breakdown */}
-                  <div className="flex gap-3 mt-2 text-xs">
-                    <span className="text-green-600">Easy: {exam.easy_count}</span>
-                    <span className="text-yellow-600">Medium: {exam.medium_count}</span>
-                    <span className="text-red-600">Hard: {exam.hard_count}</span>
-                  </div>
-                </div>
-
-                {/* Right — Actions */}
-                <div className="flex items-center gap-2 shrink-0">
-                  {/* View */}
-                  <button
-                    onClick={() => setViewExam(exam)}
-                    className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition"
-                    title="View Details"
-                  >
-                    <MdVisibility />
-                  </button>
-
-                  {/* Edit */}
-                  <button
-                    onClick={() => setEditExam(exam)}
-                    className="p-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition"
-                    title="Edit"
-                  >
-                    <MdEdit />
-                  </button>
-
-                  {/* Publish Toggle */}
-                  <button
-                    onClick={() => handleTogglePublish(exam.id)}
-                    className={`p-2 rounded-lg transition ${
-                      exam.published
-                        ? "bg-red-100 text-red-600 hover:bg-red-200"
-                        : "bg-green-100 text-green-700 hover:bg-green-200"
-                    }`}
-                    title={exam.published ? "Unpublish" : "Publish"}
-                  >
-                    {exam.published ? <MdCancel /> : <MdCheckCircle />}
-                  </button>
-
-                  {/* Delete */}
-                  <button
-                    onClick={() => handleDelete(exam.id)}
-                    className="p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition"
-                    title="Delete"
-                  >
-                    <MdDelete />
-                  </button>
-                </div>
-              </div>
+        {/* ── STATS ── */}
+        <div className="grid grid-cols-3 gap-4">
+          {[
+            { label: "Total Exams",  value: exams.length,     color: "bg-blue-50  text-blue-700",   border: "border-blue-100" },
+            { label: "Published",    value: publishedCount,   color: "bg-green-50 text-green-700",  border: "border-green-100" },
+            { label: "Drafts",       value: draftCount,       color: "bg-slate-50 text-slate-600",  border: "border-slate-200" },
+          ].map(({ label, value, color, border }) => (
+            <div key={label} className={`p-4 rounded-2xl border ${border} ${color.split(" ")[0]}`}>
+              <p className="text-xs text-slate-500">{label}</p>
+              <p className={`text-2xl font-bold mt-1 ${color.split(" ")[1]}`}>{value}</p>
             </div>
           ))}
         </div>
-      )}
 
-      {/* ── PAGINATION ── */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-2">
-          <p className="text-sm text-slate-500">
-            Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} of {filtered.length}
-          </p>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
-            >
-              <MdChevronLeft />
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`w-8 h-8 rounded-lg text-sm font-medium transition ${
-                  page === currentPage
-                    ? "bg-[#1e3a8a] text-white"
-                    : "border border-slate-200 hover:bg-slate-50 text-slate-600"
-                }`}
-              >
-                {page}
+        {/* ── SEARCH + FILTER ── */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 flex-1">
+            <MdSearch className="text-slate-400 shrink-0" />
+            <input
+              placeholder="Search by title or subject..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); resetPage(); }}
+              className="bg-transparent w-full outline-none text-sm text-[#1e3a8a]"
+            />
+            {search && (
+              <button onClick={() => { setSearch(""); resetPage(); }}>
+                <MdClose className="text-slate-400 text-sm" />
               </button>
-            ))}
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
-            >
-              <MdChevronRight />
-            </button>
+            )}
           </div>
+
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition text-sm font-medium ${
+              filterStatus ? "bg-[#1e3a8a] text-white border-[#1e3a8a]" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+            }`}
+          >
+            <MdFilterList />
+            {filterStatus ? `Filter: ${filterStatus}` : "Filter"}
+          </button>
         </div>
-      )}
 
-      {/* ── MODALS ── */}
-      <ExamDetailModal exam={viewExam} onClose={() => setViewExam(null)} />
+        {/* ── FILTER PANEL ── */}
+        {showFilters && (
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-4">
+            <p className="text-sm font-medium text-slate-600">Status:</p>
+            <div className="flex gap-2">
+              {["", "published", "draft"].map((val) => (
+                <button
+                  key={val || "all"}
+                  onClick={() => { setFilterStatus(val); resetPage(); }}
+                  className={`px-4 py-1.5 rounded-xl text-sm capitalize transition ${
+                    filterStatus === val
+                      ? "bg-[#1e3a8a] text-white"
+                      : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  {val || "All"}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
-      {editExam && (
-        <EditModal
-          exam={editExam}
-          onClose={() => setEditExam(null)}
-          onSave={handleSaveEdit}
-        />
-      )}
+        {/* ── EXAMS LIST ── */}
+        {filtered.length === 0 ? (
+          <div className="text-center py-20 text-gray-400">
+            <MdLibraryBooks className="text-5xl mx-auto mb-2 opacity-20" />
+            <p className="font-medium">No exams found</p>
+            <p className="text-sm mt-1">Try adjusting your search or filters</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {paginated.map((exam) => (
+              <div
+                key={exam.id}
+                className="border border-slate-200 rounded-2xl p-4 hover:shadow-md transition bg-white"
+              >
+                <div className="flex justify-between items-start gap-4">
+
+                  {/* Left — Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-semibold text-[#1e3a8a] truncate">{exam.title}</h3>
+                      <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium shrink-0 ${
+                        exam.published ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"
+                      }`}>
+                        {exam.published ? "Published" : "Draft"}
+                      </span>
+                    </div>
+
+                    <p className="text-sm text-gray-500 mt-0.5">{exam.subject}</p>
+
+                    {/* Meta pills */}
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <span className="flex items-center gap-1 text-xs px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full">
+                        <MdTimer className="text-sm" /> {exam.duration} min
+                      </span>
+                      <span className="flex items-center gap-1 text-xs px-2.5 py-1 bg-purple-50 text-purple-700 rounded-full">
+                        <MdQuiz className="text-sm" /> {totalQuestions(exam)} questions
+                      </span>
+                      <span className="text-xs px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full">
+                        {exam.max_attempts} attempt{exam.max_attempts !== 1 ? "s" : ""}
+                      </span>
+                      {exam.shuffle_questions && (
+                        <span className="text-xs px-2.5 py-1 bg-amber-50 text-amber-600 rounded-full">Shuffled</span>
+                      )}
+                    </div>
+
+                    {/* Questions breakdown */}
+                    <div className="flex gap-3 mt-2 text-xs">
+                      <span className="text-green-600">Easy: {exam.easy_count}</span>
+                      <span className="text-yellow-600">Medium: {exam.medium_count}</span>
+                      <span className="text-red-600">Hard: {exam.hard_count}</span>
+                    </div>
+                  </div>
+
+                  {/* Right — Actions */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {/* View */}
+                    <button
+                      onClick={() => setViewExam(exam)}
+                      className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition"
+                      title="View Details"
+                    >
+                      <MdVisibility />
+                    </button>
+
+                    {/* Edit */}
+                    <button
+                      onClick={() => setEditExam(exam)}
+                      className="p-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition"
+                      title="Edit"
+                    >
+                      <MdEdit />
+                    </button>
+
+                    {/* Publish Toggle */}
+                    <button
+                      onClick={() => handleTogglePublish(exam.id)}
+                      className={`p-2 rounded-lg transition ${
+                        exam.published
+                          ? "bg-red-100 text-red-600 hover:bg-red-200"
+                          : "bg-green-100 text-green-700 hover:bg-green-200"
+                      }`}
+                      title={exam.published ? "Unpublish" : "Publish"}
+                    >
+                      {exam.published ? <MdCancel /> : <MdCheckCircle />}
+                    </button>
+
+                    {/* Delete */}
+                    <button
+                      onClick={() => handleDelete(exam.id)}
+                      className="p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition"
+                      title="Delete"
+                    >
+                      <MdDelete />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── PAGINATION ── */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-2">
+            <p className="text-sm text-slate-500">
+              Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} of {filtered.length}
+            </p>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+              >
+                <MdChevronLeft />
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-8 h-8 rounded-lg text-sm font-medium transition ${
+                    page === currentPage
+                      ? "bg-[#1e3a8a] text-white"
+                      : "border border-slate-200 hover:bg-slate-50 text-slate-600"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+              >
+                <MdChevronRight />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── MODALS ── */}
+        <ExamDetailModal exam={viewExam} onClose={() => setViewExam(null)} />
+
+        {editExam && (
+          <EditModal
+            exam={editExam}
+            onClose={() => setEditExam(null)}
+            onSave={handleSaveEdit}
+          />
+        )}
+      </div>
     </div>
   );
 }
