@@ -1,10 +1,18 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import {
-  MdSearch, MdFilterList, MdClose, MdDashboard,
-  MdChevronLeft, MdChevronRight, MdPrint,
-  MdTrendingUp, MdPeople, MdStar, MdCheckCircle,
+  MdSearch, 
+  MdFilterList, 
+  MdClose, 
+  MdChevronLeft,
+  MdChevronRight, 
+  MdPrint,
+  MdTrendingUp, 
+  MdPeople, 
+  MdStar, 
+  MdCheckCircle,
+  MdMenu,
 } from "react-icons/md";
+import InstructorSidebar from "../components/InstructorSidebar";
 
 // ─── Sample Data ──────────────────────────────────────────────
 const SAMPLE_RESULTS = [
@@ -31,7 +39,7 @@ const scoreTextColor = (score) =>
 
 // ─── Main Component ───────────────────────────────────────────
 export default function Results() {
-  const navigate = useNavigate();
+  
 
   const [search, setSearch]           = useState("");
   const [subjectFilter, setSubjectFilter] = useState("");
@@ -82,6 +90,8 @@ export default function Results() {
 
   // ── Print ──
   const handlePrint = () => window.print();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user] = useState(null);
 
   return (
     <>
@@ -92,18 +102,26 @@ export default function Results() {
           body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
         }
       `}</style>
+      <div className="flex min-h-screen">
 
-      <div className="p-6 max-w-6xl mx-auto space-y-6">
+        <InstructorSidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          user={user}
+        />
+
+      <div className="flex-1 bg-white p-6 space-y-6">
 
         {/* ── HEADER ── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate("/instructordashboard")}
-              className="no-print flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition text-sm font-medium"
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition"
             >
-              <MdDashboard /> Dashboard
+              <MdMenu />
             </button>
+            
             <div>
               <h1 className="text-2xl font-bold text-[#1e3a8a]">Results</h1>
               <p className="text-sm text-slate-500">
@@ -347,6 +365,7 @@ export default function Results() {
           </div>
         )}
 
+      </div>
       </div>
     </>
   );

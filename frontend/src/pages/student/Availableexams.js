@@ -49,7 +49,7 @@ export default function AvailableExams() {
       {/* Header */}
       <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center gap-4 sticky top-0 z-30">
         <button
-          onClick={() => navigate("/studentdashboard")}
+          onClick={() => navigate("/student")}
           className="p-2 rounded-lg hover:bg-slate-100 transition-all"
         >
           <MdArrowBack size={20} className="text-[#1e3a8a]" />

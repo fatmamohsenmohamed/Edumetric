@@ -60,7 +60,7 @@ export default function Login() {
       } else if (data.is_institutional) {
         navigate("/student");
       } else {
-        navigate("/");
+        navigate("/home");
       }
     } catch (err) {
       setLoading(false);

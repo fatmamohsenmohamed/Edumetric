@@ -1,34 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-// eslint-disable-next-line no-unused-vars
 import {
-  MdDashboard,
   MdCreate,
   MdLibraryBooks,
   MdBarChart,
   MdAssignment,
-  MdSettings,
   MdNotifications,
   MdSearch,
   MdTrendingUp,
   MdTrendingDown,
   MdVisibility,
-  MdAutoAwesome,
-  MdMenuBook,
-  MdAddCircleOutline,
   MdMenu,
-  MdClose,
   MdLogout,
   MdPerson,
   MdCheckCircle,
-  MdCancel,
   MdEdit,
   MdDownload,
   MdHelp,
   MdChecklistRtl,
   MdWarning,
   MdGroup,
-  MdSchool,
+  MdSettings,
 } from "react-icons/md";
 import {
   BarChart,
@@ -44,14 +36,7 @@ import {
   Legend,
 } from "recharts";
 
-const NAV = [
-  { label: "Dashboard", icon: MdDashboard, active: true },
-  { label: "Create Exam", icon: MdCreate },
-  { label: "Question Bank", icon: MdLibraryBooks },
-  { label: "Analytics", icon: MdBarChart },
-  { label: "Students", icon: MdGroup },
-  { label: "Settings", icon: MdSettings },
-];
+import InstructorSidebar from "../components/InstructorSidebar"; 
 
 const MENU_ITEMS = [
   { label: "My Profile", icon: MdPerson },
@@ -60,6 +45,7 @@ const MENU_ITEMS = [
   { label: "Download Reports", icon: MdDownload },
   { label: "Help & Support", icon: MdHelp },
 ];
+
 const NOTIFICATIONS = [
   {
     id: 1,
@@ -107,11 +93,11 @@ export default function TeacherDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [user, setUser] = useState(null); // ← add
-  const [stats, setStats] = useState(null); // ← add
-  const [exams, setExams] = useState([]); // ← add
-  const [chartData, setChartData] = useState([]); // ← add
-  const [difficulty, setDifficulty] = useState([]); // ← add
+  const [user, setUser] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [exams, setExams] = useState([]);
+  const [chartData, setChartData] = useState([]);
+  const [difficulty, setDifficulty] = useState([]);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -123,13 +109,11 @@ export default function TeacherDashboard() {
     } catch (err) {
       console.error("Logout error:", err);
     }
-    navigate("/login"); //han8yarha ll home page b3d ma y3mloha MOHEMMMM
+    navigate("/login");
   };
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/me/", {
-      credentials: "include",
-    })
+    fetch("http://localhost:8000/api/me/", { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setUser(data))
       .catch((err) => console.error("User error:", err));
@@ -148,12 +132,9 @@ export default function TeacherDashboard() {
       .then((data) => setExams(data))
       .catch((err) => console.error("Exams error:", err));
 
-    fetch(
-      "http://localhost:8000/api/teacher/analytics/performance-over-time/",
-      {
-        credentials: "include",
-      },
-    )
+    fetch("http://localhost:8000/api/teacher/analytics/performance-over-time/", {
+      credentials: "include",
+    })
       .then((res) => res.json())
       .then((data) => setChartData(data))
       .catch((err) => console.error("Chart error:", err));
@@ -166,14 +147,18 @@ export default function TeacherDashboard() {
       .catch((err) => console.error("Difficulty error:", err));
   }, []);
 
-  const StatCard = ({ label, value, icon: Icon, trend, up, color }) => (
+  const StatCard = ({ label, value, icon: Icon, up, color }) => (
     <div className="bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6 hover:shadow-md transition-all">
       <div className="flex items-start justify-between mb-4">
         <div className={`p-3 rounded-xl bg-gradient-to-br ${color} text-white`}>
           <Icon size={24} />
         </div>
         <span
-          className={`text-xs font-medium px-2 py-1 rounded-full ${up ? "text-emerald-600 bg-emerald-100" : "text-orange-600 bg-orange-100"}`}
+          className={`text-xs font-medium px-2 py-1 rounded-full ${
+            up
+              ? "text-emerald-600 bg-emerald-100"
+              : "text-orange-600 bg-orange-100"
+          }`}
         >
           {up ? (
             <MdTrendingUp className="inline mr-1" size={12} />
@@ -183,16 +168,15 @@ export default function TeacherDashboard() {
         </span>
       </div>
       <div className="text-3xl font-bold text-[#1e3a8a] mb-1">{value}</div>
-      <div className="text-sm font-medium text-slate-600 mb-2">{label}</div>
-      <div className={`text-xs ${up ? "text-emerald-600" : "text-orange-600"}`}>
-        {trend}
-      </div>
+      <div className="text-sm font-medium text-slate-600">{label}</div>
     </div>
   );
 
   const ExamRow = ({ exam, i }) => (
     <div
-      className={`grid grid-cols-[2fr_1fr_70px_90px_60px] gap-3 items-center px-4 py-4 rounded-xl hover:bg-[#1e3a8a]/5 text-sm ${i < exams.length - 1 ? "border-b border-slate-200" : ""}`}
+      className={`grid grid-cols-[2fr_1fr_70px_90px_60px] gap-3 items-center px-4 py-4 rounded-xl hover:bg-[#1e3a8a]/5 text-sm ${
+        i < exams.length - 1 ? "border-b border-slate-200" : ""
+      }`}
     >
       <div className="font-medium text-[#1e3a8a]">{exam.name}</div>
       <div className="text-xs text-slate-500 hidden sm:block">{exam.date}</div>
@@ -210,62 +194,15 @@ export default function TeacherDashboard() {
 
   return (
     <div className="min-h-screen bg-white flex">
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-      <aside
-        className={`fixed lg:relative top-0 left-0 h-full w-56 bg-white border-r border-slate-200 flex flex-col z-50 transition-transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
-      >
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#1e3a8a] text-white flex items-center justify-center font-bold">
-            E
-          </div>
-          <span className="font-bold text-lg text-[#1e3a8a]">EduMetric</span>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden ml-auto text-slate-600"
-          >
-            <MdClose size={20} />
-          </button>
-        </div>
-        <nav className="flex-1 px-4 py-6 space-y-2">
-          {NAV.map(({ label, icon: Icon, active }) => (
-            <button
-              key={label}
-              onClick={() => {
-                if (label === "Create Exam") navigate("/createexam");
-                if (label === "Question Bank") navigate("/questionbank");
-              }}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-slate-600 hover:text-slate-900 hover:bg-[#1e3a8a]/10"
-            >
-              <Icon size={18} />
-              {label}
-            </button>
-          ))}
-        </nav>
-        <div className="px-4 py-6 border-t border-slate-200">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-[#1e3a8a]/5 border border-slate-200 hover:bg-[#1e3a8a]/10 transition-all"
-          >
-            <div className="w-8 h-8 rounded-full bg-[#1e3a8a] text-white flex items-center justify-center text-xs font-bold">
-              DR
-            </div>
-            <div className="flex-1 min-w-0 text-left">
-              <p className="text-sm font-medium text-[#1e3a8a]">
-                {user?.full_name || "Teacher"}
-              </p>
-              <p className="text-xs text-slate-500">{user?.email || ""}</p>
-            </div>
-            <MdLogout size={16} className="text-slate-600" />
-          </button>
-        </div>
-      </aside>
+      <InstructorSidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        user={user}
+        onLogout={handleLogout}
+      />
 
       <div className="flex-1 flex flex-col">
+        {/* Header */}
         <header className="h-16 bg-white border-b border-slate-200 flex items-center px-6 gap-4 sticky top-0 z-30">
           <button
             onClick={() => setSidebarOpen(true)}
@@ -284,6 +221,8 @@ export default function TeacherDashboard() {
             />
           </div>
           <div className="flex-1" />
+
+          {/* Notifications */}
           <div className="relative">
             <button
               onClick={() => setNotifOpen(!notifOpen)}
@@ -300,37 +239,43 @@ export default function TeacherDashboard() {
                   </p>
                 </div>
                 <div className="py-2">
-                  {NOTIFICATIONS.map(
-                    ({ id, title, message, time, type, icon: Icon }) => (
-                      <div
-                        key={id}
-                        className={`px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-all cursor-pointer ${type === "success" ? "border-l-4 border-l-emerald-500" : type === "warning" ? "border-l-4 border-l-orange-500" : "border-l-4 border-l-blue-500"}`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div
-                            className={`mt-1 ${type === "success" ? "text-emerald-600" : type === "warning" ? "text-orange-600" : "text-blue-600"}`}
-                          >
-                            <Icon size={18} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-slate-900">
-                              {title}
-                            </p>
-                            <p className="text-xs text-slate-600 mt-1">
-                              {message}
-                            </p>
-                            <p className="text-xs text-slate-400 mt-2">
-                              {time}
-                            </p>
-                          </div>
+                  {NOTIFICATIONS.map(({ id, title, message, time, type, icon: Icon }) => (
+                    <div
+                      key={id}
+                      className={`px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-all cursor-pointer ${
+                        type === "success"
+                          ? "border-l-4 border-l-emerald-500"
+                          : type === "warning"
+                          ? "border-l-4 border-l-orange-500"
+                          : "border-l-4 border-l-blue-500"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={`mt-1 ${
+                            type === "success"
+                              ? "text-emerald-600"
+                              : type === "warning"
+                              ? "text-orange-600"
+                              : "text-blue-600"
+                          }`}
+                        >
+                          <Icon size={18} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-slate-900">{title}</p>
+                          <p className="text-xs text-slate-600 mt-1">{message}</p>
+                          <p className="text-xs text-slate-400 mt-2">{time}</p>
                         </div>
                       </div>
-                    ),
-                  )}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
           </div>
+
+          {/* Profile */}
           <div className="relative">
             <button
               onClick={() => setProfileOpen(!profileOpen)}
@@ -349,9 +294,7 @@ export default function TeacherDashboard() {
                   <p className="text-sm font-semibold text-[#1e3a8a]">
                     {user?.full_name || "Teacher"}
                   </p>
-                  <p className="text-xs text-slate-500">
-                    teacher@edumetric.com
-                  </p>
+                  <p className="text-xs text-slate-500">teacher@edumetric.com</p>
                 </div>
                 <div className="py-2">
                   {MENU_ITEMS.map(({ label, icon: Icon }) => (
@@ -379,6 +322,7 @@ export default function TeacherDashboard() {
           </div>
         </header>
 
+        {/* Main content */}
         <main className="flex-1 p-6 md:p-8 space-y-6 overflow-auto">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-[#1e3a8a] mb-2">
@@ -389,6 +333,7 @@ export default function TeacherDashboard() {
             </p>
           </div>
 
+          {/* Stat cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
             {stats && (
               <>
@@ -396,7 +341,6 @@ export default function TeacherDashboard() {
                   label="Total Students"
                   value={stats.total_students}
                   icon={MdGroup}
-                  trend=""
                   up={true}
                   color="from-[#1e40af] to-[#1e3a8a]"
                 />
@@ -404,7 +348,6 @@ export default function TeacherDashboard() {
                   label="Exams Created"
                   value={stats.total_exams}
                   icon={MdAssignment}
-                  trend=""
                   up={true}
                   color="from-[#1e40af] to-[#1e3a8a]"
                 />
@@ -412,7 +355,6 @@ export default function TeacherDashboard() {
                   label="Avg Class Score"
                   value={`${stats.avg_score}%`}
                   icon={MdBarChart}
-                  trend=""
                   up={true}
                   color="from-[#1e40af] to-[#1e3a8a]"
                 />
@@ -420,7 +362,6 @@ export default function TeacherDashboard() {
                   label="Pass Rate"
                   value={`${stats.pass_rate}%`}
                   icon={MdCheckCircle}
-                  trend=""
                   up={true}
                   color="from-[#1e40af] to-[#1e3a8a]"
                 />
@@ -428,10 +369,9 @@ export default function TeacherDashboard() {
             )}
           </div>
 
+          {/* Quick actions */}
           <div className="bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6">
-            <h2 className="text-lg font-bold text-[#1e3a8a] mb-4">
-              Quick Actions
-            </h2>
+            <h2 className="text-lg font-bold text-[#1e3a8a] mb-4">Quick Actions</h2>
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => navigate("/createexam")}
@@ -454,28 +394,20 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
+          {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             <div className="lg:col-span-3 bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6">
               <h2 className="text-lg font-bold text-[#1e3a8a] mb-1">
                 Class Performance Over Time
               </h2>
-              <p className="text-sm text-slate-500 mb-6">
-                Average class score by month
-              </p>
+              <p className="text-sm text-slate-500 mb-6">Average class score by month</p>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={chartData}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="rgba(30,58,138,0.1)"
-                  />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(30,58,138,0.1)" />
                   <XAxis dataKey="month" stroke="rgba(30,58,138,0.5)" />
                   <YAxis stroke="rgba(30,58,138,0.5)" domain={[0, 100]} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar
-                    dataKey="avgScore"
-                    fill="#1e3a8a"
-                    radius={[8, 8, 0, 0]}
-                  />
+                  <Bar dataKey="avgScore" fill="#1e3a8a" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -502,39 +434,34 @@ export default function TeacherDashboard() {
                     ))}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />
-                  <Legend
-                    wrapperStyle={{ color: "#1e3a8a", paddingTop: "16px" }}
-                  />
+                  <Legend wrapperStyle={{ color: "#1e3a8a", paddingTop: "16px" }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
           </div>
 
+          {/* Recent exams */}
           <div className="bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-lg font-bold text-[#1e3a8a] mb-1">
-                  Recent Exams
-                </h2>
-                <p className="text-sm text-slate-500">
-                  Your latest 6 created exams
-                </p>
+                <h2 className="text-lg font-bold text-[#1e3a8a] mb-1">Recent Exams</h2>
+                <p className="text-sm text-slate-500">Your latest 6 created exams</p>
               </div>
               <button className="text-xs px-4 py-2 rounded-lg bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 transition-all">
                 View all exams
               </button>
             </div>
             <div className="grid grid-cols-[2fr_1fr_70px_90px_60px] gap-3 px-4 py-3 mb-2 border-b border-slate-200">
-              {["Exam Name", "Date", "Students", "Avg Score", "Action"].map(
-                (h, i) => (
-                  <span
-                    key={h}
-                    className={`text-xs font-semibold uppercase text-slate-500 ${i === 1 ? "hidden sm:block" : ""}`}
-                  >
-                    {h}
-                  </span>
-                ),
-              )}
+              {["Exam Name", "Date", "Students", "Avg Score", "Action"].map((h, i) => (
+                <span
+                  key={h}
+                  className={`text-xs font-semibold uppercase text-slate-500 ${
+                    i === 1 ? "hidden sm:block" : ""
+                  }`}
+                >
+                  {h}
+                </span>
+              ))}
             </div>
             {exams.map((exam, i) => (
               <ExamRow key={i} exam={exam} i={i} />

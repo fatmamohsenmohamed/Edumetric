@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "../components/ui/Card";
 import { Label } from "../components/ui/Label";
 import Button from "../components/ui/Button";
+import InstructorSidebar from "../components/InstructorSidebar";
+import { MdMenu } from "react-icons/md";
 
 /* ───────── PROGRESS BAR ───────── */
 const STEP_LABELS = ["Info", "Questions", "Settings", "Preview"];
@@ -13,7 +15,6 @@ function ProgressBar({ step, total, maxStep, onStepClick }) {
       <div className="flex justify-between items-center mb-3">
         {STEP_LABELS.map((label, index) => {
           const stepNumber = index + 1;
-
           const isActive = step === stepNumber;
           const isDone = stepNumber < step;
           const isLocked = stepNumber > maxStep;
@@ -94,7 +95,6 @@ function Step1({ data, onChange, errors }) {
     <div className="space-y-6">
       <h3 className="font-semibold text-lg">Basic Info</h3>
 
-      {/* TITLE */}
       <div>
         <Label>Title</Label>
         <input
@@ -111,7 +111,6 @@ function Step1({ data, onChange, errors }) {
         )}
       </div>
 
-      {/* SUBJECT */}
       <div>
         <Label>Subject</Label>
         <input
@@ -126,7 +125,6 @@ function Step1({ data, onChange, errors }) {
         )}
       </div>
 
-      {/* DURATION */}
       <div>
         <Label>Duration</Label>
         <input
@@ -216,7 +214,7 @@ function Step3({ data, onChange }) {
 }
 
 /* ───────── STEP 4 ───────── */
-function Step4({ data, errors }) {
+function Step4({ data }) {
   const total =
     Number(data.easy_count) +
     Number(data.medium_count) +
@@ -226,55 +224,36 @@ function Step4({ data, errors }) {
 
   return (
     <div className="space-y-6">
-      {/* HEADER STATUS */}
       <Card className="p-6">
         <h3 className="font-bold text-xl">Preview</h3>
-
-        <p
-          className={`mt-2 font-semibold ${
-            isReady ? "text-green-600" : "text-red-500"
-          }`}
-        >
+        <p className={`mt-2 font-semibold ${isReady ? "text-green-600" : "text-red-500"}`}>
           {isReady ? "✔ Ready to publish" : "⚠ Missing required information"}
         </p>
       </Card>
 
-      {/* BASIC INFO */}
       <Card className="p-5 space-y-2">
         <h4 className="font-semibold text-gray-700">Basic Info</h4>
-
-        <p>
-          <b>Title:</b> {data.title || "—"}
-        </p>
-        <p>
-          <b>Subject:</b> {data.subject || "—"}
-        </p>
-        <p>
-          <b>Duration:</b> {data.duration || 0} min
-        </p>
+        <p><b>Title:</b> {data.title || "—"}</p>
+        <p><b>Subject:</b> {data.subject || "—"}</p>
+        <p><b>Duration:</b> {data.duration || 0} min</p>
       </Card>
 
-      {/* QUESTIONS BREAKDOWN */}
       <Card className="p-5 space-y-3">
         <h4 className="font-semibold text-gray-700">Questions Breakdown</h4>
-
         <div className="grid grid-cols-3 gap-3 text-center">
           <div className="bg-green-50 p-3 rounded-lg">
             <p className="text-xs text-gray-500">Easy</p>
             <p className="font-bold text-green-600">{data.easy_count}</p>
           </div>
-
           <div className="bg-yellow-50 p-3 rounded-lg">
             <p className="text-xs text-gray-500">Medium</p>
             <p className="font-bold text-yellow-600">{data.medium_count}</p>
           </div>
-
           <div className="bg-red-50 p-3 rounded-lg">
             <p className="text-xs text-gray-500">Hard</p>
             <p className="font-bold text-red-600">{data.hard_count}</p>
           </div>
         </div>
-
         <div className="pt-2 border-t text-center">
           <p className="text-sm text-gray-600">
             Total Questions: <span className="font-bold">{total}</span>
@@ -282,24 +261,13 @@ function Step4({ data, errors }) {
         </div>
       </Card>
 
-      {/* SETTINGS */}
       <Card className="p-5 space-y-2">
         <h4 className="font-semibold text-gray-700">Settings</h4>
-
-        <p>
-          <b>Max Attempts:</b> {data.max_attempts}
-        </p>
-
-        <p>
-          <b>Shuffle Questions:</b> {data.shuffle_questions ? "Yes" : "No"}
-        </p>
-
-        <p>
-          <b>Shuffle Choices:</b> {data.shuffle_choices ? "Yes" : "No"}
-        </p>
+        <p><b>Max Attempts:</b> {data.max_attempts}</p>
+        <p><b>Shuffle Questions:</b> {data.shuffle_questions ? "Yes" : "No"}</p>
+        <p><b>Shuffle Choices:</b> {data.shuffle_choices ? "Yes" : "No"}</p>
       </Card>
 
-      {/* WARNING SECTION */}
       {!isReady && (
         <Card className="p-4 bg-red-50 border border-red-200">
           <p className="text-sm text-red-600">
@@ -315,24 +283,38 @@ function Step4({ data, errors }) {
 export default function CreateExam() {
   const navigate = useNavigate();
 
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState(null);
+
   const [step, setStep] = useState(1);
   const [maxStep, setMaxStep] = useState(1);
-
   const [examData, setExamData] = useState(INITIAL_EXAM_DATA);
   const [errors, setErrors] = useState({});
 
-  const getCSRFToken = () => {
-    return document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("csrftoken"))
-      ?.split("=")[1];
+  useEffect(() => {
+    fetch("http://localhost:8000/api/me/", { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => setUser(data))
+      .catch((err) => console.error("User error:", err));
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("http://localhost:8000/api/logout/", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+    navigate("/login");
   };
 
   const handlePublish = async () => {
     const err1 = validate(examData, 1);
     const err2 = validate(examData, 2);
-
     const all = { ...err1, ...err2 };
+
     if (Object.keys(all).length > 0) {
       setErrors(all);
       return;
@@ -340,25 +322,16 @@ export default function CreateExam() {
 
     try {
       const formData = new FormData();
-
       Object.keys(examData).forEach((key) => {
         let value = examData[key];
-
-        // Django expects "on" for checkboxes
-        if (typeof value === "boolean") {
-          value = value ? "on" : "";
-        }
-
+        if (typeof value === "boolean") value = value ? "on" : "";
         formData.append(key, value);
       });
 
       const response = await fetch("http://localhost:8000/api/create/", {
         method: "POST",
         body: formData,
-        credentials: "include", // 🔥 VERY IMPORTANT
-        // headers: {
-        //   "X-CSRFToken": getCSRFToken(),
-        // },
+        credentials: "include",
       });
       const data = await response.json();
 
@@ -375,22 +348,17 @@ export default function CreateExam() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-
     const val =
       type === "checkbox" ? checked : type === "number" ? Number(value) : value;
-
     const newData = { ...examData, [name]: val };
     setExamData(newData);
-
     setErrors(validate(newData, step));
   };
 
   const next = () => {
     const err = validate(examData, step);
     setErrors(err);
-
     if (Object.keys(err).length > 0) return;
-
     setStep((s) => {
       const n = s + 1;
       setMaxStep((m) => Math.max(m, n));
@@ -404,47 +372,61 @@ export default function CreateExam() {
     if (n <= maxStep) setStep(n);
   };
 
-  // const all = { ...err1, ...err2 };
-  // if (Object.keys(all).length > 0) {
-  //   setErrors(all);
-  //   return;
-  // }
-
-  // alert("🎉 Exam created successfully!");
-  // navigate("/instructordashboard");
-
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <ProgressBar
-        step={step}
-        total={TOTAL_STEPS}
-        maxStep={maxStep}
-        onStepClick={handleStepClick}
+    <div className="min-h-screen bg-white flex">
+      {/* ✅ Sidebar */}
+      <InstructorSidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        user={user}
+        onLogout={handleLogout}
       />
 
-      <Card className="p-6">
-        {step === 1 && (
-          <Step1 data={examData} onChange={handleChange} errors={errors} />
-        )}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center px-6 gap-4 sticky top-0 z-30">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden text-slate-600"
+          >
+            <MdMenu size={22} />
+          </button>
+          <h1 className="text-xl font-bold text-[#1e3a8a]">Create Exam</h1>
+        </header>
 
-        {step === 2 && (
-          <Step2 data={examData} onChange={handleChange} errors={errors} />
-        )}
+        {/* Content */}
+        <main className="flex-1 p-6 md:p-8 overflow-auto">
+          <div className="max-w-3xl mx-auto">
+            <ProgressBar
+              step={step}
+              total={TOTAL_STEPS}
+              maxStep={maxStep}
+              onStepClick={handleStepClick}
+            />
 
-        {step === 3 && <Step3 data={examData} onChange={handleChange} />}
+            <Card className="p-6">
+              {step === 1 && (
+                <Step1 data={examData} onChange={handleChange} errors={errors} />
+              )}
+              {step === 2 && (
+                <Step2 data={examData} onChange={handleChange} errors={errors} />
+              )}
+              {step === 3 && (
+                <Step3 data={examData} onChange={handleChange} />
+              )}
+              {step === 4 && <Step4 data={examData} />}
 
-        {step === 4 && <Step4 data={examData} />}
-
-        <div className="flex justify-between mt-6">
-          {step > 1 && <Button onClick={back}>Back</Button>}
-
-          {step < TOTAL_STEPS && <Button onClick={next}>Next</Button>}
-
-          {step === TOTAL_STEPS && (
-            <Button onClick={handlePublish}>Publish</Button>
-          )}
-        </div>
-      </Card>
+              <div className="flex justify-between mt-6">
+                {step > 1 && <Button onClick={back}>Back</Button>}
+                {step < TOTAL_STEPS && <Button onClick={next}>Next</Button>}
+                {step === TOTAL_STEPS && (
+                  <Button onClick={handlePublish}>Publish</Button>
+                )}
+              </div>
+            </Card>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
