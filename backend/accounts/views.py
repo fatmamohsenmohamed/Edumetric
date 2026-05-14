@@ -3,8 +3,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 
-from urllib3 import request
-from .models import User #table el user f el models
+
+#from .models import User #table el user f el models m4 ha7tago 34an already andy wa7d mn django.contrib.auth.models
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth.hashers import make_password
@@ -19,7 +19,7 @@ from django.contrib.auth import authenticate, login as auth_login
 
 import json
 import uuid
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User  #el hwa daa el user model el built in bta3 django
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -240,7 +240,9 @@ def forgot_password(request):
         # check if user exists
         try:
             user = User.objects.get(email=email)
+            print(f"✅ User found: {user.email}")
         except User.DoesNotExist:
+            print("❌ User not found")  # ← add this
             return JsonResponse({"message": "a reset link has been sent"}) #hna m4 ha2olo en el email dosent exist 34an el hacking
         
         # delete ay token adema abl ma a3ml wa7da gdede
@@ -248,12 +250,15 @@ def forgot_password(request):
         
         # generate token
         token = str(uuid.uuid4())
+        print(f"✅ Token created: {token}")  # ← add this
+        
         
         # save the token in the database
         PasswordResetToken.objects.create(user=user, token=token)
         
-        # # build the reset link
+        # build the reset link
         reset_link = f"http://localhost:3000/reset-password?token={token}" 
+        print(f"✅ Reset link: {reset_link}")  # ← add this
         
         # send the email
         send_mail(
@@ -262,11 +267,14 @@ def forgot_password(request):
             from_email="edumetric.plattform2026@gmail.com",  # el email el 3amlto f settings.py
             recipient_list=[user.email],
         )
+        print(f"✅ Email sent to: {user.email}")  # ← add this
         
         return JsonResponse({"message": "If this email exists, a reset link has been sent"})
     
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+    
+    except Exception as mail_error:
+        print(f"❌ Email failed: {mail_error}")  # ← add this
+        return JsonResponse({"error": str(mail_error)}, status=500)
 
 
 #  eh el user hy3mlo b3d ma y click 3la el link hay3ml new password f page el reset password
@@ -346,36 +354,6 @@ def confirm_email(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
     
-
-# contact page view
-# @csrf_exempt
-# def contact(request):
-#     if request.method != "POST":
-#         return JsonResponse({"error": "Only POST allowed"}, status=405)
-    
-#     try:
-#         data = json.loads(request.body)
-#         name    = data.get("name", "").strip()
-#         email   = data.get("email", "").strip()
-#         subject = data.get("subject", "").strip()
-#         message = data.get("message", "").strip()
-        
-#         if not name or not email or not subject or not message:
-#             return JsonResponse({"error": "All fields are required"}, status=400)
-        
-#         send_mail(
-#             subject=f"Contact Form: {subject}",
-#             message=f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}",
-#             from_email="edumetric.plattform2026@gmail.com",
-#             recipient_list="edumetric.admin48@gmail.com",
-#         )
-    
-#         return JsonResponse({"message": "Message sent successfully!"})
-    
-#     except Exception as e:
-#         return JsonResponse({"error": str(e)}, status=500)
-
-
 
 
 #logout view

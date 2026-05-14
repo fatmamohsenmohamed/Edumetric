@@ -36,7 +36,6 @@ export default function Login() {
           "Content-Type": "application/json",
         },
         credentials: "include", // session support
-        // ✅ Fixed — also sends remember_me as a boolean
         body: JSON.stringify({
             email: formData.email,
             password: formData.password,
@@ -66,7 +65,7 @@ export default function Login() {
       } else if (data.is_institutional) {
         navigate("/student");
       } else {
-        navigate("/home");
+        navigate("/");
       }
     } catch (err) {
       setLoading(false);
@@ -133,7 +132,7 @@ export default function Login() {
             {/* Options */}
             <div className="flex justify-between items-center text-xs text-textSoft">
               <label className="flex items-center gap-2 cursor-pointer">
-              // ✅ Fixed — connected to rememberMe state
+              
               <input
                   type="checkbox"
                   className="accent-primary"

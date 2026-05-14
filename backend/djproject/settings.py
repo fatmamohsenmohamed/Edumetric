@@ -84,25 +84,25 @@ WSGI_APPLICATION = 'djproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-
 DATABASES = {
     'default': {
-        'ENGINE': 'mssql',
-        'NAME': 'EduMetric',
-        'HOST': 'DESKTOP-0SKT89E\\SQLEXPRESS',
-        'OPTIONS': {
-            'driver': 'ODBC Driver 17 for SQL Server',
-            'trusted_connection': 'yes',
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'mssql',
+#         'NAME': 'EduMetric',
+#         'HOST': 'DESKTOP-0SKT89E\\SQLEXPRESS',
+#         'OPTIONS': {
+#             'driver': 'ODBC Driver 17 for SQL Server',
+#             'trusted_connection': 'yes',
+#         },
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -159,7 +159,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'edumetric.plattform2026@gmail.com'      # email you want to send from, na 3amlt el acc da ll project
 EMAIL_HOST_PASSWORD = 'fhnu blln zpuv logq' #pass key generated from that email for security, not the actual email password
-EMAIL_TIMEOUT = 10 
+
 
 
 
