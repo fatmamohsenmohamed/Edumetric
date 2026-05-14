@@ -1,17 +1,33 @@
-import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 export default function Pricing() {
   const navigate = useNavigate();
   const location = useLocation();
   const examId = location.state?.examId;
   const examTitle = location.state?.examTitle;
+
+  const [user, setUser] = useState(null);
+
   useEffect(() => {
     AOS.init({ duration: 900, once: true, easing: "ease-out-cubic" });
+
+    fetch("http://localhost:8000/api/me/", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setUser(data))
+      .catch(() => setUser(null));
   }, []);
+
+  function handleLogout() {
+    fetch("http://localhost:8000/api/logout/", {
+      method: "POST",
+      credentials: "include",
+    }).finally(() => navigate("/login"));
+  }
 
   const plans = [
     {
@@ -45,7 +61,9 @@ export default function Pricing() {
   ];
 
   return (
-    <div className="min-h-screen bg-bg flex flex-col items-center justify-start p-10">
+    <div className="min-h-screen bg-bg flex flex-col  pt-24">
+      <Navbar user={user} onLogout={handleLogout} activePage="pricing" />
+      <div className="flex flex-col items-center justify-start p-10 flex-1">
       {/* Header */}
       <div className="max-w-7xl w-full text-center mb-16" data-aos="fade-down">
         <h1 className="text-5xl font-extrabold text-textMain mb-4">
@@ -55,6 +73,7 @@ export default function Pricing() {
           Flexible pricing plans to suit every learner and educator
         </p>
       </div>
+
       {examId && (
         <div
           className="bg-amber-50 border border-amber-200 rounded-xl px-6 py-4 mb-8 max-w-3xl text-center"
@@ -67,7 +86,7 @@ export default function Pricing() {
       )}
 
       {/* Cards */}
-      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-12 max-w-7xl items-center">
+      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-12 max-w-7xl items-center ">
         {plans.map((plan, i) => (
           <div
             key={i}
@@ -82,7 +101,6 @@ export default function Pricing() {
             }`}
           >
             <h2 className="text-3xl font-bold mb-5 z-10">{plan.title}</h2>
-
             <p className="text-4xl font-extrabold mb-8 z-10">{plan.price}</p>
 
             <ul className="flex-1 flex flex-col gap-4 mb-8 z-10">
@@ -110,7 +128,7 @@ export default function Pricing() {
         ))}
       </div>
 
-      {/* Footer */}
+      {/* Note */}
       <p
         className="text-textSoft text-base mt-16 max-w-2xl text-center"
         data-aos="fade-up"
@@ -118,6 +136,9 @@ export default function Pricing() {
       >
         All plans come with a 14-day free trial. No credit card required.
       </p>
+
+      </div>
+      <Footer />
     </div>
   );
 }
