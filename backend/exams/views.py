@@ -17,6 +17,9 @@ from django.http import JsonResponse
 from functools import wraps
 from django.http import JsonResponse
 from accounts.models import InstitutionMember
+from .models import Exam, Submission, Answer, Certificate, ExamPurchase
+from accounts.models import InstitutionMember, Institution
+from django.contrib.auth.models import User
 
 def api_login_required(view_func):
     @wraps(view_func)
@@ -58,17 +61,18 @@ def create_exam(request):
         if easy_count + medium_count + hard_count == 0:
             return JsonResponse({"error": "Select at least one question"}, status=400)
 
-        subject = request.POST.get("subject")
+        subject = request.POST.get("subject", "").strip().lower()
 
         exam = Exam.objects.create(
             title=request.POST.get("title"),
             instructor=request.user ,
             duration=int(request.POST.get("duration", 60)),
-            subject = request.POST.get("subject"),
+            subject = subject,
             max_attempts=int(request.POST.get("max_attempts", 1)),
             shuffle_questions=request.POST.get("shuffle_questions") == "on",
             shuffle_choices=request.POST.get("shuffle_choices") == "on",
-            is_published=True
+            is_published=True,
+            is_public=False
         )
 
         picked_ids = set()
@@ -160,11 +164,15 @@ def take_exam(request, exam_id):
                     for c in choices
                 ]
             })
-
+        membership = getattr(request.user, "institution_membership", None)
         return JsonResponse({
             "title": exam.title,
             "duration": exam.duration,
-            "questions": result
+            "questions": result,
+            "subject": exam.subject,
+            "instructor_name": exam.instructor.get_full_name() or exam.instructor.username,  
+            "institution_name": membership.institution.name if membership else "",           
+            "student_name": request.user.get_full_name() or request.user.username,  
         })
 
     except Exception as e:
@@ -197,7 +205,7 @@ def submit_exam(request, exam_id):
                 status=400
             )
 
-        # 🔥 Get student safely
+        
         if not request.user.is_authenticated:
             return JsonResponse(
                 {"error": "You must be logged in to submit"},
@@ -206,7 +214,7 @@ def submit_exam(request, exam_id):
 
         student = request.user
 
-        # 🔥 Check max attempts again (double check)
+        
         attempts = Submission.objects.filter(
             exam=exam,
             student=student
@@ -375,8 +383,8 @@ def available_exams(request):
                 "attempts_left": max(0, attempts_left),
                 "can_take": attempts_left > 0,
                 "instructor": exam.instructor.first_name or exam.instructor.username,
-                "is_paid": exam.is_paid,                                       # 👈 ADD
-                "price": float(exam.price) if exam.is_paid else 0,             # 👈 ADD
+                "is_paid": exam.is_paid,                                       
+                "price": float(exam.price) if exam.is_paid else 0,             
                 "is_purchased": (
                         ExamPurchase.objects.filter(user=user, exam=exam).exists()
                 if exam.is_paid

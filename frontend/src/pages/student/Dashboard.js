@@ -96,32 +96,32 @@ const NOTIFICATIONS = [
     icon: MdWarning,
   },
 ];
-const UPCOMING_EXAMS = [
-  {
-    name: "Advanced Calculus",
-    date: "Apr 25",
-    time: "10:00 AM",
-    duration: "2h",
-    questions: 50,
-    status: "upcoming",
-  },
-  {
-    name: "Quantum Physics",
-    date: "Today",
-    time: "2:00 PM",
-    duration: "1.5h",
-    questions: 40,
-    status: "active",
-  },
-  {
-    name: "Organic Chemistry",
-    date: "May 2",
-    time: "10:00 AM",
-    duration: "2h",
-    questions: 45,
-    status: "upcoming",
-  },
-];
+// const UPCOMING_EXAMS = [
+//   {
+//     name: "Advanced Calculus",
+//     date: "Apr 25",
+//     time: "10:00 AM",
+//     duration: "2h",
+//     questions: 50,
+//     status: "upcoming",
+//   },
+//   {
+//     name: "Quantum Physics",
+//     date: "Today",
+//     time: "2:00 PM",
+//     duration: "1.5h",
+//     questions: 40,
+//     status: "active",
+//   },
+//   {
+//     name: "Organic Chemistry",
+//     date: "May 2",
+//     time: "10:00 AM",
+//     duration: "2h",
+//     questions: 45,
+//     status: "upcoming",
+//   },
+// ];
 
 const CustomTooltip = ({ active, payload }) =>
   active && payload?.length ? (
@@ -248,60 +248,60 @@ export default function Dashboard() {
     );
   };
 
-  const UpcomingExamCard = ({ exam }) => {
-    const isActive = exam.status === "active";
-    return (
-      <div
-        className={`bg-gradient-to-br ${isActive ? "from-emerald-50 to-emerald-100/50 border-emerald-300" : "from-[#1e3a8a]/5 to-[#1e3a8a]/2 border-slate-200"} border rounded-xl p-4 hover:shadow-md transition-all`}
-      >
-        <div className="flex items-start justify-between mb-3">
-          <h3
-            className={`font-semibold text-sm ${isActive ? "text-emerald-900" : "text-[#1e3a8a]"}`}
-          >
-            {exam.name}
-          </h3>
-          <span
-            className={`text-xs px-2 py-1 rounded-full ${isActive ? "bg-emerald-500 text-white animate-pulse" : "bg-slate-300 text-slate-600"}`}
-          >
-            {isActive ? "Active Now" : "Soon"}
-          </span>
-        </div>
-        <div
-          className={`space-y-2 text-xs ${isActive ? "text-emerald-800" : "text-slate-500"}`}
-        >
-          <div className="flex items-center gap-2">
-            <MdCalendarToday
-              size={14}
-              className={isActive ? "text-emerald-600" : "text-slate-400"}
-            />
-            <span>{exam.date}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <MdTimer
-              size={14}
-              className={isActive ? "text-emerald-600" : "text-slate-400"}
-            />
-            <span>
-              {exam.time} • {exam.duration}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <MdAssignment
-              size={14}
-              className={isActive ? "text-emerald-600" : "text-slate-400"}
-            />
-            <span>{exam.questions} Questions</span>
-          </div>
-        </div>
-        <button
-          disabled={!isActive}
-          className={`w-full mt-3 py-2 text-xs font-semibold rounded-lg transition-all ${isActive ? "bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer" : "bg-slate-200 text-slate-400 cursor-not-allowed opacity-50"}`}
-        >
-          {isActive ? "Start Exam" : "Coming Soon"}
-        </button>
-      </div>
-    );
-  };
+  // const UpcomingExamCard = ({ exam }) => {
+  //   const isActive = exam.status === "active";
+  //   return (
+  //     <div
+  //       className={`bg-gradient-to-br ${isActive ? "from-emerald-50 to-emerald-100/50 border-emerald-300" : "from-[#1e3a8a]/5 to-[#1e3a8a]/2 border-slate-200"} border rounded-xl p-4 hover:shadow-md transition-all`}
+  //     >
+  //       <div className="flex items-start justify-between mb-3">
+  //         <h3
+  //           className={`font-semibold text-sm ${isActive ? "text-emerald-900" : "text-[#1e3a8a]"}`}
+  //         >
+  //           {exam.name}
+  //         </h3>
+  //         <span
+  //           className={`text-xs px-2 py-1 rounded-full ${isActive ? "bg-emerald-500 text-white animate-pulse" : "bg-slate-300 text-slate-600"}`}
+  //         >
+  //           {isActive ? "Active Now" : "Soon"}
+  //         </span>
+  //       </div>
+  //       <div
+  //         className={`space-y-2 text-xs ${isActive ? "text-emerald-800" : "text-slate-500"}`}
+  //       >
+  //         <div className="flex items-center gap-2">
+  //           <MdCalendarToday
+  //             size={14}
+  //             className={isActive ? "text-emerald-600" : "text-slate-400"}
+  //           />
+  //           <span>{exam.date}</span>
+  //         </div>
+  //         <div className="flex items-center gap-2">
+  //           <MdTimer
+  //             size={14}
+  //             className={isActive ? "text-emerald-600" : "text-slate-400"}
+  //           />
+  //           <span>
+  //             {exam.time} • {exam.duration}
+  //           </span>
+  //         </div>
+  //         <div className="flex items-center gap-2">
+  //           <MdAssignment
+  //             size={14}
+  //             className={isActive ? "text-emerald-600" : "text-slate-400"}
+  //           />
+  //           <span>{exam.questions} Questions</span>
+  //         </div>
+  //       </div>
+  //       <button
+  //         disabled={!isActive}
+  //         className={`w-full mt-3 py-2 text-xs font-semibold rounded-lg transition-all ${isActive ? "bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer" : "bg-slate-200 text-slate-400 cursor-not-allowed opacity-50"}`}
+  //       >
+  //         {isActive ? "Start Exam" : "Coming Soon"}
+  //       </button>
+  //     </div>
+  //   );
+  // };
 
   return (
     <div className="min-h-screen bg-white flex">
@@ -533,7 +533,7 @@ export default function Dashboard() {
             )}
           </div>
 
-          <div className="bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6">
+          {/* <div className="bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6">
             <h2 className="text-lg font-bold text-[#1e3a8a] mb-4">
               📅 Upcoming Exams
             </h2>
@@ -542,7 +542,7 @@ export default function Dashboard() {
                 <UpcomingExamCard key={idx} exam={exam} />
               ))}
             </div>
-          </div>
+          </div> */}
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             <div className="lg:col-span-3 bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6">

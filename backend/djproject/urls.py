@@ -12,5 +12,4 @@ urlpatterns = [
     path('api/', include('exams.urls')),
     path('api/admins/', include('admins.urls')),
     path("api/", include("edu.urls")),        # edu last fyha function contact bs bt3ml save bs ll message m4 btb3tha
-    # path('api/', include('teacher.urls')),
 ]

@@ -2,14 +2,13 @@ from django.shortcuts import render
 import csv
 import os
 import json
-import pandas as pd
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from .models import Question, Choice
-from docx import Document
 from django.db import transaction
-# Create your views here.
+from docx import Document
+
 
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Question, Choice, Chapter
@@ -43,7 +42,7 @@ def create_question_api(request):
         data = json.loads(request.body)
 
         chapter_name = data.get("chapter", "").strip()
-        subject      = data.get("subject", "").strip()
+        subject      = data.get("subject", "").strip().lower()
         q_type       = data.get("type", "MCQ").lower()
         difficulty   = data.get("difficulty", "Easy").lower()
 
@@ -91,7 +90,7 @@ def update_question_api(request, question_id):
         question = get_object_or_404(Question, id=question_id)
 
         chapter_name = data.get("chapter", "").strip()
-        subject      = data.get("subject", "").strip()
+        subject      = data.get("subject", "").strip().lower()
         q_type       = data.get("type", "MCQ").lower()
 
         chapter, _ = Chapter.objects.get_or_create(
@@ -180,7 +179,7 @@ def upload_questions(request):
 
 def process_row(row, user):
     chapter_name = str(row["chapter"]).strip()
-    subject = str(row.get("subject", "")).strip()
+    subject = str(row.get("subject", "")).strip().lower()
 
     chapter, created = Chapter.objects.get_or_create(
         name=chapter_name,
@@ -233,7 +232,7 @@ def parse_docx_question(text_block):
         "question_type": data.get("type"),
         "difficulty":    data.get("difficulty"),
         "chapter":       data.get("chapter"),
-        "subject":       data.get("subject"),
+        "subject":       data.get("subject", "").lower().strip(),
         "choice1":       data.get("choice1"),
         "choice2":       data.get("choice2"),
         "choice3":       data.get("choice3"),
