@@ -129,6 +129,8 @@ def take_exam(request, exam_id):
                 status=403
             )
 
+        
+
 
         if request.user.is_authenticated:
             attempts = Submission.objects.filter(
@@ -279,18 +281,22 @@ def submit_exam(request, exam_id):
         score = (correct / total) * 100 if total > 0 else 0
         submission.score = score
         submission.save()
+        
+        is_free_user = not hasattr(request.user, "institution_membership") or request.user.institution_membership is None
 
-        #htl3 certificate ll free users for paid exams only 
-        if score >= 60 and exam.is_paid:
+        should_issue_cert = score >= 60 and exam.is_paid and is_free_user
+
+        if should_issue_cert:
             Certificate.objects.create(submission=submission)
 
+        
         return JsonResponse({
             "score": score,
             "correct": correct,
             "total": total,
-            "submission_id": submission.id , # 🔥 Useful for results page
-            "passed": score >= 60,                                # 👈 add this too
-            "certificate_issued": score >= 60 and exam.is_paid
+            "submission_id": submission.id , 
+            "passed": score >= 60,                                
+            "certificate_issued": should_issue_cert
         })
 
 
