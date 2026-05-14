@@ -161,6 +161,9 @@ EMAIL_HOST_USER = 'edumetric.plattform2026@gmail.com'      # email you want to s
 EMAIL_HOST_PASSWORD = 'fhnu blln zpuv logq' #pass key generated from that email for security, not the actual email password
 EMAIL_TIMEOUT = 10 
 
+
+
+# Session and cookie settings for "Remember Me" functionality# ma7d4 yel3b fyha plz
 CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_HTTPONLY = False
@@ -170,10 +173,8 @@ CSRF_COOKIE_SECURE = False
 
 # how long session lasts — 2 weeks in seconds
 SESSION_COOKIE_AGE = 1209600
-
 # refreshes the expiry time on every request
 # so session stays alive as long as user is active
 SESSION_SAVE_EVERY_REQUEST = True
-
 # keeps session in database (most reliable method)
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
