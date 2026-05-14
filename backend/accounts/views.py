@@ -2,6 +2,8 @@ import re
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
+
+from urllib3 import request
 from .models import User #table el user f el models
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -164,7 +166,7 @@ def login(request):
 
         email       = data.get("email", "").strip().lower()
         password    = data.get("password", "")
-        remember_me = data.get("remember_me")
+        remember_me = data.get("remember_me",False)
 
         if not email or not password:
             return JsonResponse({"error": "Email and password are required"}, status=400)
@@ -179,9 +181,9 @@ def login(request):
         auth_login(request, user)
 
         if remember_me:
-            request.session.set_expiry(1209600)
+            request.session.set_expiry(1209600)  # 2 weeks
         else:
-            request.session.set_expiry(0)
+            request.session.set_expiry(0)  # expires on browser close
 
         # Check if user belongs to an institution
         membership = getattr(user, "institution_membership", None)

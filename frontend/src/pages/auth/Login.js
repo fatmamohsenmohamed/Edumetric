@@ -14,6 +14,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,7 +36,12 @@ export default function Login() {
           "Content-Type": "application/json",
         },
         credentials: "include", // session support
-        body: JSON.stringify(formData),
+        // ✅ Fixed — also sends remember_me as a boolean
+        body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+            remember_me: rememberMe,  // ← sends true or false to Django
+        }),
       });
 
       let data;
@@ -127,7 +133,14 @@ export default function Login() {
             {/* Options */}
             <div className="flex justify-between items-center text-xs text-textSoft">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="accent-primary" />
+              // ✅ Fixed — connected to rememberMe state
+              <input
+                  type="checkbox"
+                  className="accent-primary"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  // e.target.checked is a boolean — true when checked, false when unchecked
+              />
                 Remember me
               </label>
               <Link
