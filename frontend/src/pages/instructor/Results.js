@@ -49,6 +49,8 @@ export default function Results() {
   const [currentPage, setCurrentPage] = useState(1);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState(null);
 
 
 useEffect(() => {
@@ -126,8 +128,7 @@ const activeFiltersCount = [subjectFilter, statusFilter].filter(Boolean).length;
 
   // ── Print ──
   const handlePrint = () => window.print();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [user,setUser] = useState(null);
+
   if (loading) {
     return (
         <div className="flex items-center justify-center min-h-screen">
