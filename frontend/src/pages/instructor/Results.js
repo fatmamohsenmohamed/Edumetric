@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useState, useMemo , useEffect } from "react";
 import {
   MdSearch, 
@@ -52,6 +53,21 @@ export default function Results() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState(null);
 
+
+  // ✅ Add these right here — after states, before useEffect
+const navigate = useNavigate();
+
+const handleLogout = async () => {
+    try {
+        await fetch("http://localhost:8000/api/logout/", {
+            method: "POST",
+            credentials: "include",
+        });
+    } catch (err) {
+        console.error("Logout error:", err);
+    }
+    navigate("/login");
+};
 
 useEffect(() => {
    
@@ -152,6 +168,7 @@ const activeFiltersCount = [subjectFilter, statusFilter].filter(Boolean).length;
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
           user={user}
+          onLogout={handleLogout}
         />
 
       <div className="flex-1 bg-white p-6 space-y-6">

@@ -31,6 +31,8 @@ const NAV = [
  *  - user     {object}   — { full_name, email } from /api/me/
  *  - onLogout {function} — logout handler
  */
+
+
 export default function InstructorSidebar({ isOpen, onClose, user, onLogout }) {
   const navigate = useNavigate();
 
