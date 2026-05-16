@@ -180,6 +180,8 @@ def login(request):
 
         auth_login(request, user)
 
+        request.session.cycle_key() # 34an may7sal4 conflict f el seesions w na b3ml switching f el users
+
         if remember_me:
             request.session.set_expiry(1209600)  # 2 weeks
         else:

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo , useEffect } from "react";
 import {
   MdSearch, 
   MdFilterList, 
@@ -15,18 +15,18 @@ import {
 import InstructorSidebar from "../components/InstructorSidebar";
 
 // ─── Sample Data ──────────────────────────────────────────────
-const SAMPLE_RESULTS = [
-  { id: 1,  student: "Mariam Ahmed",  subject: "Web Dev",  exam: "Midterm Exam",      score: 85, correct: 17, total: 20, date: "2026-05-03" },
-  { id: 2,  student: "Ahmed Ali",     subject: "Science",  exam: "Chapter 3 Quiz",    score: 60, correct: 12, total: 20, date: "2026-05-03" },
-  { id: 3,  student: "Fatma Hassan",  subject: "Math",     exam: "Final Exam",        score: 92, correct: 23, total: 25, date: "2026-05-02" },
-  { id: 4,  student: "Nada Mohamed",  subject: "Web Dev",  exam: "Midterm Exam",      score: 45, correct: 9,  total: 20, date: "2026-05-01" },
-  { id: 5,  student: "Shahd Omar",    subject: "Science",  exam: "Chapter 3 Quiz",    score: 78, correct: 15, total: 20, date: "2026-05-03" },
-  { id: 6,  student: "Youssef Tarek", subject: "Math",     exam: "Final Exam",        score: 55, correct: 14, total: 25, date: "2026-05-02" },
-  { id: 7,  student: "Sara Ibrahim",  subject: "CS",       exam: "Programming Quiz",  score: 96, correct: 24, total: 25, date: "2026-04-30" },
-  { id: 8,  student: "Karim Salah",   subject: "CS",       exam: "Programming Quiz",  score: 40, correct: 10, total: 25, date: "2026-04-30" },
-  { id: 9,  student: "Hana Magdy",    subject: "Web Dev",  exam: "Final Project",     score: 73, correct: 22, total: 30, date: "2026-04-28" },
-  { id: 10, student: "Omar Fathy",    subject: "Science",  exam: "Final Exam",        score: 88, correct: 22, total: 25, date: "2026-04-27" },
-];
+// const SAMPLE_RESULTS = [
+//   { id: 1,  student: "Mariam Ahmed",  subject: "Web Dev",  exam: "Midterm Exam",      score: 85, correct: 17, total: 20, date: "2026-05-03" },
+//   { id: 2,  student: "Ahmed Ali",     subject: "Science",  exam: "Chapter 3 Quiz",    score: 60, correct: 12, total: 20, date: "2026-05-03" },
+//   { id: 3,  student: "Fatma Hassan",  subject: "Math",     exam: "Final Exam",        score: 92, correct: 23, total: 25, date: "2026-05-02" },
+//   { id: 4,  student: "Nada Mohamed",  subject: "Web Dev",  exam: "Midterm Exam",      score: 45, correct: 9,  total: 20, date: "2026-05-01" },
+//   { id: 5,  student: "Shahd Omar",    subject: "Science",  exam: "Chapter 3 Quiz",    score: 78, correct: 15, total: 20, date: "2026-05-03" },
+//   { id: 6,  student: "Youssef Tarek", subject: "Math",     exam: "Final Exam",        score: 55, correct: 14, total: 25, date: "2026-05-02" },
+//   { id: 7,  student: "Sara Ibrahim",  subject: "CS",       exam: "Programming Quiz",  score: 96, correct: 24, total: 25, date: "2026-04-30" },
+//   { id: 8,  student: "Karim Salah",   subject: "CS",       exam: "Programming Quiz",  score: 40, correct: 10, total: 25, date: "2026-04-30" },
+//   { id: 9,  student: "Hana Magdy",    subject: "Web Dev",  exam: "Final Project",     score: 73, correct: 22, total: 30, date: "2026-04-28" },
+//   { id: 10, student: "Omar Fathy",    subject: "Science",  exam: "Final Exam",        score: 88, correct: 22, total: 25, date: "2026-04-27" },
+// ];
 
 const PAGE_SIZE = 6;
 
@@ -47,16 +47,51 @@ export default function Results() {
   const [sortBy, setSortBy]           = useState("score");
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+
+useEffect(() => {
+   
+  // ✅ Add this — fetch who is logged in
+    fetch("http://localhost:8000/api/me/", {
+        credentials: "include",
+    })
+    .then(res => {
+        if (!res.ok) {
+            // if not logged in → redirect to login
+            window.location.href = "/login";
+            return;
+        }
+        return res.json();
+    })
+    .then(data => setUser(data))
+    .catch(err => console.error("User error:", err));
+
+    // existing fetch
+    fetch("http://localhost:8000/api/teacher/results/", {
+        credentials: "include",
+    })
+    .then(res => res.json())
+    .then(data => {
+        setResults(data.results || []);
+        setLoading(false);
+    })
+    .catch(err => {
+        console.error("Results error:", err);
+        setLoading(false);
+    });
+}, []);
 
   // ── Unique subjects from data ──
   const allSubjects = useMemo(
-    () => [...new Set(SAMPLE_RESULTS.map((r) => r.subject))],
-    []
+    () => [...new Set(results.map((r) => r.subject))],
+    [results]
   );
 
   // ── Filter + Sort ──
   const filtered = useMemo(() => {
-    return SAMPLE_RESULTS
+    return results
       .filter((r) =>
         !search ||
         r.student.toLowerCase().includes(search.toLowerCase()) ||
@@ -75,7 +110,7 @@ export default function Results() {
         if (sortBy === "name")  return a.student.localeCompare(b.student);
         return 0;
       });
-  }, [search, subjectFilter, statusFilter, sortBy]);
+  }, [search, subjectFilter, statusFilter, sortBy,results]);
 
   // ── Pagination ──
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
@@ -83,15 +118,23 @@ export default function Results() {
   const resetPage  = () => setCurrentPage(1);
 
   // ── Stats ──
-  const avg      = SAMPLE_RESULTS.reduce((s, r) => s + r.score, 0) / SAMPLE_RESULTS.length;
-  const highest  = Math.max(...SAMPLE_RESULTS.map((r) => r.score));
-  const passRate = Math.round((SAMPLE_RESULTS.filter((r) => r.score >= 50).length / SAMPLE_RESULTS.length) * 100);
-  const activeFiltersCount = [subjectFilter, statusFilter].filter(Boolean).length;
+// ✅ Fix — check for empty array first
+const avg = results.length > 0 ? results.reduce((s, r) => s + r.score, 0) / results.length : 0;
+const highest = results.length > 0 ? Math.max(...results.map((r) => r.score)) : 0;
+const passRate = results.length > 0 ? Math.round((results.filter((r) => r.score >= 50).length / results.length) * 100) : 0;
+const activeFiltersCount = [subjectFilter, statusFilter].filter(Boolean).length;
 
   // ── Print ──
   const handlePrint = () => window.print();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [user] = useState(null);
+  const [user,setUser] = useState(null);
+  if (loading) {
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="w-10 h-10 border-4 border-[#1e3a8a] border-t-transparent rounded-full animate-spin" />
+        </div>
+    );
+}
 
   return (
     <>
@@ -125,7 +168,7 @@ export default function Results() {
             <div>
               <h1 className="text-2xl font-bold text-[#1e3a8a]">Results</h1>
               <p className="text-sm text-slate-500">
-                {SAMPLE_RESULTS.length} submissions · {filtered.length} shown
+                {results.length} submissions · {filtered.length} shown
               </p>
             </div>
           </div>
@@ -141,7 +184,7 @@ export default function Results() {
         {/* ── STATS ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { icon: <MdPeople className="text-xl" />,      label: "Students",  value: SAMPLE_RESULTS.length,    color: "text-blue-600",   bg: "bg-blue-50"   },
+            { icon: <MdPeople className="text-xl" />,      label: "Students",  value: results.length,    color: "text-blue-600",   bg: "bg-blue-50"   },
             { icon: <MdTrendingUp className="text-xl" />,  label: "Average",   value: `${avg.toFixed(1)}%`,     color: "text-purple-600", bg: "bg-purple-50" },
             { icon: <MdStar className="text-xl" />,        label: "Highest",   value: `${highest}%`,            color: "text-green-600",  bg: "bg-green-50"  },
             { icon: <MdCheckCircle className="text-xl" />, label: "Pass Rate", value: `${passRate}%`,           color: "text-emerald-600",bg: "bg-emerald-50"},

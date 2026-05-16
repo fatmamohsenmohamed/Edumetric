@@ -402,3 +402,54 @@ def available_exams(request):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+
+
+#handeling results in the instructor dashboard 
+@csrf_exempt
+@api_login_required
+def teacher_student_results(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "Only GET allowed"}, status=405)
+    
+    try:
+        # get all exams where instructor is the logged in teacher
+        # instructor is a ForeignKey field on the Exam model
+        exams = Exam.objects.filter(instructor=request.user)
+        
+        results = []
+        
+        for exam in exams:
+            # get all submissions for this exam
+            # Submission has a ForeignKey to Exam
+            submissions = Submission.objects.filter(exam=exam)
+            
+            for submission in submissions:
+                # count correct answers
+                correct_answers = Answer.objects.filter(
+                    submission=submission,
+                    selected_choice__is_correct=True
+                ).count()
+                
+                # total questions in this exam
+                total_questions = exam.questions.count()
+                
+                results.append({
+                    # ✅ Get name from profile which stores full_name correctly
+                    "student": submission.student.first_name or submission.student.profile.user.username,
+                    "exam": exam.title,
+                    "subject": exam.subject or "N/A",
+                    "score": round(submission.score, 1) if submission.score is not None else 0,
+                    "correct": correct_answers,
+                    "total": total_questions,
+                    "date": submission.submitted_at.strftime("%Y-%m-%d"),# hy7otely el date bta3 el you el a5d feh el exam
+                })
+
+                for submission in submissions:
+                    print(f"Student: {submission.student.email}, Name: {submission.student.first_name}")
+        
+        return JsonResponse({"results": results})
+    
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
