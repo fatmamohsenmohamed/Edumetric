@@ -64,7 +64,7 @@ export default function InstructorSidebar({ isOpen, onClose, user, onLogout }) {
         {/* Logo */}
         <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
           <button
-            onClick={() => navigate("/home")}
+            onClick={() => navigate("/")}
             className="focus:outline-none"
           >
             <img

@@ -1,7 +1,18 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useEffect } from "react";
-import { MdError, MdCheckCircle } from "react-icons/md";
+import logoImg from "../../images/home/logo1.png";
+import { 
+  MdError,
+  MdCheckCircle,
+  MdOutlineTrackChanges,
+  MdOutlinePsychology,
+  MdOutlineAnalytics,
+  MdOutlineSchool,
+  MdOutlineTimer,
+  MdVisibility,
+  MdVisibilityOff,
+} from "react-icons/md";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -21,6 +32,8 @@ export default function Register() {
   const [errors, setErrors] = useState({});
   const [isInstitutional, setIsInstitutional] = useState(false);
   const [institutionUserId, setInstitutionUserId] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   useEffect(() => {
     const accepted = localStorage.getItem("acceptedTerms");
 
@@ -52,9 +65,6 @@ export default function Register() {
     if (!formData.agree) {
       newErrors.agree = "You must accept Terms & Conditions";
     }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
 
     if (isInstitutional && !institutionUserId.trim()) {
       newErrors.institutionUserId = "Helwan University ID is required";
@@ -136,46 +146,100 @@ export default function Register() {
 
       <div className="w-full max-w-6xl grid md:grid-cols-2 gap-8">
         {/* LEFT */}
-        <div className="hidden md:flex flex-col justify-between bg-primary text-white rounded-2xl p-10 shadow-soft">
-          <div>
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center text-xl">
-                📚
+        <div className="hidden md:flex flex-col justify-between bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 text-white rounded-2xl p-10 shadow-soft">
+          {/* GLOW BACKGROUND LAYERS */}
+          <div className="absolute w-96 h-96 bg-cyan-400/10 blur-[120px] rounded-full top-10 left-10" />
+          <div className="absolute w-72 h-72 bg-blue-500/10 blur-[100px] rounded-full bottom-10 right-10" />
+
+          {/* TOP CONTENT */}
+          <div className="relative z-10">
+
+            {/* LOGO + BRAND */}
+        <div className="relative flex items-center mb-10">
+
+              {/* Main glow */}
+              <div
+                className="
+                  absolute
+                  w-56 h-56
+                  bg-cyan-300/30
+                  blur-3xl
+                  rounded-full
+                  -left-10
+                  animate-pulse
+                "
+              />
+
+              {/* Secondary glow */}
+              <div
+                className="
+                  absolute
+                  w-40 h-40
+                  bg-white/20
+                  blur-2xl
+                  rounded-full
+                  left-10
+                "
+              />
+
+              {/* Logo */}
+              <div className="relative w-60 h-36 flex items-center">
+                <img
+                  src={logoImg}
+                  alt="EduMetric Logo"
+                  className="
+                    w-full h-full object-contain
+                    brightness-110
+                    contrast-110
+                    drop-shadow-[0_0_35px_rgba(255,255,255,0.55)]
+                    hover:scale-105
+                    transition-all duration-500
+                  "
+                />
               </div>
-              <h1 className="text-2xl font-bold">EduMetric</h1>
+
             </div>
+            
 
-            <h2 className="text-2xl font-bold mb-3">Smart Learning Platform</h2>
+            {/* TITLE */}
+            <h2 className="text-3xl font-bold mb-3 leading-snug">
+              Smart Learning Platform
+            </h2>
 
-            <p className="text-white/70 mb-10">
-              Create and take exams with AI-powered questions and analytics
+            <p className="text-white/70 mb-8">
+              Create exams, track progress, and unlock AI-powered learning insights
             </p>
 
+            {/* FEATURES */}
             <div className="flex flex-col gap-4">
+
               {[
-                { icon: "🎯", title: "Smart Question Bank" },
-                { icon: "🤖", title: "AI-Powered Generation" },
-                { icon: "📊", title: "Performance Analytics" },
-                { icon: "🎓", title: "Certificates" },
-                { icon: "⏱️", title: "Timed Exams" },
+                { icon: MdOutlineTrackChanges, title: "Smart Question Bank", color: "text-cyan-300" },
+                { icon: MdOutlinePsychology, title: "AI-Powered Generation", color: "text-purple-300" },
+                { icon: MdOutlineAnalytics, title: "Advanced Analytics", color: "text-green-300" },
+                { icon: MdOutlineSchool, title: "Auto Certificates", color: "text-yellow-200" },
+                { icon: MdOutlineTimer, title: "Timed Exams System", color: "text-pink-300" },
               ].map((f, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-4 p-4 rounded-xl bg-white/10 border border-white/20 
-                  hover:bg-white/20 hover:translate-x-1 transition-all"
+                  className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-cyan-400/20 hover:bg-white/20 hover:scale-[1.02] transition-all"
                 >
-                  <div className="w-10 h-10 flex items-center justify-center bg-white/20 rounded-lg text-lg">
-                    {f.icon}
+                  <div>
+                    <f.icon className={`text-xl text-cyan-200 drop-shadow-md`} />
                   </div>
+
                   <p className="font-medium">{f.title}</p>
                 </div>
               ))}
+
             </div>
           </div>
 
-          <p className="text-sm text-white/60 mt-10">
+          {/* BOTTOM TEXT */}
+          <div className="mt-10 text-sm text-white/60">
             Join thousands of students worldwide
-          </p>
+          </div>
+
         </div>
 
         {/* RIGHT */}
@@ -311,40 +375,92 @@ export default function Register() {
               )}
             </div>
             {/* Password */}
-            <div className="flex flex-col gap-1">
-              <label className="text-textSoft text-base font-medium">
-                Password
-              </label>
-              <input
-                name="password"
-                type="password"
-                placeholder="Min. 8 characters"
-                value={formData.password}
-                onChange={handleChange}
-                className="border border-border rounded-xl p-3 bg-bg"
-              />
-              {errors.password && (
-                <p className="text-danger text-sm">{errors.password}</p>
-              )}
-            </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-textSoft text-base font-medium">
+                  Password
+                </label>
 
-            {/* Confirm Password */}
-            <div className="flex flex-col gap-1">
-              <label className="text-textSoft text-base font-medium">
-                Confirm Password
-              </label>
-              <input
-                name="confirmPassword"
-                type="password"
-                placeholder="Confirm password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="border border-border rounded-xl p-3 bg-bg"
-              />
-              {errors.confirmPassword && (
-                <p className="text-danger text-sm">{errors.confirmPassword}</p>
-              )}
-            </div>
+                <div className="relative">
+                  <input
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Min. 8 characters"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="
+                      w-full border border-border rounded-xl p-3 pr-12 bg-bg
+                      focus:ring-2 focus:ring-primary/30
+                      hover:border-primary/40 transition-all
+                    "
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="
+                      absolute right-4 top-1/2 -translate-y-1/2
+                      text-textSoft hover:text-primary
+                      transition
+                    "
+                  >
+                    {showPassword ? (
+                      <MdVisibilityOff size={22} />
+                    ) : (
+                      <MdVisibility size={22} />
+                    )}
+                  </button>
+                </div>
+
+                {errors.password && (
+                  <p className="text-danger text-sm">{errors.password}</p>
+                )}
+              </div>
+
+           {/* Confirm Password */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-textSoft text-base font-medium">
+                        Confirm Password
+                      </label>
+
+                      <div className="relative">
+                        <input
+                          name="confirmPassword"
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="Confirm password"
+                          value={formData.confirmPassword}
+                          onChange={handleChange}
+                          className="
+                            w-full border border-border rounded-xl p-3 pr-12 bg-bg
+                            focus:ring-2 focus:ring-primary/30
+                            hover:border-primary/40 transition-all
+                          "
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
+                          className="
+                            absolute right-4 top-1/2 -translate-y-1/2
+                            text-textSoft hover:text-primary
+                            transition
+                          "
+                        >
+                          {showConfirmPassword ? (
+                            <MdVisibilityOff size={22} />
+                          ) : (
+                            <MdVisibility size={22} />
+                          )}
+                        </button>
+                      </div>
+
+                      {errors.confirmPassword && (
+                        <p className="text-danger text-sm">
+                          {errors.confirmPassword}
+                        </p>
+                      )}
+                    </div>
 
             {/* Terms */}
             <div className="flex items-start gap-2 mt-2">

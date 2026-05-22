@@ -9,6 +9,10 @@ import {
 } from "react-icons/fa";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+
+import onlineImg from "../../images/contact/online-communication.svg";
 
 export default function Contact() {
   useEffect(() => {
@@ -98,7 +102,9 @@ export default function Contact() {
   };
 
   return (
-    <div className="min-h-screen bg-bg flex flex-col items-center p-8">
+    <div className="min-h-screen bg-bg flex flex-col pt-24">
+      <Navbar activePage="contact" />
+      <div className="w-full flex flex-col items-center p-8">
 
       {/* STATUS ANIMATION */}
       {status.message && (
@@ -128,8 +134,7 @@ export default function Contact() {
       </div>
 
       {/* GRID */}
-      <div className="w-full max-w-6xl grid md:grid-cols-2 gap-12">
-
+       <div className="w-full max-w-6xl grid md:grid-cols-2 gap-12 items-center">
         {/* FORM */}
         <div
           className="bg-card border border-border rounded-3xl p-10 shadow-soft transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
@@ -233,9 +238,16 @@ export default function Contact() {
 
         {/* INFO ANIMATION */}
         <div
-          className="flex flex-col gap-8 text-textMain"
+          className="flex flex-col justify-start items-center gap-8 text-textMain h-full pt-6 md:pt-0"
           data-aos="fade-left"
         >
+          <div className="flex justify-center">
+          <img
+            src={onlineImg}
+            alt="Online Communication"
+            className="w-64 md:w-72 -mt-4 md:-mt-8"
+          />
+        </div>
 
           <div className="flex items-center gap-3 transition-transform duration-200 hover:translate-x-1">
             <FaMapMarkerAlt className="text-primary" />
@@ -260,6 +272,8 @@ export default function Contact() {
 
         </div>
       </div>
+      </div>
+      <Footer activePage="contact" />
     </div>
   );
 }

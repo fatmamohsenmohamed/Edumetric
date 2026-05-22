@@ -16,14 +16,48 @@ export default function Login() {
   const navigate = useNavigate();
   const [rememberMe, setRememberMe] = useState(false);
 
+  // Live Validation States
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  // Email Validation
+  const validateEmail = (value) => {
+    if (!value) {
+      setEmailError("Email is required");
+    } else if (!/\S+@\S+\.\S+/.test(value)) {
+      setEmailError("Invalid email format");
+    } else {
+      setEmailError("");
+    }
+  };
+
+  // Password Validation
+  const validatePassword = (value) => {
+    if (!value) {
+      setPasswordError("Password is required");
+    } else if (value.length < 6) {
+      setPasswordError("Password must be at least 6 characters");
+    } else {
+      setPasswordError("");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     setError("");
     setSuccess("");
 
-    if (!formData.email || !formData.password) {
-      setError("All fields are required");
+    validateEmail(formData.email);
+    validatePassword(formData.password);
+
+    if (
+      !formData.email ||
+      !formData.password ||
+      emailError ||
+      passwordError
+    ) {
+      setError("Please fix the errors first");
       return;
     }
 
@@ -37,9 +71,9 @@ export default function Login() {
         },
         credentials: "include", // session support
         body: JSON.stringify({
-            email: formData.email,
-            password: formData.password,
-            remember_me: rememberMe,  // ← sends true or false to Django
+          email: formData.email,
+          password: formData.password,
+          remember_me: rememberMe,
         }),
       });
 
@@ -59,6 +93,7 @@ export default function Login() {
       // success
       setError("");
       setSuccess("Logged in successfully 🔥");
+      setLoading(false);
 
       if (data.user_type === "teacher") {
         navigate("/instructordashboard");
@@ -72,6 +107,7 @@ export default function Login() {
       setError(err.message || "Server error. Try again later.");
     }
   };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-bg px-4 ">
       <div className="w-full max-w-lg">
@@ -79,6 +115,7 @@ export default function Login() {
           <h2 className="text-3xl font-bold text-center text-textMain mb-2">
             Welcome Back 👋
           </h2>
+
           <p className="text-center text-textSoft mb-6 text-sm">
             Login to your EduMetric account
           </p>
@@ -88,6 +125,7 @@ export default function Login() {
               {error}
             </div>
           )}
+
           {success && (
             <div className="bg-success/10 border border-success/30 text-success text-sm p-3 rounded-xl mb-4 text-center">
               {success}
@@ -96,52 +134,99 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email */}
-            <div className="relative">
-              <FaEnvelope className="absolute left-3 top-3 text-textSoft" />
-              <input
-                type="email"
-                placeholder="example@email.com"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                className="mt-1 w-full pl-10 px-4 py-3 rounded-xl bg-bg border border-border text-textMain placeholder-textSoft  focus:outline-none focus:ring-2 focus:ring-primary/30 hover:border-primary/40 transition"
-              />
+            <div>
+              <div className="relative">
+                <FaEnvelope className="absolute left-3 top-3 text-textSoft" />
+
+                <input
+                  type="email"
+                  placeholder="example@email.com"
+                  value={formData.email}
+                  onChange={(e) => {
+                    const value = e.target.value;
+
+                    setFormData({
+                      ...formData,
+                      email: value,
+                    });
+
+                    validateEmail(value);
+
+                    if (error) setError("");
+                  }}
+                  className={`mt-1 w-full pl-10 px-4 py-3 rounded-xl bg-bg border text-textMain placeholder-textSoft focus:outline-none focus:ring-2 transition
+                    ${
+                      emailError
+                        ? "border-danger focus:ring-danger/30"
+                        : "border-border focus:ring-primary/30 hover:border-primary/40"
+                    }`}
+                />
+              </div>
+
+              {emailError && (
+                <p className="text-danger text-xs mt-1 ml-1">
+                  {emailError}
+                </p>
+              )}
             </div>
 
             {/* Password */}
-            <div className="relative">
-              <FaLock className="absolute left-3 top-3 text-textSoft" />
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-                className="mt-1 w-full pl-10 px-4 py-3 rounded-xl bg-bg border border-border text-textMain placeholder-textSoft  focus:outline-none focus:ring-2 focus:ring-primary/30 hover:border-primary/40 transition"
-              />
-              <span
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-xs text-textSoft cursor-pointer hover:text-primary transition"
-              >
-                {showPassword ? "Hide" : "Show"}
-              </span>
+            <div>
+              <div className="relative">
+                <FaLock className="absolute left-3 top-3 text-textSoft" />
+
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={(e) => {
+                    const value = e.target.value;
+
+                    setFormData({
+                      ...formData,
+                      password: value,
+                    });
+
+                    validatePassword(value);
+
+                    if (error) setError("");
+                  }}
+                  className={`mt-1 w-full pl-10 px-4 py-3 rounded-xl bg-bg border text-textMain placeholder-textSoft focus:outline-none focus:ring-2 transition
+                    ${
+                      passwordError
+                        ? "border-danger focus:ring-danger/30"
+                        : "border-border focus:ring-primary/30 hover:border-primary/40"
+                    }`}
+                />
+
+                <span
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-xs text-textSoft cursor-pointer hover:text-primary transition"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </span>
+              </div>
+
+              {passwordError && (
+                <p className="text-danger text-xs mt-1 ml-1">
+                  {passwordError}
+                </p>
+              )}
             </div>
 
             {/* Options */}
             <div className="flex justify-between items-center text-xs text-textSoft">
               <label className="flex items-center gap-2 cursor-pointer">
-              
-              <input
+                <input
                   type="checkbox"
                   className="accent-primary"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  // e.target.checked is a boolean — true when checked, false when unchecked
-              />
+                />
+
                 Remember me
               </label>
+
               <Link
                 to="/forgot-password"
                 className="text-primary hover:underline"
@@ -153,8 +238,14 @@ export default function Login() {
             {/* Button */}
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primaryLight hover:shadow-soft transition  flex justify-center items-center gap-2"
-              disabled={loading || !formData.email || !formData.password}
+              className="w-full py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primaryLight hover:shadow-soft transition flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={
+                loading ||
+                !formData.email ||
+                !formData.password ||
+                emailError ||
+                passwordError
+              }
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -167,7 +258,9 @@ export default function Login() {
           {/* Divider */}
           <div className="flex items-center my-6">
             <div className="flex-grow border-t border-border"></div>
+
             <span className="mx-3 text-textSoft text-xs">OR</span>
+
             <div className="flex-grow border-t border-border"></div>
           </div>
 
@@ -176,6 +269,7 @@ export default function Login() {
             <button className="flex-1 py-3 rounded-xl bg-card border border-border text-textMain hover:bg-primary/5 transition flex justify-center items-center gap-2">
               <FaGoogle className="text-danger" /> Google
             </button>
+
             <button className="flex-1 py-3 rounded-xl bg-card border border-border text-textMain hover:bg-primary/5 transition flex justify-center items-center gap-2">
               <FaFacebook className="text-primary" /> Facebook
             </button>
@@ -186,7 +280,7 @@ export default function Login() {
             Don’t have an account?
             <Link
               to="/Register"
-              className="text-primary font-semibold hover:underline "
+              className="text-primary font-semibold hover:underline ml-1"
             >
               Sign up
             </Link>

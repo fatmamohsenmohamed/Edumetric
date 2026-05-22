@@ -97,3 +97,9 @@ code {
   }
 
 }
+
+/* remove default eye for password fields */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}

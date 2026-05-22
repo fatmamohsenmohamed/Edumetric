@@ -53,7 +53,7 @@ export default function Navbar({ user, onLogout, activePage }) {
       document.getElementById(href)?.scrollIntoView({ behavior: "smooth" });
     } else {
       sessionStorage.setItem("scrollTo", href);
-      navigate("/home");
+      navigate("/");
     }
   }
 
@@ -74,7 +74,7 @@ export default function Navbar({ user, onLogout, activePage }) {
         {/* LOGO */}
         <div className="flex items-center justify-center gap-3 h-18 w-40">
           <button
-            onClick={() => navigate("/home")}
+            onClick={() => navigate("/")}
             className="focus:outline-none"
           >
             <img
@@ -156,7 +156,7 @@ export default function Navbar({ user, onLogout, activePage }) {
 
         {/* USER */}
         {user ? (
-          <UserMenu user={user} onLogout={onLogout} />
+          <UserMenu user={user} onLogout={onLogout} navigate={navigate} />
         ) : (
           <GuestMenu navigate={navigate} />
         )}
@@ -165,44 +165,128 @@ export default function Navbar({ user, onLogout, activePage }) {
     </header>
   );
 }
+/* ================= USER MENU ================= */
+ function UserMenu({ user, onLogout, navigate }) {
 
-function UserMenu({ user, onLogout }) {
-  const initial = user.full_name?.charAt(0).toUpperCase() || "U";
+  if (!user) return null;
+
+
+  const initial =
+    user.full_name?.charAt(0).toUpperCase() || "U";
+
+  /* dashboard route */
+  const getDashboardRoute = (user) => {
+
+    // admin
+    if (user.user_type === "admin") {
+      return "/admindashboard";
+    }
+
+    // teacher
+    if (user.user_type === "teacher") {
+      return "/instructordashboard";
+    }
+
+    // institutional student
+    if (
+      user.user_type === "student" &&
+      user.is_institutional
+    ) {
+      return "/student";
+    }
+
+    // free user
+    return null;
+  };
+
+  const dashboardRoute = getDashboardRoute(user);
+
+  const handleClick = () => {
+    if (dashboardRoute) {
+      navigate(dashboardRoute);
+    }
+  };
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="px-3 py-1.5 rounded-full bg-blue-50 flex items-center gap-2">
-        <div className="w-8 h-8 rounded-full bg-blue-900 text-white flex items-center justify-center text-xs">
-          {initial}
-        </div>
-        <span className="text-sm text-blue-900">{user.full_name}</span>
-      </div>
+    <>
+      <div className="flex items-center gap-3">
 
-      <button
-        onClick={onLogout}
-        className="p-2 rounded-xl hover:bg-red-50 hover:text-red-600"
-      >
-        <MdLogout size={18} />
-      </button>
-    </div>
+        {/* USER */}
+        <div
+          onClick={dashboardRoute ? handleClick : undefined}
+          className={`
+            px-3 py-1.5 rounded-full
+            flex items-center gap-2
+            transition
+            ${
+              dashboardRoute
+                ? "cursor-pointer hover:bg-blue-50"
+                : "cursor-default"
+            }
+          `}
+        >
+          {/* AVATAR */}
+          <div className="
+            w-8 h-8 rounded-full
+            bg-blue-900 text-white
+            flex items-center justify-center
+            text-xs
+          ">
+            {initial}
+          </div>
+
+          {/* NAME */}
+          <span className="text-sm text-blue-900 font-medium">
+            {user.full_name}
+          </span>
+        </div>
+
+        {/* LOGOUT */}
+        <button
+          onClick={onLogout}
+          className="
+            p-2 rounded-xl
+            hover:bg-red-50
+            hover:text-red-600
+          "
+        >
+          <MdLogout size={18} />
+        </button>
+
+      </div>
+    </>
   );
 }
+
+/* ================= GUEST MENU ================= */
 
 function GuestMenu({ navigate }) {
   return (
     <div className="flex items-center gap-2">
+
       <button
         onClick={() => navigate("/login")}
-        className="px-4 py-2 text-blue-900 hover:bg-blue-50 rounded-xl"
+        className="
+          px-4 py-2
+          text-blue-900
+          hover:bg-blue-50
+          rounded-xl
+        "
       >
         Login
       </button>
+
       <button
         onClick={() => navigate("/register")}
-        className="px-4 py-2 bg-blue-900 text-white rounded-xl"
+        className="
+          px-4 py-2
+          bg-blue-900 text-white
+          rounded-xl
+        "
       >
         Sign Up
       </button>
+
     </div>
   );
 }
