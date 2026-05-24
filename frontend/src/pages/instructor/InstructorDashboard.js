@@ -36,50 +36,15 @@ import {
   Legend,
 } from "recharts";
 
-import InstructorSidebar from "../components/InstructorSidebar"; 
+import InstructorSidebar from "../components/InstructorSidebar";
 
 const MENU_ITEMS = [
   { label: "My Profile", icon: MdPerson },
   { label: "Edit Profile", icon: MdEdit },
-  { label: "Settings", icon: MdSettings },
   { label: "Download Reports", icon: MdDownload },
   { label: "Help & Support", icon: MdHelp },
 ];
 
-const NOTIFICATIONS = [
-  {
-    id: 1,
-    title: "Exam Submitted",
-    message: "All students completed Mathematics exam",
-    time: "2 hours ago",
-    type: "success",
-    icon: MdCheckCircle,
-  },
-  {
-    id: 2,
-    title: "New Submission",
-    message: "5 students submitted their assignments",
-    time: "5 hours ago",
-    type: "info",
-    icon: MdChecklistRtl,
-  },
-  {
-    id: 3,
-    title: "Low Performance",
-    message: "3 students scored below 50% in Physics",
-    time: "1 day ago",
-    type: "warning",
-    icon: MdWarning,
-  },
-  {
-    id: 4,
-    title: "Class Reminder",
-    message: "Chemistry class starts tomorrow at 10 AM",
-    time: "1 day ago",
-    type: "warning",
-    icon: MdWarning,
-  },
-];
 
 const CustomTooltip = ({ active, payload }) =>
   active && payload?.length ? (
@@ -132,9 +97,12 @@ export default function TeacherDashboard() {
       .then((data) => setExams(data))
       .catch((err) => console.error("Exams error:", err));
 
-    fetch("http://localhost:8000/api/teacher/analytics/performance-over-time/", {
-      credentials: "include",
-    })
+    fetch(
+      "http://localhost:8000/api/teacher/analytics/performance-over-time/",
+      {
+        credentials: "include",
+      },
+    )
       .then((res) => res.json())
       .then((data) => setChartData(data))
       .catch((err) => console.error("Chart error:", err));
@@ -222,58 +190,7 @@ export default function TeacherDashboard() {
           </div>
           <div className="flex-1" />
 
-          {/* Notifications */}
-          <div className="relative">
-            <button
-              onClick={() => setNotifOpen(!notifOpen)}
-              className="p-2 rounded-xl bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 transition-all relative"
-            >
-              <MdNotifications size={18} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full" />
-            </button>
-            {notifOpen && (
-              <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-xl z-50 shadow-lg max-h-96 overflow-y-auto">
-                <div className="px-4 py-3 border-b border-slate-200 bg-white sticky top-0">
-                  <p className="text-sm font-semibold text-[#1e3a8a]">
-                    Notifications
-                  </p>
-                </div>
-                <div className="py-2">
-                  {NOTIFICATIONS.map(({ id, title, message, time, type, icon: Icon }) => (
-                    <div
-                      key={id}
-                      className={`px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-all cursor-pointer ${
-                        type === "success"
-                          ? "border-l-4 border-l-emerald-500"
-                          : type === "warning"
-                          ? "border-l-4 border-l-orange-500"
-                          : "border-l-4 border-l-blue-500"
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div
-                          className={`mt-1 ${
-                            type === "success"
-                              ? "text-emerald-600"
-                              : type === "warning"
-                              ? "text-orange-600"
-                              : "text-blue-600"
-                          }`}
-                        >
-                          <Icon size={18} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-slate-900">{title}</p>
-                          <p className="text-xs text-slate-600 mt-1">{message}</p>
-                          <p className="text-xs text-slate-400 mt-2">{time}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+
 
           {/* Profile */}
           <div className="relative">
@@ -294,7 +211,9 @@ export default function TeacherDashboard() {
                   <p className="text-sm font-semibold text-[#1e3a8a]">
                     {user?.full_name || "Teacher"}
                   </p>
-                  <p className="text-xs text-slate-500">teacher@edumetric.com</p>
+                  <p className="text-xs text-slate-500">
+                    teacher@edumetric.com
+                  </p>
                 </div>
                 <div className="py-2">
                   {MENU_ITEMS.map(({ label, icon: Icon }) => (
@@ -371,7 +290,9 @@ export default function TeacherDashboard() {
 
           {/* Quick actions */}
           <div className="bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6">
-            <h2 className="text-lg font-bold text-[#1e3a8a] mb-4">Quick Actions</h2>
+            <h2 className="text-lg font-bold text-[#1e3a8a] mb-4">
+              Quick Actions
+            </h2>
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => navigate("/createexam")}
@@ -387,10 +308,7 @@ export default function TeacherDashboard() {
                 <MdLibraryBooks size={16} />
                 Question Bank
               </button>
-              <button className="flex items-center gap-2 px-5 py-3 rounded-xl bg-[#1e3a8a]/10 border border-slate-300 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 transition-all">
-                <MdGroup size={16} />
-                View Students
-              </button>
+             
             </div>
           </div>
 
@@ -400,14 +318,23 @@ export default function TeacherDashboard() {
               <h2 className="text-lg font-bold text-[#1e3a8a] mb-1">
                 Class Performance Over Time
               </h2>
-              <p className="text-sm text-slate-500 mb-6">Average class score by month</p>
+              <p className="text-sm text-slate-500 mb-6">
+                Average class score by month
+              </p>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(30,58,138,0.1)" />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="rgba(30,58,138,0.1)"
+                  />
                   <XAxis dataKey="month" stroke="rgba(30,58,138,0.5)" />
                   <YAxis stroke="rgba(30,58,138,0.5)" domain={[0, 100]} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="avgScore" fill="#1e3a8a" radius={[8, 8, 0, 0]} />
+                  <Bar
+                    dataKey="avgScore"
+                    fill="#1e3a8a"
+                    radius={[8, 8, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -434,7 +361,9 @@ export default function TeacherDashboard() {
                     ))}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />
-                  <Legend wrapperStyle={{ color: "#1e3a8a", paddingTop: "16px" }} />
+                  <Legend
+                    wrapperStyle={{ color: "#1e3a8a", paddingTop: "16px" }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -444,24 +373,30 @@ export default function TeacherDashboard() {
           <div className="bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-lg font-bold text-[#1e3a8a] mb-1">Recent Exams</h2>
-                <p className="text-sm text-slate-500">Your latest 6 created exams</p>
+                <h2 className="text-lg font-bold text-[#1e3a8a] mb-1">
+                  Recent Exams
+                </h2>
+                <p className="text-sm text-slate-500">
+                  Your latest 6 created exams
+                </p>
               </div>
               <button className="text-xs px-4 py-2 rounded-lg bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 transition-all">
                 View all exams
               </button>
             </div>
             <div className="grid grid-cols-[2fr_1fr_70px_90px_60px] gap-3 px-4 py-3 mb-2 border-b border-slate-200">
-              {["Exam Name", "Date", "Students", "Avg Score", "Action"].map((h, i) => (
-                <span
-                  key={h}
-                  className={`text-xs font-semibold uppercase text-slate-500 ${
-                    i === 1 ? "hidden sm:block" : ""
-                  }`}
-                >
-                  {h}
-                </span>
-              ))}
+              {["Exam Name", "Date", "Students", "Avg Score", "Action"].map(
+                (h, i) => (
+                  <span
+                    key={h}
+                    className={`text-xs font-semibold uppercase text-slate-500 ${
+                      i === 1 ? "hidden sm:block" : ""
+                    }`}
+                  >
+                    {h}
+                  </span>
+                ),
+              )}
             </div>
             {exams.map((exam, i) => (
               <ExamRow key={i} exam={exam} i={i} />

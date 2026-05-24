@@ -18,8 +18,15 @@ from functools import wraps
 from django.http import JsonResponse
 from accounts.models import InstitutionMember
 from .models import Exam, Submission, Answer, Certificate, ExamPurchase
+from questions.models import Question, Choice, Chapter
 from accounts.models import InstitutionMember, Institution
 from django.contrib.auth.models import User
+
+import random
+from functools import wraps
+from .services.difficulty_calibration import calibrate_question_difficulty
+
+
 
 def api_login_required(view_func):
     @wraps(view_func)
@@ -98,8 +105,7 @@ def create_exam(request):
 
                 picked.extend(selected)
                 picked_ids.update(q.id for q in selected)
-
-        exam.questions.set(picked)
+                exam.questions.set(picked)
 
         return JsonResponse({
             "success": True,
@@ -114,7 +120,6 @@ def create_exam(request):
             "success": False,
             "error": str(e)
         }, status=500)
-# @login_required
 
 @csrf_exempt  # 🔥 REQUIRED for React frontend
 @api_login_required
@@ -281,7 +286,13 @@ def submit_exam(request, exam_id):
         score = (correct / total) * 100 if total > 0 else 0
         submission.score = score
         submission.save()
-        
+        score = (correct / total) * 100 if total > 0 else 0
+        submission.score = score
+        submission.save()
+
+        for question in exam.questions.all():
+            calibrate_question_difficulty(question)
+
         is_free_user = not hasattr(request.user, "institution_membership") or request.user.institution_membership is None
 
         should_issue_cert = score >= 60 and exam.is_paid and is_free_user
@@ -402,3 +413,237 @@ def available_exams(request):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+# Add at top with other imports (if not already there)
+from .models import Exam, Submission, Answer
+from questions.models import Question, Choice
+
+
+@csrf_exempt
+@api_login_required
+def student_results(request):
+    """List all exam submissions for the logged-in student."""
+    if request.method != "GET":
+        return JsonResponse({"error": "Only GET allowed"}, status=405)
+
+    try:
+        submissions = (
+            Submission.objects
+            .filter(student=request.user)
+            .select_related("exam")
+            .order_by("-submitted_at")
+        )
+
+        data = []
+        for sub in submissions:
+            score = sub.score or 0
+            data.append({
+                "id": sub.id,
+                "exam_id": sub.exam.id,
+                "exam_title": sub.exam.title,
+                "subject": sub.exam.subject or "—",
+                "score": round(score, 2),
+                "passed": score >= 60,
+                "submitted_at": sub.submitted_at.strftime("%b %d, %Y"),
+                "submitted_at_iso": sub.submitted_at.isoformat(),
+                "question_count": sub.exam.questions.count(),
+            })
+
+        # Aggregate stats for the page header
+        total = len(data)
+        passed = sum(1 for d in data if d["passed"])
+        avg = round(sum(d["score"] for d in data) / total, 2) if total else 0
+
+        return JsonResponse({
+            "results": data,
+            "stats": {
+                "total": total,
+                "passed": passed,
+                "failed": total - passed,
+                "average": avg,
+            },
+        })
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+@api_login_required
+def student_result_detail(request, submission_id):
+    """Detailed view of a single submission - shows each question, the student's answer, and the correct answer."""
+    if request.method != "GET":
+        return JsonResponse({"error": "Only GET allowed"}, status=405)
+
+    try:
+        submission = Submission.objects.select_related("exam").get(
+            id=submission_id,
+            student=request.user,  # 🔒 ensures students can only see their own submissions
+        )
+    except Submission.DoesNotExist:
+        return JsonResponse({"error": "Submission not found"}, status=404)
+
+    try:
+        # Get all answers in this submission, keyed by question_id
+        answers_qs = Answer.objects.filter(submission=submission).select_related(
+            "question", "selected_choice"
+        )
+        answers_map = {a.question_id: a for a in answers_qs}
+
+        questions_data = []
+        for question in submission.exam.questions.all():
+            ans = answers_map.get(question.id)
+
+            if question.question_type == "mcq":
+                correct_choice = question.choices.filter(is_correct=True).first()
+                student_choice = ans.selected_choice if ans else None
+                is_correct = bool(student_choice and student_choice.is_correct)
+
+                questions_data.append({
+                    "id": question.id,
+                    "text": question.text,
+                    "type": "mcq",
+                    "difficulty": question.difficulty,
+                    "options": [
+                        {
+                            "id": c.id,
+                            "text": c.text,
+                            "is_correct": c.is_correct,
+                            "selected": student_choice and c.id == student_choice.id,
+                        }
+                        for c in question.choices.all()
+                    ],
+                    "correct_text": correct_choice.text if correct_choice else None,
+                    "student_text": student_choice.text if student_choice else "Not answered",
+                    "is_correct": is_correct,
+                    "answered": ans is not None,
+                })
+
+            elif question.question_type == "tf":
+                student_tf = ans.tf_answer if ans else None
+                correct_tf = question.correct_tf_answer
+                is_correct = (student_tf is not None) and (student_tf == correct_tf)
+
+                questions_data.append({
+                    "id": question.id,
+                    "text": question.text,
+                    "type": "tf",
+                    "difficulty": question.difficulty,
+                    "correct_answer": "True" if correct_tf else "False",
+                    "student_answer": (
+                        "Not answered" if student_tf is None
+                        else ("True" if student_tf else "False")
+                    ),
+                    "is_correct": is_correct,
+                    "answered": ans is not None,
+                })
+
+        score = submission.score or 0
+        return JsonResponse({
+            "submission_id": submission.id,
+            "exam_title": submission.exam.title,
+            "subject": submission.exam.subject or "—",
+            "score": round(score, 2),
+            "passed": score >= 60,
+            "submitted_at": submission.submitted_at.strftime("%b %d, %Y at %I:%M %p"),
+            "total_questions": len(questions_data),
+            "correct_count": sum(1 for q in questions_data if q["is_correct"]),
+            "questions": questions_data,
+        })
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+@csrf_exempt
+@api_login_required
+def teacher_student_results(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "Only GET allowed"}, status=405)
+    
+    try:
+        # get all exams where instructor is the logged in teacher
+        # instructor is a ForeignKey field on the Exam model
+        exams = Exam.objects.filter(instructor=request.user)
+        
+        results = []
+        
+        for exam in exams:
+            # get all submissions for this exam
+            # Submission has a ForeignKey to Exam
+            submissions = Submission.objects.filter(exam=exam)
+            
+            for submission in submissions:
+                # count correct answers
+                correct_answers = Answer.objects.filter(
+                    submission=submission,
+                    selected_choice__is_correct=True
+                ).count()
+                
+                # total questions in this exam
+                total_questions = exam.questions.count()
+                
+                results.append({
+                    # ✅ Get name from profile which stores full_name correctly
+                    "student": submission.student.first_name or submission.student.profile.user.username,
+                    "exam": exam.title,
+                    "subject": exam.subject or "N/A",
+                    "score": round(submission.score, 1) if submission.score is not None else 0,
+                    "correct": correct_answers,
+                    "total": total_questions,
+                    "date": submission.submitted_at.strftime("%Y-%m-%d"),# hy7otely el date bta3 el you el a5d feh el exam
+                })
+
+                for submission in submissions:
+                    print(f"Student: {submission.student.email}, Name: {submission.student.first_name}")
+        
+        return JsonResponse({"results": results})
+    
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
+
+@csrf_exempt
+@api_login_required
+def teacher_exams_list(request):
+    """List all exams created by the logged-in teacher."""
+    if request.method != "GET":
+        return JsonResponse({"error": "Only GET allowed"}, status=405)
+
+    if request.user.profile.user_type != "teacher":
+        return JsonResponse({"error": "Only teachers can access this"}, status=403)
+
+    exams = Exam.objects.filter(instructor=request.user).order_by("-id")
+
+    data = []
+    for exam in exams:
+        questions = exam.questions.all()
+        data.append({
+            "id": exam.id,
+            "title": exam.title,
+            "subject": exam.subject or "—",
+            "duration": exam.duration,
+            "max_attempts": exam.max_attempts,
+            "shuffle_questions": exam.shuffle_questions,
+            "shuffle_choices": exam.shuffle_choices,
+            "published": exam.is_published,
+            "easy_count":   questions.filter(difficulty="easy").count(),
+            "medium_count": questions.filter(difficulty="medium").count(),
+            "hard_count":   questions.filter(difficulty="hard").count(),
+        })
+
+    return JsonResponse({"exams": data})
+
+
+@csrf_exempt
+@api_login_required
+def teacher_delete_exam(request, exam_id):
+    """Delete an exam (only the teacher who owns it can delete)."""
+    if request.method != "DELETE":
+        return JsonResponse({"error": "Only DELETE allowed"}, status=405)
+
+    try:
+        exam = Exam.objects.get(id=exam_id, instructor=request.user)
+        exam.delete()
+        return JsonResponse({"success": True})
+    except Exam.DoesNotExist:
+        return JsonResponse({"error": "Exam not found"}, status=404)

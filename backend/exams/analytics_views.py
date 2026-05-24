@@ -142,14 +142,22 @@ def teacher_performance_over_time(request):
 
 @login_required
 def teacher_difficulty(request):
+    DIFFICULTY_COLORS = {
+        "easy":   "#10b981",  # emerald — easy/passable
+        "medium": "#f59e0b",  # amber — moderate caution
+        "hard":   "#dc2626",  # red — challenging
+    }
+
     exams = Exam.objects.filter(instructor=request.user)
     questions = Question.objects.filter(exam__in=exams)
-
-    data = questions.values('difficulty').annotate(value=Count('id'))
+    data = questions.values("difficulty").annotate(value=Count("id"))
 
     result = [
-        {"name": d['difficulty'].capitalize(), "value": d['value']}
+        {
+            "name": d["difficulty"].capitalize(),
+            "value": d["value"],
+            "color": DIFFICULTY_COLORS.get(d["difficulty"], "#1e3a8a"),  # fallback navy
+        }
         for d in data
     ]
-
     return JsonResponse(result, safe=False)

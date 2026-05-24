@@ -20,5 +20,10 @@ urlpatterns = [
     path("teacher/analytics/performance-over-time/", teacher_performance_over_time),
     path("teacher/analytics/difficulty/",            teacher_difficulty),
     path("available/", views.available_exams, name="available_exams"),
+    path("my-results/", views.student_results, name="student_results"),
+    path("my-results/<int:submission_id>/", views.student_result_detail, name="student_result_detail"),
+    path("teacher/results/", views.teacher_student_results), 
+    path("teacher/exams/", views.teacher_exams_list, name="teacher_exams_list"),
+    path("teacher/exams/<int:exam_id>/delete/", views.teacher_delete_exam, name="teacher_delete_exam"),
 
 ]

@@ -51,9 +51,6 @@ const NAV = [
   { label: "Dashboard", icon: MdDashboard, path: "/dashboard", active: true },
   { label: "Available Exams", icon: MdPlayArrow, path: "/testexam" },
   { label: "My Results", icon: MdHistory, path: "/my-results" },
-  { label: "Analytics", icon: MdBarChart, path: "/analytics" },
-  { label: "Resources", icon: MdLibraryBooks, path: "/resources" },
-  { label: "Settings", icon: MdSettings, path: "/settings" },
 ];
 const MENU_ITEMS = [
   { label: "My Profile", icon: MdPerson },
@@ -233,14 +230,17 @@ export default function Dashboard() {
         <div className="text-xs text-slate-500 hidden sm:block">
           {exam.date}
         </div>
-        <div className={`font-bold text-base ${scoreColor}`}>{exam.score}%</div>
+        <div className={`font-bold text-base ${scoreColor}`}>{Number(exam.score).toFixed(1)}%</div>
         <span
           className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${passed ? "text-emerald-700 bg-emerald-100 border-emerald-300" : "text-red-700 bg-red-100 border-red-300"}`}
         >
           {passed ? <MdCheckCircle size={11} /> : <MdCancel size={11} />}
           {passed ? "Passed" : "Failed"}
         </span>
-        <button className="flex items-center gap-1 text-xs px-3 py-2 rounded-lg bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 transition-all">
+        <button
+          onClick={() => navigate("/my-results")}
+          className="flex items-center gap-1 text-xs px-3 py-2 rounded-lg bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 transition-all"
+        >
           <MdVisibility size={12} />
           View
         </button>
@@ -248,60 +248,6 @@ export default function Dashboard() {
     );
   };
 
-  // const UpcomingExamCard = ({ exam }) => {
-  //   const isActive = exam.status === "active";
-  //   return (
-  //     <div
-  //       className={`bg-gradient-to-br ${isActive ? "from-emerald-50 to-emerald-100/50 border-emerald-300" : "from-[#1e3a8a]/5 to-[#1e3a8a]/2 border-slate-200"} border rounded-xl p-4 hover:shadow-md transition-all`}
-  //     >
-  //       <div className="flex items-start justify-between mb-3">
-  //         <h3
-  //           className={`font-semibold text-sm ${isActive ? "text-emerald-900" : "text-[#1e3a8a]"}`}
-  //         >
-  //           {exam.name}
-  //         </h3>
-  //         <span
-  //           className={`text-xs px-2 py-1 rounded-full ${isActive ? "bg-emerald-500 text-white animate-pulse" : "bg-slate-300 text-slate-600"}`}
-  //         >
-  //           {isActive ? "Active Now" : "Soon"}
-  //         </span>
-  //       </div>
-  //       <div
-  //         className={`space-y-2 text-xs ${isActive ? "text-emerald-800" : "text-slate-500"}`}
-  //       >
-  //         <div className="flex items-center gap-2">
-  //           <MdCalendarToday
-  //             size={14}
-  //             className={isActive ? "text-emerald-600" : "text-slate-400"}
-  //           />
-  //           <span>{exam.date}</span>
-  //         </div>
-  //         <div className="flex items-center gap-2">
-  //           <MdTimer
-  //             size={14}
-  //             className={isActive ? "text-emerald-600" : "text-slate-400"}
-  //           />
-  //           <span>
-  //             {exam.time} • {exam.duration}
-  //           </span>
-  //         </div>
-  //         <div className="flex items-center gap-2">
-  //           <MdAssignment
-  //             size={14}
-  //             className={isActive ? "text-emerald-600" : "text-slate-400"}
-  //           />
-  //           <span>{exam.questions} Questions</span>
-  //         </div>
-  //       </div>
-  //       <button
-  //         disabled={!isActive}
-  //         className={`w-full mt-3 py-2 text-xs font-semibold rounded-lg transition-all ${isActive ? "bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer" : "bg-slate-200 text-slate-400 cursor-not-allowed opacity-50"}`}
-  //       >
-  //         {isActive ? "Start Exam" : "Coming Soon"}
-  //       </button>
-  //     </div>
-  //   );
-  // };
 
   return (
     <div className="min-h-screen bg-white flex">
@@ -609,7 +555,10 @@ export default function Dashboard() {
                   Your latest 6 exam attempts
                 </p>
               </div>
-              <button className="text-xs px-4 py-2 rounded-lg bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 transition-all">
+              <button
+                onClick={() => navigate("/my-results")}
+                className="text-xs px-4 py-2 rounded-lg bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 transition-all"
+              >
                 View all
               </button>
             </div>

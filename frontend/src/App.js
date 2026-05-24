@@ -26,10 +26,11 @@ import TakeExam from "./pages/student/Takeexam";
 
 import AvailableExams from "./pages/student/Availableexams";
 import Certificate from "./pages/student/Certificate";
+import MyResults from "./pages/student/StudentResult";
+import ResultDetail from "./pages/student/ResultDetail";
+
 // admin
 import AdminDashboard from "./pages/admin/AdminDashboard";
-
-
 
 function App() {
   return (
@@ -58,13 +59,13 @@ function App() {
         <Route path="/results" element={<Results />} />
         <Route path="/examsmanagement" element={<ExamsManagement />} />
 
-
-
         {/* Student */}
         <Route path="/student" element={<Dashboard />} />
         <Route path="/takeexam/:id" element={<TakeExam />} />
         <Route path="/testexam" element={<AvailableExams />} />
         <Route path="/certificate" element={<Certificate />} />
+        <Route path="/my-results" element={<MyResults />} />
+        <Route path="/my-results/:id" element={<ResultDetail />} />
 
         {/* Admin */}
         <Route path="/admindashboard" element={<AdminDashboard />} />

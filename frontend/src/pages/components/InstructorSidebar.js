@@ -19,7 +19,6 @@ const NAV = [
   { label: "Question Bank", icon: MdLibraryBooks },
   { label: "Exams", icon: MdAssignment },
   { label: "Results", icon: MdBarChart },
-  { label: "Settings", icon: MdSettings },
 ];
 
 /**
@@ -72,10 +71,7 @@ export default function InstructorSidebar({ isOpen, onClose, user, onLogout }) {
             />
           </button>
 
-          <button
-            onClick={onClose}
-            className="lg:hidden text-slate-600"
-          >
+          <button onClick={onClose} className="lg:hidden text-slate-600">
             <MdClose size={20} />
           </button>
         </div>
