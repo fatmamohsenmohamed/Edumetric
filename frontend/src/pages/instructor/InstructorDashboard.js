@@ -21,6 +21,7 @@ import {
   MdWarning,
   MdGroup,
   MdSettings,
+  MdDeleteForever,
 } from "react-icons/md";
 import {
   BarChart,
@@ -64,6 +65,7 @@ export default function TeacherDashboard() {
   const [chartData, setChartData] = useState([]);
   const [difficulty, setDifficulty] = useState([]);
   const navigate = useNavigate();
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -74,7 +76,7 @@ export default function TeacherDashboard() {
     } catch (err) {
       console.error("Logout error:", err);
     }
-    navigate("/login");
+    navigate("/");
   };
 
   useEffect(() => {
@@ -114,7 +116,20 @@ export default function TeacherDashboard() {
       .then((data) => setDifficulty(data))
       .catch((err) => console.error("Difficulty error:", err));
   }, []);
-
+// Add this function — but we'll update it to call the backend
+const handleDeleteAccount = async () => {
+    try {
+        await fetch("http://localhost:8000/api/delete-account/", {
+            method: "DELETE",
+            credentials: "include",
+        });
+    } catch (err) {
+        console.error("Delete error:", err);
+    }
+    setDeleteConfirmOpen(false);
+    setProfileOpen(false);
+    navigate("/");
+};
   const StatCard = ({ label, value, icon: Icon, up, color }) => (
     <div className="bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6 hover:shadow-md transition-all">
       <div className="flex items-start justify-between mb-4">
@@ -229,7 +244,14 @@ export default function TeacherDashboard() {
                 </div>
                 <div className="border-t border-slate-200 py-2">
                   <button
-                    onClick={() => navigate("/login")}
+                onClick={() => { setProfileOpen(false); setDeleteConfirmOpen(true); }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-700 hover:bg-red-100 transition-all font-semibold"
+            >
+                <MdDeleteForever size={16} />
+                Delete Account
+            </button>
+                  <button
+                    onClick={handleLogout}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-all"
                   >
                     <MdLogout size={16} />
@@ -404,6 +426,43 @@ export default function TeacherDashboard() {
           </div>
         </main>
       </div>
-    </div>
+
+      {/* ✅ Add modal here */}
+      {deleteConfirmOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden">
+            <div className="bg-gradient-to-br from-red-600 to-red-800 px-6 pt-8 pb-6 text-center">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MdDeleteForever size={36} className="text-white" />
+              </div>
+              <h2 className="text-xl font-bold text-white">Delete Account</h2>
+              <p className="text-red-100 text-sm mt-1">This action cannot be undone</p>
+            </div>
+            <div className="px-6 py-6">
+              <p className="text-slate-700 text-sm text-center leading-relaxed">
+                Are you sure you want to permanently delete your account? All your exams and data will be{" "}
+                <span className="font-semibold text-red-600">erased forever</span>.
+              </p>
+              <div className="mt-6 flex flex-col gap-3">
+                <button
+                  onClick={handleDeleteAccount}
+                  className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-all flex items-center justify-center gap-2"
+                >
+                  <MdDeleteForever size={18} />
+                  Yes, Delete My Account
+                </button>
+                <button
+                  onClick={() => setDeleteConfirmOpen(false)}
+                  className="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div> 
   );
 }

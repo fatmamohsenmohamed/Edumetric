@@ -413,7 +413,7 @@ def available_exams(request):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-    
+
 # Add at top with other imports (if not already there)
 from .models import Exam, Submission, Answer
 from questions.models import Question, Choice
@@ -647,3 +647,4 @@ def teacher_delete_exam(request, exam_id):
         return JsonResponse({"success": True})
     except Exam.DoesNotExist:
         return JsonResponse({"error": "Exam not found"}, status=404)
+

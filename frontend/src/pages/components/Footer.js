@@ -15,7 +15,7 @@ export default function Footer({ activePage }) {
       document.getElementById(href)?.scrollIntoView({ behavior: "smooth" });
     } else {
       sessionStorage.setItem("scrollTo", href);
-      navigate("/home");
+      navigate("/");
     }
   }
 
@@ -109,14 +109,55 @@ function FooterBrand({ navigate }) {
       {/* LOGO */}
       <div className="flex items-center gap-3 mb-5">
         <button
-            onClick={() => navigate("/home")}
-            className="focus:outline-none"
+            onClick={() => navigate("/")}
+            className="relative z-20 focus:outline-none"
           >
-          <img
-            src={logoImg}
-            alt="EduMetric Logo"
-            className="w-auto h-20 object-contain p-1 rounded-lg"
-          />
+          <div className="relative flex items-center mb-10">
+          
+                  {/* Main glow */}
+                  <div
+                    className="
+                      absolute
+                      w-40 h-40
+                      bg-cyan-300/30
+                      blur-3xl
+                      rounded-full
+                      -left-10
+                      animate-pulse
+                      pointer-events-none
+                    "
+                  />
+          
+                  {/* Secondary glow */}
+                  <div
+                    className="
+                      absolute
+                      w-32 h-32
+                      bg-white/20
+                      blur-2xl
+                      rounded-full
+                      left-10
+                      pointer-events-none
+                    "
+                  />
+          
+                  {/* Logo */}
+                  <div className="relative w-34 h-16 flex items-center">
+                    <img
+                      src={logoImg}
+                      alt="EduMetric Logo"
+                      className="
+                        w-full h-full object-contain
+                        brightness-110
+                        contrast-110
+                        drop-shadow-[0_0_35px_rgba(255,255,255,0.55)]
+                        hover:scale-105
+                        transition-all duration-500
+                      "
+                    />
+                  </div>
+          
+                </div>
         </button>
       </div>
 

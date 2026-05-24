@@ -3,7 +3,8 @@ from . import views
 from django.urls import path
 from . import views
 from .analytics_views import (dashboard_stats, recent_exams, performance_over_time, difficulty_distribution 
-,teacher_difficulty,teacher_stats, teacher_recent_exams, teacher_performance_over_time  )
+,teacher_difficulty,teacher_stats, teacher_recent_exams, teacher_performance_over_time   )
+from .views import teacher_student_results
 
 urlpatterns = [
     path("create/", views.create_exam, name="create_exam"),
@@ -26,4 +27,5 @@ urlpatterns = [
     path("teacher/exams/", views.teacher_exams_list, name="teacher_exams_list"),
     path("teacher/exams/<int:exam_id>/delete/", views.teacher_delete_exam, name="teacher_delete_exam"),
 
+    path("teacher/results/", teacher_student_results), 
 ]
