@@ -153,7 +153,7 @@ export default function Dashboard() {
     } catch (err) {
       console.error("Logout error:", err);
     }
-    navigate("/login"); // han3del dy bardo lma y3mlo el home page MOHEMMM
+    navigate("/"); // han3del dy bardo lma y3mlo el home page MOHEMMM
   };
   useEffect(() => {
     fetch("http://localhost:8000/api/me/", {
@@ -230,7 +230,7 @@ const handleDeleteAccount = async () => {
     }
     setDeleteConfirmOpen(false);
     setProfileOpen(false);
-    navigate("/login");
+    navigate("/");
 };
   const ExamRow = ({ exam, i, total }) => {
     const passed = exam.status === "passed";

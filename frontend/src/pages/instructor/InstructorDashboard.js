@@ -111,7 +111,7 @@ export default function TeacherDashboard() {
     } catch (err) {
       console.error("Logout error:", err);
     }
-    navigate("/login");
+    navigate("/");
   };
 
   useEffect(() => {
@@ -160,7 +160,7 @@ const handleDeleteAccount = async () => {
     }
     setDeleteConfirmOpen(false);
     setProfileOpen(false);
-    navigate("/login");
+    navigate("/");
 };
   const StatCard = ({ label, value, icon: Icon, up, color }) => (
     <div className="bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6 hover:shadow-md transition-all">

@@ -369,3 +369,26 @@ def logout(request):
     auth_logout(request) #built in fun bt delete el session mn el database w btms7 el session cookie mn el brawser w el token n el database
     return JsonResponse({"message": "Logged out successfully"})
 
+#delete account view
+@csrf_exempt
+@api_login_required
+def delete_account(request):
+    if request.method != "DELETE":
+        return JsonResponse({"error": "Only DELETE allowed"}, status=405)
+    
+    try:
+        user = request.user
+        
+        # logout first to clear the session
+        auth_logout(request)
+        # auth_logout is a built-in Django function that clears the session
+        
+        # delete the user from the database
+        # this also deletes all related data automatically
+        # because of CASCADE on ForeignKey fields in your models
+        user.delete()
+        
+        return JsonResponse({"message": "Account deleted successfully"})
+    
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
