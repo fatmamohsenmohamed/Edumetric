@@ -100,10 +100,11 @@ export default function TakeExam() {
     setFlagged(newFlagged);
   };
   const handleDownloadPDF = () => {
-    const { score, total, percentage } = results;
+    const { score, correct, total, percentage } = results;
     const passed = percentage >= 50;
-    const skipped = total - Object.keys(answers).length;
-    const wrong = Object.keys(answers).length - score;
+    const answered = Object.keys(answers).length;
+    const skipped = total - answered;
+    const wrong = answered - correct;
 
     const pdf = new jsPDF("p", "mm", "a4");
     const W = pdf.internal.pageSize.getWidth();
@@ -136,7 +137,7 @@ export default function TakeExam() {
     );
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(8.5);
-    pdf.text(`${score} correct out of ${total} total questions`, W / 2, 39, {
+    pdf.text(`${correct} correct out of ${total} total questions`, W / 2, 39, {
       align: "center",
     });
     y = 54;
@@ -146,7 +147,7 @@ export default function TakeExam() {
     const statData = [
       {
         label: "Correct",
-        value: score,
+        value: correct,
         bgR: 240,
         bgG: 253,
         bgB: 244,
@@ -208,18 +209,33 @@ export default function TakeExam() {
     y += 8;
 
     // Questions — works with your backend structure (question.options is array of {id, text})
-    exam.questions.forEach((q, idx) => {
-      const studentAnswerId = answers[String(q.id)];
-      const correctOption = q.options.find((o) => o.is_correct);
-      const studentOption = q.options.find((o) => o.id === studentAnswerId);
-      const isCorrect =
-        studentOption && correctOption && studentOption.id === correctOption.id;
-      const wasSkipped = studentAnswerId === undefined;
+    (results.detailedQuestions || []).forEach((q, idx) => {
+      const isCorrect = q.is_correct;
+      const wasSkipped = !q.answered;
+
+      // Build a uniform "options" list for both MCQ and TF
+      const optionsList =
+        q.type === "mcq"
+          ? q.options
+          : [
+              {
+                id: "true",
+                text: "True",
+                is_correct: q.correct_answer === "True",
+                selected: q.student_answer === "True",
+              },
+              {
+                id: "false",
+                text: "False",
+                is_correct: q.correct_answer === "False",
+                selected: q.student_answer === "False",
+              },
+            ];
 
       const optH = 8;
       const qHeaderH = 14;
       const skippedNoteH = wasSkipped ? 7 : 0;
-      const cardH = qHeaderH + q.options.length * optH + skippedNoteH + 4;
+      const cardH = qHeaderH + optionsList.length * optH + skippedNoteH + 4;
 
       checkY(cardH);
 
@@ -292,9 +308,9 @@ export default function TakeExam() {
       let oy = y + qHeaderH;
 
       // Options
-      q.options.forEach((opt) => {
-        const isRight = correctOption && opt.id === correctOption.id;
-        const isPicked = opt.id === studentAnswerId;
+      optionsList.forEach((opt) => {
+        const isRight = opt.is_correct;
+        const isPicked = opt.selected;
 
         let obR = 248,
           obG = 250,
@@ -357,15 +373,16 @@ export default function TakeExam() {
         oy += optH;
       });
 
-      if (wasSkipped && correctOption) {
+      // Skipped note showing the correct answer
+      if (wasSkipped) {
+        const correctText =
+          q.type === "mcq"
+            ? q.options.find((o) => o.is_correct)?.text || "—"
+            : q.correct_answer;
         pdf.setTextColor(100, 116, 139);
         pdf.setFont("helvetica", "italic");
         pdf.setFontSize(7);
-        pdf.text(
-          `Skipped — correct answer: ${correctOption.text}`,
-          M + 10,
-          oy + 3,
-        );
+        pdf.text(`Skipped — correct answer: ${correctText}`, M + 10, oy + 3);
       }
 
       y += cardH + 4;
@@ -389,23 +406,34 @@ export default function TakeExam() {
 
     pdf.save(`${exam.title}_Results.pdf`);
   };
-
   const handleSubmitExam = () => {
-    if (submittedRef.current && examSubmitted) return; // 🔥 Prevent double submit
+    if (submittedRef.current && examSubmitted) return;
     submittedRef.current = true;
     setExamSubmitted(true);
+
     fetch(`http://localhost:8000/api/submit/${id}/`, {
       method: "POST",
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        answers: answers,
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answers: answers }),
     })
       .then((res) => res.json())
-      .then((data) => {
+      .then(async (data) => {
+        // After submission, fetch the detailed review
+        let detailedQuestions = [];
+        try {
+          const detailRes = await fetch(
+            `http://localhost:8000/api/my-results/${data.submission_id}/`,
+            { credentials: "include" },
+          );
+          if (detailRes.ok) {
+            const detail = await detailRes.json();
+            detailedQuestions = detail.questions || [];
+          }
+        } catch (e) {
+          console.error("Detail fetch failed:", e);
+        }
+
         setResults({
           score: data.score,
           total: data.total,
@@ -413,15 +441,16 @@ export default function TakeExam() {
           percentage: Math.round(data.score),
           examTitle: exam.title,
           certificate_issued: data.certificate_issued,
+          detailedQuestions, // 👈 NEW
         });
       })
-
       .catch((err) => {
         console.error(err);
         submittedRef.current = false;
         setExamSubmitted(false);
       });
   };
+
   if (examSubmitted && !results) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1e3a8a] to-[#1e40af] text-white text-xl">
@@ -429,12 +458,12 @@ export default function TakeExam() {
       </div>
     );
   }
-
   if (examSubmitted && results) {
-    const { score, total, percentage } = results;
+    const { score, correct, total, percentage } = results; // 👈 add `correct`
     const passed = percentage >= 50;
-    const skipped = total - Object.keys(answers).length;
-    const wrong = Object.keys(answers).length - score;
+    const answered = Object.keys(answers).length;
+    const skipped = total - answered;
+    const wrong = answered - correct;
 
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -472,7 +501,7 @@ export default function TakeExam() {
                   : "Don't give up, try again! 😤"}
               </p>
               <p className="text-sm mt-1 opacity-80">
-                {score} correct out of {total} total questions
+                {correct} correct out of {total} total questions
               </p>
             </div>
 
@@ -480,7 +509,7 @@ export default function TakeExam() {
               {[
                 {
                   emoji: "✅",
-                  value: score,
+                  value: correct,
                   label: "Correct",
                   color: "text-emerald-600",
                 },
