@@ -44,6 +44,8 @@ export default function AdminDashboard() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const navigate = useNavigate();
+  const [students, setStudents] = useState([]);
+  const [teachers, setTeachers] = useState([]);
 
   //  state variables dol badal el hard coded data 3shan n fetch el data mn el backend w n displayha
  const [stats, setStats] = useState(null);
@@ -94,6 +96,22 @@ export default function AdminDashboard() {
     .then(data => setUserDistribution(data))
     .catch(err => console.error("Distribution error:", err));
 
+    // fetch students
+fetch("http://localhost:8000/api/admins/students/", {
+    credentials: "include"
+})
+.then(res => res.json())
+.then(data => setStudents(data))
+.catch(err => console.error("Students error:", err));
+
+// fetch teachers
+fetch("http://localhost:8000/api/admins/teachers/", {
+    credentials: "include"
+})
+.then(res => res.json())
+.then(data => setTeachers(data))
+.catch(err => console.error("Teachers error:", err));
+
 }, []); // [] means run once when page loads
 
 const handleLogout = async () => {
@@ -107,6 +125,27 @@ const handleLogout = async () => {
     }
     navigate("/");  // redirect to home page after logout which e7na lsa ma3mlanaha444
 
+};
+const handleDeleteUser = async (userId) => {
+    // window.confirm is a built-in browser function that shows a confirmation popup
+    if (!window.confirm("Are you sure you want to delete this account?")) return;
+
+    try {
+        await fetch("http://localhost:8000/api/admins/users/", {
+            method: "DELETE",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_id: userId }),
+        });
+
+        // remove deleted user from state without refetching
+        setStudents(prev => prev.filter(s => s.id !== userId));
+        setTeachers(prev => prev.filter(t => t.id !== userId));
+        setUsers(prev => prev.filter(u => u.id !== userId));
+
+    } catch (err) {
+        console.error("Delete error:", err);
+    }
 };
   const StatCard = ({ label, value, icon: Icon, trend, up, color }) => (
     <div className="bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6 hover:shadow-md hover:border-slate-300 transition-all">
@@ -133,7 +172,7 @@ const handleLogout = async () => {
       <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${user.status === "active" ? "text-emerald-700 bg-emerald-100 border-emerald-300" : "text-red-700 bg-red-100 border-red-300"}`}>
         {user.status === "active" ? <MdCheckCircle size={11} /> : <MdCancel size={11} />}{user.status === "active" ? "Active" : "Inactive"}
       </span>
-      <button className="flex items-center gap-1 text-xs px-3 py-2 rounded-lg bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 transition-all">
+      <button className="flex items-center gap-1 text-xs px-3 py-2 rounded-lg bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 transition-all" onClick={() => handleDeleteUser(user.id)}>
         <MdDeleteOutline size={12} />Delete
       </button>
     </div>
@@ -157,6 +196,58 @@ const handleLogout = async () => {
       </div>
     );
   };
+const StudentRow = ({ student, i }) => (
+    <div className={`grid grid-cols-[2fr_1.5fr_1fr_1fr_80px_80px_60px] gap-3 items-center px-4 py-4 rounded-xl hover:bg-[#1e3a8a]/5 text-sm ${i < students.length - 1 ? "border-b border-slate-200" : ""}`}>
+        <div className="font-medium text-[#1e3a8a]">{student.name}</div>
+        <div className="text-xs text-slate-500">{student.email}</div>
+        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
+            student.type === "Institutional"
+                ? "text-purple-700 bg-purple-100 border-purple-300"
+                : "text-blue-700 bg-blue-100 border-blue-300"
+        }`}>
+            {student.type}
+        </span>
+        <div className="text-xs text-slate-500">{student.institution}</div>
+        <div className="text-sm font-bold text-[#1e3a8a] text-center">{student.exams_taken}</div>
+        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
+            student.status === "active"
+                ? "text-emerald-700 bg-emerald-100 border-emerald-300"
+                : "text-red-700 bg-red-100 border-red-300"
+        }`}>
+            {student.status === "active" ? <MdCheckCircle size={11} /> : <MdCancel size={11} />}
+            {student.status}
+        </span>
+        <button
+            onClick={() => handleDeleteUser(student.id)}
+            className="flex items-center gap-1 text-xs px-3 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-all"
+        >
+            <MdDeleteOutline size={12} />Delete
+        </button>
+    </div>
+);
+
+const TeacherRow = ({ teacher, i }) => (
+    <div className={`grid grid-cols-[2fr_1.5fr_1.5fr_80px_80px_60px] gap-3 items-center px-4 py-4 rounded-xl hover:bg-[#1e3a8a]/5 text-sm ${i < teachers.length - 1 ? "border-b border-slate-200" : ""}`}>
+        <div className="font-medium text-[#1e3a8a]">{teacher.name}</div>
+        <div className="text-xs text-slate-500">{teacher.email}</div>
+        <div className="text-xs text-slate-500">{teacher.institution}</div>
+        <div className="text-sm font-bold text-[#1e3a8a] text-center">{teacher.exams_created}</div>
+        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
+            teacher.status === "active"
+                ? "text-emerald-700 bg-emerald-100 border-emerald-300"
+                : "text-red-700 bg-red-100 border-red-300"
+        }`}>
+            {teacher.status === "active" ? <MdCheckCircle size={11} /> : <MdCancel size={11} />}
+            {teacher.status}
+        </span>
+        <button
+            onClick={() => handleDeleteUser(teacher.id)}
+            className="flex items-center gap-1 text-xs px-3 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-all"
+        >
+            <MdDeleteOutline size={12} />Delete
+        </button>
+    </div>
+);
 
   return (
     <div className="min-h-screen bg-white flex">
@@ -359,6 +450,49 @@ const handleLogout = async () => {
               {["Exam Name", "Teacher", "Students", "Questions", "Date", "Status", "Action"].map((h, i) => <span key={h} className={`text-xs font-semibold uppercase text-slate-500 ${i === 4 ? "hidden sm:block" : ""}`}>{h}</span>)}
             </div>
             {exams.map((exam, i) => <ExamRow key={i} exam={exam} i={i} />)}
+          </div>
+                     {/* Students Table */}
+          <div className="bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-6">
+                  <div>
+                      <h2 className="text-lg font-bold text-[#1e3a8a] mb-1">Students</h2>
+                      <p className="text-sm text-slate-500">
+                          All students — {students.filter(s => s.type === "Free").length} free · {students.filter(s => s.type === "Institutional").length} institutional
+                      </p>
+                  </div>
+              </div>
+              <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_80px_80px_60px] gap-3 px-4 py-3 mb-2 border-b border-slate-200">
+                  {["Name", "Email", "Type", "Institution", "Exams", "Status", "Action"].map(h => (
+                      <span key={h} className="text-xs font-semibold uppercase text-slate-500">{h}</span>
+                  ))}
+              </div>
+              {students.length === 0 ? (
+                  <p className="text-center py-8 text-slate-400 text-sm">No students yet</p>
+              ) : (
+                  students.map((student, i) => <StudentRow key={student.id} student={student} i={i} />)
+              )}
+          </div>
+
+          {/* Teachers Table */}
+          <div className="bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-6">
+                  <div>
+                      <h2 className="text-lg font-bold text-[#1e3a8a] mb-1">Teachers</h2>
+                      <p className="text-sm text-slate-500">
+                          All teachers — {teachers.length} total
+                      </p>
+                  </div>
+              </div>
+              <div className="grid grid-cols-[2fr_1.5fr_1.5fr_80px_80px_60px] gap-3 px-4 py-3 mb-2 border-b border-slate-200">
+                  {["Name", "Email", "Institution", "Exams Made", "Status", "Action"].map(h => (
+                      <span key={h} className="text-xs font-semibold uppercase text-slate-500">{h}</span>
+                  ))}
+              </div>
+              {teachers.length === 0 ? (
+                  <p className="text-center py-8 text-slate-400 text-sm">No teachers yet</p>
+              ) : (
+                  teachers.map((teacher, i) => <TeacherRow key={teacher.id} teacher={teacher} i={i} />)
+              )}
           </div>
         </main>
       </div>
