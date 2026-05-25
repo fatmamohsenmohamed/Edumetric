@@ -97,7 +97,7 @@ export default function AdminDashboard() {
     .catch(err => console.error("Distribution error:", err));
 
     // fetch students
-fetch("http://localhost:8000/api/admins/students/", {
+fetch("http://localhost:8000/api/admin/students/", {
     credentials: "include"
 })
 .then(res => res.json())
@@ -105,7 +105,7 @@ fetch("http://localhost:8000/api/admins/students/", {
 .catch(err => console.error("Students error:", err));
 
 // fetch teachers
-fetch("http://localhost:8000/api/admins/teachers/", {
+fetch("http://localhost:8000/api/admin/teachers/", {
     credentials: "include"
 })
 .then(res => res.json())
@@ -131,7 +131,7 @@ const handleDeleteUser = async (userId) => {
     if (!window.confirm("Are you sure you want to delete this account?")) return;
 
     try {
-        await fetch("http://localhost:8000/api/admins/users/", {
+        await fetch("http://localhost:8000/api/admin/users/", {
             method: "DELETE",
             credentials: "include",
             headers: { "Content-Type": "application/json" },

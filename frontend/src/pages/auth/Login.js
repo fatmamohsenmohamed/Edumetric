@@ -95,13 +95,16 @@ export default function Login() {
       setSuccess("Logged in successfully 🔥");
       setLoading(false);
 
-      if (data.user_type === "teacher") {
-        navigate("/instructordashboard");
-      } else if (data.is_institutional) {
-        navigate("/student");
-      } else {
-        navigate("/");
-      }
+  // ✅ Fixed — admin check is FIRST
+  if (data.user_type === "admin") {
+      navigate("/admindashboard");  // ← check what your admin route is called in App.js
+  } else if (data.user_type === "teacher") {
+      navigate("/instructordashboard");
+  } else if (data.is_institutional) {
+      navigate("/student");
+  } else {
+      navigate("/home");
+  }
     } catch (err) {
       setLoading(false);
       setError(err.message || "Server error. Try again later.");
