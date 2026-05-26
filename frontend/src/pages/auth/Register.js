@@ -154,51 +154,50 @@ export default function Register() {
           {/* TOP CONTENT */}
           <div className="relative z-10">
 
-            {/* LOGO + BRAND */}
+           {/* LOGO + BRAND */}
         <div className="relative flex items-center mb-10">
 
-              {/* Main glow */}
-              <div
-                className="
-                  absolute
-                  w-56 h-56
-                  bg-cyan-300/30
-                  blur-3xl
-                  rounded-full
-                  -left-10
-                  animate-pulse
-                "
-              />
+          {/* Main glow */}
+          <div
+            className="
+              absolute
+              w-44 h-44
+              bg-cyan-300/15
+              blur-2xl
+              rounded-full
+              -left-6
+            "
+          />
 
-              {/* Secondary glow */}
-              <div
-                className="
-                  absolute
-                  w-40 h-40
-                  bg-white/20
-                  blur-2xl
-                  rounded-full
-                  left-10
-                "
-              />
+          {/* Secondary glow */}
+          <div
+            className="
+              absolute
+              w-28 h-28
+              bg-white/10
+              blur-xl
+              rounded-full
+              left-8
+            "
+          />
 
-              {/* Logo */}
-              <div className="relative w-60 h-36 flex items-center">
-                <img
-                  src={logoImg}
-                  alt="EduMetric Logo"
-                  className="
-                    w-full h-full object-contain
-                    brightness-110
-                    contrast-110
-                    drop-shadow-[0_0_35px_rgba(255,255,255,0.55)]
-                    hover:scale-105
-                    transition-all duration-500
-                  "
-                />
-              </div>
+          {/* Logo */}
+          <div className="relative w-60 h-36 flex items-center">
+            <img
+              src={logoImg}
+              alt="EduMetric Logo"
+              className="
+                w-full h-full object-contain
+                brightness-110
+                contrast-105
+                drop-shadow-[0_0_18px_rgba(255,255,255,0.35)]
+                hover:scale-105
+                transition-all duration-500
+              "
+            />
+          </div>
 
-            </div>
+        </div>
             
 
             {/* TITLE */}

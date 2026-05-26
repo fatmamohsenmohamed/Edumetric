@@ -1,30 +1,39 @@
 import React, { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MdDashboard, MdPeople, MdAssignment, MdBarChart, MdSettings, MdNotifications, MdSearch, MdTrendingUp, MdTrendingDown, MdVisibility, MdMenu, MdClose, MdLogout, MdPerson, MdEdit, MdDownload, MdHelp, MdCheckCircle, MdCancel, MdWarning, MdDeleteOutline } from "react-icons/md";
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import {
+   MdDashboard, 
+   MdPeople, 
+   MdAssignment, 
+   MdBarChart, 
+   MdSearch, 
+   MdTrendingUp, 
+   MdTrendingDown, 
+   MdVisibility, 
+   MdMenu, 
+   MdClose, 
+   MdLogout, 
+   MdCheckCircle, 
+   MdCancel,  
+   MdDeleteOutline 
+  } from "react-icons/md";
+import { 
+  BarChart, 
+  Bar, 
+  PieChart, 
+  Pie, 
+  Cell, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer, 
+  Legend 
+} from "recharts";
+import logo from "../../images/home/logo1.png";
 
 // Add these back — these are UI constants not database data
 const NAV = [
   { label: "Dashboard", icon: MdDashboard, active: true },
-  { label: "Users", icon: MdPeople },
-  { label: "Exams", icon: MdAssignment },
-  { label: "Reports", icon: MdBarChart },
-  { label: "Settings", icon: MdSettings }
-];
-
-const MENU_ITEMS = [
-  { label: "My Profile", icon: MdPerson },
-  { label: "Edit Profile", icon: MdEdit },
-  { label: "Settings", icon: MdSettings },
-  { label: "Download Reports", icon: MdDownload },
-  { label: "Help & Support", icon: MdHelp }
-];
-
-const NOTIFICATIONS = [
-  { id: 1, title: "New User Registration", message: "5 new users registered today", time: "2 hours ago", type: "success", icon: MdCheckCircle },
-  { id: 2, title: "Exam Created", message: "New exam created by teacher", time: "5 hours ago", type: "info", icon: MdAssignment },
-  { id: 3, title: "System Alert", message: "Database backup completed", time: "1 day ago", type: "warning", icon: MdWarning },
-  { id: 4, title: "Low Storage", message: "Server storage at 85%", time: "1 day ago", type: "warning", icon: MdWarning }
 ];
 
 const CustomTooltip = ({ active, payload }) => {
@@ -42,7 +51,6 @@ const CustomTooltip = ({ active, payload }) => {
 export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
   const navigate = useNavigate();
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
@@ -230,10 +238,26 @@ const TeacherRow = ({ teacher, i }) => (
       {sidebarOpen && <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
       <aside className={`fixed lg:relative top-0 left-0 h-full w-56 bg-white border-r border-slate-200 flex flex-col z-50 transition-transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#1e3a8a] text-white flex items-center justify-center font-bold">E</div>
-          <span className="font-bold text-lg text-[#1e3a8a]">EduMetric</span>
-          <button onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto text-slate-600"><MdClose size={20} /></button>
+        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+          
+          <button
+            onClick={() => navigate("/")}
+            className="focus:outline-none"
+          >
+            <img
+              src={logo}
+              alt="EduMetric Logo"
+              className="h-20 w-40 object-contain"
+            />
+          </button>
+
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden text-slate-600"
+          >
+            <MdClose size={20} />
+          </button>
+
         </div>
         <nav className="flex-1 px-4 py-6 space-y-2">
           {NAV.map(({ label, icon: Icon, active }) => (
@@ -263,32 +287,6 @@ const TeacherRow = ({ teacher, i }) => (
           </div>
           <div className="flex-1" />
           <div className="relative">
-            <button onClick={() => setNotifOpen(!notifOpen)} className="p-2 rounded-xl bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 transition-all relative"><MdNotifications size={18} /><span className="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full" /></button>
-            {notifOpen && (
-              <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-xl z-50 shadow-lg max-h-96 overflow-y-auto">
-                <div className="px-4 py-3 border-b border-slate-200 bg-white sticky top-0">
-                  <p className="text-sm font-semibold text-[#1e3a8a]">Notifications</p>
-                </div>
-                <div className="py-2">
-                  {NOTIFICATIONS.map(({ id, title, message, time, type, icon: Icon }) => (
-                    <div key={id} className={`px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-all cursor-pointer ${type === "success" ? "border-l-4 border-l-emerald-500" : type === "warning" ? "border-l-4 border-l-orange-500" : "border-l-4 border-l-blue-500"}`}>
-                      <div className="flex items-start gap-3">
-                        <div className={`mt-1 ${type === "success" ? "text-emerald-600" : type === "warning" ? "text-red-600" : "text-blue-600"}`}>
-                          <Icon size={18} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-slate-900">{title}</p>
-                          <p className="text-xs text-slate-600 mt-1">{message}</p>
-                          <p className="text-xs text-slate-400 mt-2">{time}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="relative">
             <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 transition-all">
               <div className="w-7 h-7 rounded-full bg-[#1e3a8a] text-white flex items-center justify-center text-xs font-bold">AD</div>
               <span className="text-sm font-medium hidden sm:block">Admin</span>
@@ -298,13 +296,6 @@ const TeacherRow = ({ teacher, i }) => (
                 <div className="px-4 py-3 border-b border-slate-200 bg-[#1e3a8a]/5">
                   <p className="text-sm font-semibold text-[#1e3a8a]">Administrator</p>
                   <p className="text-xs text-slate-500">admin@edumetric.com</p>
-                </div>
-                <div className="py-2">
-                  {MENU_ITEMS.map(({ label, icon: Icon }) => (
-                    <button key={label} onClick={() => setProfileOpen(false)} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-[#1e3a8a]/10 transition-all">
-                      <Icon size={16} className="text-[#1e3a8a]" />{label}
-                    </button>
-                  ))}
                 </div>
                 <div className="border-t border-slate-200 py-2">
                   <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-all">
@@ -396,10 +387,6 @@ const TeacherRow = ({ teacher, i }) => (
               </ResponsiveContainer>
             </div>
           </div>
-
-
-
-
 
           <div className="bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-6">
