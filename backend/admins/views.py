@@ -17,7 +17,12 @@ def admin_stats(request):
         return JsonResponse({"error": "Only GET allowed"}, status=405)
     
     try:
-        total_users    = User.objects.count()
+        # Fix total users count to exclude admins
+        total_users = User.objects.filter(
+            is_superuser=False,
+            is_staff=False
+         ).count()
+
         total_students = User.objects.filter(profile__user_type="student").count()
         total_teachers = User.objects.filter(profile__user_type="teacher").count()
         total_exams    = Exam.objects.count()
@@ -77,9 +82,21 @@ def admin_user_distribution(request):
         return JsonResponse({"error": "Only GET allowed"}, status=405)
     
     try:
-        students = User.objects.filter(profile__user_type="student").count()
-        teachers = User.objects.filter(profile__user_type="teacher").count()
-        admins   = User.objects.filter(is_staff=True).count()
+        # exclude admins from students/teachers count
+        students = User.objects.filter(
+            profile__user_type="student",
+            is_superuser=False,
+            is_staff=False
+        ).count()
+        
+        teachers = User.objects.filter(
+            profile__user_type="teacher",
+            is_superuser=False,
+            is_staff=False
+        ).count()
+        
+        # count only real admins
+        admins = User.objects.filter(is_staff=True).count()
         
         data = [
             {"name": "Students", "value": students, "color": "#1e3a8a"},
@@ -91,7 +108,6 @@ def admin_user_distribution(request):
     
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-
 
 
 #users table
@@ -172,11 +188,19 @@ def admin_exams(request):
 
 # data about students all students
 @csrf_exempt
+
 def admin_students(request):
     if request.method == "GET":
         try:
             from exams.models import Submission
             from accounts.models import InstitutionMember
+
+            #  exclude superusers and staff from students list
+            students = User.objects.filter(
+                profile__user_type="student",
+                is_superuser=False,
+                is_staff=False
+            )
 
             # get all students
             students = User.objects.filter(profile__user_type="student")
@@ -229,6 +253,13 @@ def admin_teachers(request):
     if request.method == "GET":
         try:
             from exams.models import Exam
+
+             # exclude superusers and staff from teachers list
+            teachers = User.objects.filter(
+                profile__user_type="teacher",
+                is_superuser=False,
+                is_staff=False
+            )
 
             # get all teachers
             teachers = User.objects.filter(profile__user_type="teacher")

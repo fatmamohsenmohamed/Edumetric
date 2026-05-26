@@ -49,13 +49,13 @@ export default function AdminDashboard() {
 
   //  state variables dol badal el hard coded data 3shan n fetch el data mn el backend w n displayha
  const [stats, setStats] = useState(null);
- const [users, setUsers] = useState([]);
  const [exams, setExams] = useState([]);
  const [userGrowth, setUserGrowth] = useState([]);
  const [userDistribution, setUserDistribution] = useState([]);
 
 //m4 fahma el code da awy bs harga3lo tany hwa by3ml fetch mn el backend l data elly 3ndna fe el dashboard zay el stats cards w el tables w el charts w by7ot el data di fe state variables 3shan n displayha fe el UI
  useEffect(() => {
+
     // fetch stats cards data
     fetch("http://localhost:8000/api/admin/stats/", {
         credentials: "include"
@@ -63,14 +63,6 @@ export default function AdminDashboard() {
     .then(res => res.json())
     .then(data => setStats(data))
     .catch(err => console.error("Stats error:", err));
-
-    // fetch users table data
-    fetch("http://localhost:8000/api/admin/users/", {
-        credentials: "include"
-    })
-    .then(res => res.json())
-    .then(data => setUsers(data))
-    .catch(err => console.error("Users error:", err));
 
     // fetch exams table data
     fetch("http://localhost:8000/api/admin/exams/", {
@@ -141,7 +133,7 @@ const handleDeleteUser = async (userId) => {
         // remove deleted user from state without refetching
         setStudents(prev => prev.filter(s => s.id !== userId));
         setTeachers(prev => prev.filter(t => t.id !== userId));
-        setUsers(prev => prev.filter(u => u.id !== userId));
+        // setUsers(prev => prev.filter(u => u.id !== userId));
 
     } catch (err) {
         console.error("Delete error:", err);
@@ -161,22 +153,6 @@ const handleDeleteUser = async (userId) => {
     </div>
   );
 
-  const UserRow = ({ user, i }) => (
-    <div className={`grid grid-cols-[2fr_1.5fr_1fr_70px_90px_60px] gap-3 items-center px-4 py-4 rounded-xl hover:bg-[#1e3a8a]/5 text-sm ${i < users.length - 1 ? "border-b border-slate-200" : ""}`}>
-      <div className="font-medium text-[#1e3a8a]">{user.name}</div>
-      <div className="text-xs text-slate-500 hidden sm:block">{user.email}</div>
-      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${user.role === "Teacher" ? "text-purple-700 bg-purple-100 border-purple-300" : "text-blue-700 bg-blue-100 border-blue-300"}`}>
-        {user.role}
-      </span>
-      <div className="text-xs text-slate-500 hidden sm:block">{user.date}</div>
-      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${user.status === "active" ? "text-emerald-700 bg-emerald-100 border-emerald-300" : "text-red-700 bg-red-100 border-red-300"}`}>
-        {user.status === "active" ? <MdCheckCircle size={11} /> : <MdCancel size={11} />}{user.status === "active" ? "Active" : "Inactive"}
-      </span>
-      <button className="flex items-center gap-1 text-xs px-3 py-2 rounded-lg bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 transition-all" onClick={() => handleDeleteUser(user.id)}>
-        <MdDeleteOutline size={12} />Delete
-      </button>
-    </div>
-  );
 
   const ExamRow = ({ exam, i }) => {
     const active = exam.status === "active";
@@ -421,22 +397,9 @@ const TeacherRow = ({ teacher, i }) => (
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-lg font-bold text-[#1e3a8a] mb-1">Users</h2>
-                <p className="text-sm text-slate-500">Manage all system users</p>
-              </div>
-              <button className="text-xs px-4 py-2 rounded-lg bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 transition-all">View all users</button>
-            </div>
-            <div className="grid grid-cols-[2fr_1.5fr_1fr_70px_90px_60px] gap-3 px-4 py-3 mb-2 border-b border-slate-200">
-              {["Name", "Email", "Role", "Date", "Status", "Action"].map((h, i) => <span key={h} className={`text-xs font-semibold uppercase text-slate-500 ${i === 1 ? "hidden sm:block" : ""}`}>{h}</span>)}
-            </div>
 
-            {/* //edit tany 34an asta5den el data el7a2y2ya bl user id 34an e7na 8yarna l django users */}
-            {users.map((user, i) => <UserRow key={user.id} user={user} i={i} />)}
 
-          </div>
+
 
           <div className="bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-6">
