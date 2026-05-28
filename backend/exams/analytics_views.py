@@ -64,11 +64,17 @@ def performance_over_time(request):
 
     return JsonResponse(result, safe=False)
 
-
 @login_required
 def difficulty_distribution(request):
-    data = Question.objects.values('difficulty')\
-        .annotate(value=Count('id'))
+
+    # Only questions from exams this student took
+
+    answered_questions = Question.objects.filter(
+        answer__submission__student=request.user  # only this students answers
+    )
+    
+    data = answered_questions.values('difficulty')\
+        .annotate(value=Count('id', distinct=True))
 
     result = [
         {"name": d['difficulty'].capitalize(), "value": d['value']}
