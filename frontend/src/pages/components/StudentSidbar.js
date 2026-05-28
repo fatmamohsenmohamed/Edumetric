@@ -9,7 +9,7 @@ import {
 import logo from "../../images/home/logo1.png";
 
 const NAV = [
-  { label: "Dashboard", icon: MdDashboard, path: "/dashboard", active: true },
+  { label: "Dashboard", icon: MdDashboard, path: "/student", active: true },
   { label: "Available Exams", icon: MdPlayArrow, path: "/testexam" },
   { label: "My Results", icon: MdHistory, path: "/my-results" },
 ];
