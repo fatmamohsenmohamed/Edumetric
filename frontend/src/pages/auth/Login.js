@@ -118,7 +118,7 @@ export default function Login() {
   } else if (data.is_institutional) {
       navigate("/student");
   } else {
-      navigate("/home");
+      navigate("/");
   }
     } catch (err) {
       setLoading(false);
