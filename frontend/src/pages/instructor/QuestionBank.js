@@ -13,12 +13,12 @@ import {
   MdTableChart,
   MdDescription,
   MdMenu,
+  MdAutoAwesome, // 🆕 NEW — AI sparkle icon
 } from "react-icons/md";
 import * as XLSX from "xlsx";
 import mammoth from "mammoth";
 import InstructorSidebar from "../components/InstructorSidebar";
 
-// ─── Upload Modal ─────────────────────────────────────────────
 // ─── Upload Modal (Word only) ────────────────────────────────
 const TEMPLATE_TEXT = `Question: What is 2+2?
 Type: mcq
@@ -73,9 +73,7 @@ function UploadModal({ open, onClose, onConfirm }) {
     setFileName(file.name);
 
     if (ext !== "docx") {
-      setError(
-        "Only Word (.docx) files are supported. Please upload a .docx file.",
-      );
+      setError("Only Word (.docx) files are supported. Please upload a .docx file.");
       setLoading(false);
       return;
     }
@@ -94,36 +92,22 @@ function UploadModal({ open, onClose, onConfirm }) {
             data[key.trim().toLowerCase()] = rest.join(":").trim();
           });
 
-          // Normalize fields
           const rawType = (data.type || "tf").toLowerCase();
           const type = rawType === "mcq" ? "MCQ" : "TF";
           const difficulty =
             (data.difficulty || "easy").charAt(0).toUpperCase() +
             (data.difficulty || "easy").slice(1).toLowerCase();
 
-          // Build choices array (only for MCQ)
-          const choices = [
-            data.choice1,
-            data.choice2,
-            data.choice3,
-            data.choice4,
-          ].filter(Boolean);
+          const choices = [data.choice1, data.choice2, data.choice3, data.choice4].filter(Boolean);
 
-          // Determine the correct answer
           let answer = "";
           if (type === "MCQ") {
             const correctIdx = parseInt(data.correct, 10);
-            if (
-              !isNaN(correctIdx) &&
-              correctIdx >= 1 &&
-              correctIdx <= choices.length
-            ) {
-              answer = choices[correctIdx - 1]; // 1-indexed (Choice1 → 1)
+            if (!isNaN(correctIdx) && correctIdx >= 1 && correctIdx <= choices.length) {
+              answer = choices[correctIdx - 1];
             }
           } else {
-            // TF — accept "true" / "false" (case-insensitive)
-            answer =
-              (data.correct || "").toLowerCase() === "true" ? "True" : "False";
+            answer = (data.correct || "").toLowerCase() === "true" ? "True" : "False";
           }
 
           return {
@@ -140,17 +124,13 @@ function UploadModal({ open, onClose, onConfirm }) {
         .filter((q) => q.question);
 
       if (parsed.length === 0) {
-        setError(
-          "No valid questions found. Check that your file follows the template format.",
-        );
+        setError("No valid questions found. Check that your file follows the template format.");
       } else {
         setPreview(parsed);
       }
     } catch (err) {
       console.error(err);
-      setError(
-        "Error reading the Word file. Please check that it follows the template format.",
-      );
+      setError("Error reading the Word file. Please check that it follows the template format.");
     } finally {
       setLoading(false);
     }
@@ -171,24 +151,17 @@ function UploadModal({ open, onClose, onConfirm }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
-        {/* Header */}
         <div className="flex items-center justify-between p-5 border-b">
           <div className="flex items-center gap-2">
             <MdCloudUpload className="text-[#1e3a8a] text-2xl" />
-            <h2 className="text-lg font-bold text-[#1e3a8a]">
-              Import Questions from Word
-            </h2>
+            <h2 className="text-lg font-bold text-[#1e3a8a]">Import Questions from Word</h2>
           </div>
-          <button
-            onClick={handleClose}
-            className="p-2 hover:bg-slate-100 rounded-lg transition"
-          >
+          <button onClick={handleClose} className="p-2 hover:bg-slate-100 rounded-lg transition">
             <MdClose className="text-slate-500" />
           </button>
         </div>
 
         <div className="p-5 space-y-4 overflow-auto flex-1">
-          {/* Supported format */}
           <div className="flex items-center gap-2 p-3 rounded-xl border bg-indigo-50 border-indigo-200">
             <MdDescription className="text-indigo-600 text-2xl" />
             <div>
@@ -197,18 +170,13 @@ function UploadModal({ open, onClose, onConfirm }) {
             </div>
           </div>
 
-          {/* Template display */}
           <div className="border border-slate-200 rounded-xl overflow-hidden">
             <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 border-b border-slate-200">
-              <p className="text-sm font-semibold text-slate-700">
-                📋 Required Template
-              </p>
+              <p className="text-sm font-semibold text-slate-700">📋 Required Template</p>
               <button
                 onClick={handleCopyTemplate}
                 className={`text-xs px-3 py-1 rounded-md font-medium transition ${
-                  copied
-                    ? "bg-green-100 text-green-700"
-                    : "bg-[#1e3a8a] text-white hover:bg-[#1e40af]"
+                  copied ? "bg-green-100 text-green-700" : "bg-[#1e3a8a] text-white hover:bg-[#1e40af]"
                 }`}
               >
                 {copied ? "✓ Copied!" : "Copy Template"}
@@ -219,40 +187,17 @@ function UploadModal({ open, onClose, onConfirm }) {
             </pre>
           </div>
 
-          {/* Format rules */}
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-1">
-            <p className="text-xs font-semibold text-amber-700">
-              ⚠️ Format Rules
-            </p>
+            <p className="text-xs font-semibold text-amber-700">⚠️ Format Rules</p>
             <ul className="text-xs text-slate-600 list-disc pl-5 space-y-0.5">
-              <li>
-                Each question must end with a line containing only{" "}
-                <code className="bg-amber-100 px-1 rounded">---</code>
-              </li>
-              <li>
-                <b>Type</b> must be{" "}
-                <code className="bg-amber-100 px-1 rounded">mcq</code> or{" "}
-                <code className="bg-amber-100 px-1 rounded">tf</code>
-              </li>
-              <li>
-                <b>Difficulty</b> must be{" "}
-                <code className="bg-amber-100 px-1 rounded">easy</code>,{" "}
-                <code className="bg-amber-100 px-1 rounded">medium</code>, or{" "}
-                <code className="bg-amber-100 px-1 rounded">hard</code>
-              </li>
-              <li>
-                For MCQ: provide <b>Choice1</b> to <b>Choice4</b>, and{" "}
-                <b>Correct</b> as the choice number (1, 2, 3, or 4)
-              </li>
-              <li>
-                For TF: <b>Correct</b> must be{" "}
-                <code className="bg-amber-100 px-1 rounded">true</code> or{" "}
-                <code className="bg-amber-100 px-1 rounded">false</code>
-              </li>
+              <li>Each question must end with a line containing only <code className="bg-amber-100 px-1 rounded">---</code></li>
+              <li><b>Type</b> must be <code className="bg-amber-100 px-1 rounded">mcq</code> or <code className="bg-amber-100 px-1 rounded">tf</code></li>
+              <li><b>Difficulty</b> must be <code className="bg-amber-100 px-1 rounded">easy</code>, <code className="bg-amber-100 px-1 rounded">medium</code>, or <code className="bg-amber-100 px-1 rounded">hard</code></li>
+              <li>For MCQ: provide <b>Choice1</b> to <b>Choice4</b>, and <b>Correct</b> as the choice number (1, 2, 3, or 4)</li>
+              <li>For TF: <b>Correct</b> must be <code className="bg-amber-100 px-1 rounded">true</code> or <code className="bg-amber-100 px-1 rounded">false</code></li>
             </ul>
           </div>
 
-          {/* Upload Button */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => fileRef.current.click()}
@@ -266,16 +211,9 @@ function UploadModal({ open, onClose, onConfirm }) {
                 📄 {fileName}
               </span>
             )}
-            <input
-              type="file"
-              ref={fileRef}
-              accept=".docx"
-              className="hidden"
-              onChange={handleFileChange}
-            />
+            <input type="file" ref={fileRef} accept=".docx" className="hidden" onChange={handleFileChange} />
           </div>
 
-          {/* Loading */}
           {loading && (
             <div className="flex items-center gap-2 text-slate-500 text-sm">
               <div className="w-4 h-4 border-2 border-[#1e3a8a] border-t-transparent rounded-full animate-spin" />
@@ -283,68 +221,41 @@ function UploadModal({ open, onClose, onConfirm }) {
             </div>
           )}
 
-          {/* Error */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-3">
               <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
 
-          {/* Preview */}
           {preview.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold text-slate-700">
-                  Preview — {preview.length} question
-                  {preview.length !== 1 ? "s" : ""} found
+                  Preview — {preview.length} question{preview.length !== 1 ? "s" : ""} found
                 </p>
-                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                  Ready to import
-                </span>
+                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Ready to import</span>
               </div>
               <div className="max-h-64 overflow-auto space-y-2 pr-1">
                 {preview.map((q, i) => (
-                  <div
-                    key={q.id}
-                    className="border border-slate-200 rounded-xl p-3 bg-slate-50"
-                  >
+                  <div key={q.id} className="border border-slate-200 rounded-xl p-3 bg-slate-50">
                     <div className="flex justify-between items-start gap-2">
                       <p className="text-sm font-medium text-slate-800">
                         {i + 1}. {q.question}
                       </p>
                       <div className="flex gap-1 shrink-0">
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded-full ${
-                            q.type === "MCQ"
-                              ? "bg-blue-100 text-blue-700"
-                              : "bg-purple-100 text-purple-700"
-                          }`}
-                        >
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${q.type === "MCQ" ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"}`}>
                           {q.type}
                         </span>
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded-full ${
-                            q.difficulty === "Easy"
-                              ? "bg-green-100 text-green-700"
-                              : q.difficulty === "Medium"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : "bg-red-100 text-red-700"
-                          }`}
-                        >
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          q.difficulty === "Easy" ? "bg-green-100 text-green-700" :
+                          q.difficulty === "Medium" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"
+                        }`}>
                           {q.difficulty}
                         </span>
                       </div>
                     </div>
-                    {q.answer && (
-                      <p className="text-xs text-emerald-600 mt-1">
-                        ✓ Answer: {q.answer}
-                      </p>
-                    )}
-                    {q.chapter && (
-                      <p className="text-xs text-slate-400 mt-0.5">
-                        {q.chapter} — {q.subject}
-                      </p>
-                    )}
+                    {q.answer && <p className="text-xs text-emerald-600 mt-1">✓ Answer: {q.answer}</p>}
+                    {q.chapter && <p className="text-xs text-slate-400 mt-0.5">{q.chapter} — {q.subject}</p>}
                   </div>
                 ))}
               </div>
@@ -352,12 +263,8 @@ function UploadModal({ open, onClose, onConfirm }) {
           )}
         </div>
 
-        {/* Footer */}
         <div className="flex justify-end gap-2 p-5 border-t bg-slate-50 rounded-b-2xl">
-          <button
-            onClick={handleClose}
-            className="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300 transition"
-          >
+          <button onClick={handleClose} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300 transition">
             Cancel
           </button>
           <button
@@ -373,17 +280,222 @@ function UploadModal({ open, onClose, onConfirm }) {
   );
 }
 
+// ─── 🆕 NEW: AI Generate Dialog ────────────────────────────────
+function AIGenerateDialog({ open, onClose, onSaved }) {
+  const [subject, setSubject] = useState("");
+  const [topic, setTopic] = useState("");
+  const [difficulty, setDifficulty] = useState("medium");
+  const [count, setCount] = useState(3);
+  const [generated, setGenerated] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  if (!open) return null;
+
+  const handleClose = () => {
+    setSubject("");
+    setTopic("");
+    setDifficulty("medium");
+    setCount(3);
+    setGenerated([]);
+    setError("");
+    onClose();
+  };
+
+  const handleGenerate = async () => {
+    setError("");
+    if (!subject.trim() || !topic.trim()) {
+      setError("Subject and topic are required");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch("http://localhost:8000/api/questions/ai-generate/", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject, topic, difficulty, count: Number(count) }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Failed to generate");
+        return;
+      }
+      setGenerated(data.questions);
+    } catch (err) {
+      setError("Server error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveAll = async () => {
+    setSaving(true);
+    setError("");
+    try {
+      for (const q of generated) {
+        await fetch("http://localhost:8000/api/questions/create/", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            question: q.question,
+            type: "MCQ",
+            difficulty: difficulty.charAt(0).toUpperCase() + difficulty.slice(1),
+            chapter: topic,
+            subject: subject,
+            options: q.options,
+            correctIndex: q.correct_index,
+          }),
+        });
+      }
+      onSaved(generated.length);
+      handleClose();
+    } catch (err) {
+      setError("Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-auto">
+        <div className="p-6 border-b">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-xl font-bold text-[#1e3a8a]">✨ Generate Questions with AI</h3>
+              <p className="text-sm text-slate-500 mt-1">Let AI create questions based on your topic and difficulty</p>
+            </div>
+            <button onClick={handleClose} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500">
+              <MdClose />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm">{error}</div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-sm font-medium text-slate-600">Subject</label>
+              <input
+                placeholder="e.g., Math"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                className="w-full mt-1 p-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-slate-600">Topic</label>
+              <input
+                placeholder="e.g., Quadratic equations"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                className="w-full mt-1 p-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-slate-600">Difficulty</label>
+              <select
+                value={difficulty}
+                onChange={(e) => setDifficulty(e.target.value)}
+                className="w-full mt-1 p-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-slate-600">Number of Questions</label>
+              <input
+                type="number"
+                min={1}
+                max={10}
+                value={count}
+                onChange={(e) => setCount(e.target.value)}
+                className="w-full mt-1 p-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          {generated.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="font-semibold text-slate-700">Preview ({generated.length} questions)</h4>
+              <div className="max-h-64 overflow-auto space-y-3 border border-slate-200 rounded-xl p-3 bg-slate-50">
+                {generated.map((q, i) => (
+                  <div key={i} className="bg-white p-3 rounded-lg border border-slate-200">
+                    <p className="font-medium text-sm text-slate-800">{i + 1}. {q.question}</p>
+                    <ul className="mt-2 space-y-1">
+                      {q.options.map((opt, j) => (
+                        <li
+                          key={j}
+                          className={`text-xs px-2 py-1 rounded ${
+                            j === q.correct_index ? "bg-green-50 text-green-700 font-semibold" : "text-slate-500"
+                          }`}
+                        >
+                          {j === q.correct_index ? "✓ " : "○ "}{opt}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="p-6 border-t flex gap-2 justify-end">
+          <button onClick={handleClose} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200">
+            Cancel
+          </button>
+          {generated.length === 0 ? (
+            <button
+              onClick={handleGenerate}
+              disabled={loading}
+              className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:shadow-lg disabled:opacity-50"
+            >
+              {loading ? "Generating..." : "✨ Generate"}
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={handleGenerate}
+                disabled={loading}
+                className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200"
+              >
+                Regenerate
+              </button>
+              <button
+                onClick={handleSaveAll}
+                disabled={saving}
+                className="px-6 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 disabled:opacity-50"
+              >
+                {saving ? "Saving..." : `Save All (${generated.length})`}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ────────────────────────────────────────────
 export default function QuestionBank() {
-  const [questions, setQuestions] = useState([]); // ← empty, loads from API
+  const [questions, setQuestions] = useState([]);
   const [search, setSearch] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [openUpload, setOpenUpload] = useState(false);
+  const [openAI, setOpenAI] = useState(false); // 🆕 NEW
   const [loading, setLoading] = useState(true);
 
-  // ── Load questions from backend ──
-  useEffect(() => {
-    fetch("http://localhost:8000/api/questions/", {
+  const loadQuestions = () => {
+    return fetch("http://localhost:8000/api/questions/", {
       credentials: "include",
     })
       .then((res) => res.json())
@@ -395,9 +507,12 @@ export default function QuestionBank() {
         console.error(err);
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    loadQuestions();
   }, []);
 
-  // Form state
   const [editId, setEditId] = useState(null);
   const [text, setText] = useState("");
   const [type, setType] = useState("MCQ");
@@ -410,7 +525,6 @@ export default function QuestionBank() {
 
   const filtered = questions.filter((q) => {
     const s = search.toLowerCase();
-
     return (
       q.question.toLowerCase().includes(s) ||
       q.subject.toLowerCase().includes(s) ||
@@ -437,11 +551,7 @@ export default function QuestionBank() {
     setSubject(q.subject);
     setDifficulty(q.difficulty);
     if (q.type === "MCQ") {
-      setChoices(
-        q.options.length === 4
-          ? q.options
-          : [...q.options, "", "", "", ""].slice(0, 4),
-      );
+      setChoices(q.options.length === 4 ? q.options : [...q.options, "", "", "", ""].slice(0, 4));
       setCorrectIndex(q.options.indexOf(q.answer));
     } else {
       setTfAnswer(q.answer);
@@ -451,18 +561,15 @@ export default function QuestionBank() {
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this question?")) return;
-
     await fetch(`http://localhost:8000/api/questions/${id}/delete/`, {
       method: "DELETE",
       credentials: "include",
     });
-
     setQuestions((prev) => prev.filter((q) => q.id !== id));
   };
 
   const handleSave = async () => {
     if (!text.trim()) return;
-
     const payload = {
       question: text,
       type: type,
@@ -473,33 +580,24 @@ export default function QuestionBank() {
       correctIndex: type === "MCQ" ? correctIndex : 0,
       answer: type === "TF" ? tfAnswer : choices[correctIndex],
     };
-
     const url = editId
       ? `http://localhost:8000/api/questions/${editId}/update/`
       : `http://localhost:8000/api/questions/create/`;
-
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify(payload),
     });
-
     if (res.ok) {
-      // Reload questions from backend
-      const updated = await fetch("http://localhost:8000/api/questions/", {
-        credentials: "include",
-      }).then((r) => r.json());
-      setQuestions(updated);
+      await loadQuestions();
     }
-
     setOpenModal(false);
     setEditId(null);
     resetForm();
   };
 
   const handleImport = async (imported) => {
-    // Send each question to backend
     for (const q of imported) {
       await fetch("http://localhost:8000/api/questions/create/", {
         method: "POST",
@@ -517,46 +615,42 @@ export default function QuestionBank() {
         }),
       });
     }
-
-    // Reload from backend
-    const updated = await fetch("http://localhost:8000/api/questions/", {
-      credentials: "include",
-    }).then((r) => r.json());
-
-    setQuestions(updated);
+    await loadQuestions();
   };
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user] = useState(null);
+
   return (
     <div className="flex">
-      <InstructorSidebar
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        user={user}
-      />
+      <InstructorSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} user={user} />
       <div className="flex-1 p-6 bg-white min-h-screen space-y-6">
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden"
-              >
+              <button onClick={() => setSidebarOpen(true)} className="lg:hidden">
                 <MdMenu />
               </button>
-
               <h1 className="text-2xl font-bold text-[#1e3a8a] flex items-center gap-2">
                 <MdLibraryBooks /> Question Bank
               </h1>
             </div>
             <p className="text-sm text-slate-500">
-              {questions.length} question{questions.length !== 1 ? "s" : ""}{" "}
-              total
+              {questions.length} question{questions.length !== 1 ? "s" : ""} total
             </p>
           </div>
 
           <div className="flex gap-2">
+            {/* 🆕 NEW: AI Generate button */}
+            <button
+              onClick={() => setOpenAI(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:shadow-lg transition font-medium"
+            >
+              <MdAutoAwesome />
+              Generate with AI
+            </button>
+
             <button
               onClick={() => setOpenUpload(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-[#1e3a8a] hover:bg-slate-200 transition font-medium"
@@ -604,25 +698,14 @@ export default function QuestionBank() {
         ) : (
           <div className="space-y-4">
             {filtered.map((q) => (
-              <div
-                key={q.id}
-                className="border border-slate-200 rounded-2xl p-4 hover:shadow-md transition"
-              >
+              <div key={q.id} className="border border-slate-200 rounded-2xl p-4 hover:shadow-md transition">
                 <div className="flex justify-between items-start">
-                  <h3 className="font-semibold text-[#1e3a8a] flex-1 pr-4">
-                    {q.question}
-                  </h3>
+                  <h3 className="font-semibold text-[#1e3a8a] flex-1 pr-4">{q.question}</h3>
                   <div className="flex gap-2 shrink-0">
-                    <button
-                      onClick={() => handleEdit(q)}
-                      className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition"
-                    >
+                    <button onClick={() => handleEdit(q)} className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition">
                       <MdEdit />
                     </button>
-                    <button
-                      onClick={() => handleDelete(q.id)}
-                      className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition"
-                    >
+                    <button onClick={() => handleDelete(q.id)} className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition">
                       <MdDelete />
                     </button>
                   </div>
@@ -630,20 +713,14 @@ export default function QuestionBank() {
 
                 <div className="flex flex-wrap gap-2 mt-2">
                   {[q.type, q.chapter, q.subject].filter(Boolean).map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-xs px-3 py-1 bg-slate-100 rounded-full"
-                    >
+                    <span key={tag} className="text-xs px-3 py-1 bg-slate-100 rounded-full">
                       {tag}
                     </span>
                   ))}
                   <span
                     className={`text-xs px-3 py-1 rounded-full font-medium ${
-                      q.difficulty === "Easy"
-                        ? "bg-emerald-100 text-emerald-700"
-                        : q.difficulty === "Medium"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
+                      q.difficulty === "Easy" ? "bg-emerald-100 text-emerald-700" :
+                      q.difficulty === "Medium" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"
                     }`}
                   >
                     {q.difficulty}
@@ -652,9 +729,7 @@ export default function QuestionBank() {
 
                 <div className="mt-3 text-sm">
                   <span className="font-medium">Correct Answer: </span>
-                  <span className="text-emerald-600 font-medium">
-                    {q.answer}
-                  </span>
+                  <span className="text-emerald-600 font-medium">{q.answer}</span>
                 </div>
 
                 {q.type === "MCQ" && q.options?.length > 0 && (
@@ -663,16 +738,10 @@ export default function QuestionBank() {
                       <div
                         key={i}
                         className={`p-2 border rounded-lg text-sm flex items-center gap-1 ${
-                          opt === q.answer
-                            ? "bg-emerald-50 border-emerald-400 text-emerald-700"
-                            : "border-slate-200 text-slate-600"
+                          opt === q.answer ? "bg-emerald-50 border-emerald-400 text-emerald-700" : "border-slate-200 text-slate-600"
                         }`}
                       >
-                        {opt === q.answer ? (
-                          <MdCheckCircle className="shrink-0" />
-                        ) : (
-                          <MdCancel className="shrink-0 text-slate-400" />
-                        )}
+                        {opt === q.answer ? <MdCheckCircle className="shrink-0" /> : <MdCancel className="shrink-0 text-slate-400" />}
                         {opt}
                       </div>
                     ))}
@@ -688,9 +757,7 @@ export default function QuestionBank() {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white w-full max-w-lg rounded-2xl p-6 space-y-3 max-h-[90vh] overflow-auto shadow-2xl">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-[#1e3a8a]">
-                  {editId ? "Edit Question" : "Add New Question"}
-                </h2>
+                <h2 className="text-lg font-bold text-[#1e3a8a]">{editId ? "Edit Question" : "Add New Question"}</h2>
                 <button
                   onClick={() => {
                     setOpenModal(false);
@@ -712,20 +779,11 @@ export default function QuestionBank() {
               />
 
               <div className="grid grid-cols-2 gap-3">
-                <select
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  className="border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
+                <select value={type} onChange={(e) => setType(e.target.value)} className="border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option value="MCQ">MCQ</option>
                   <option value="TF">True / False</option>
                 </select>
-
-                <select
-                  value={difficulty}
-                  onChange={(e) => setDifficulty(e.target.value)}
-                  className="border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
+                <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className="border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option>Easy</option>
                   <option>Medium</option>
                   <option>Hard</option>
@@ -733,18 +791,8 @@ export default function QuestionBank() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <input
-                  value={chapter}
-                  onChange={(e) => setChapter(e.target.value)}
-                  placeholder="Chapter"
-                  className="border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <input
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  placeholder="Subject"
-                  className="border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <input value={chapter} onChange={(e) => setChapter(e.target.value)} placeholder="Chapter" className="border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject" className="border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
 
               {type === "MCQ" && (
@@ -771,8 +819,7 @@ export default function QuestionBank() {
                   >
                     {choices.map((c, i) => (
                       <option key={i} value={i}>
-                        Correct: Choice {i + 1}
-                        {c ? ` — ${c}` : ""}
+                        Correct: Choice {i + 1}{c ? ` — ${c}` : ""}
                       </option>
                     ))}
                   </select>
@@ -780,11 +827,7 @@ export default function QuestionBank() {
               )}
 
               {type === "TF" && (
-                <select
-                  value={tfAnswer}
-                  onChange={(e) => setTfAnswer(e.target.value)}
-                  className="w-full border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
+                <select value={tfAnswer} onChange={(e) => setTfAnswer(e.target.value)} className="w-full border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option>True</option>
                   <option>False</option>
                 </select>
@@ -801,10 +844,7 @@ export default function QuestionBank() {
                 >
                   Cancel
                 </button>
-                <button
-                  onClick={handleSave}
-                  className="px-4 py-2 bg-[#1e3a8a] text-white rounded-xl hover:bg-[#1e40af] transition"
-                >
+                <button onClick={handleSave} className="px-4 py-2 bg-[#1e3a8a] text-white rounded-xl hover:bg-[#1e40af] transition">
                   {editId ? "Update" : "Save"}
                 </button>
               </div>
@@ -813,10 +853,16 @@ export default function QuestionBank() {
         )}
 
         {/* UPLOAD MODAL */}
-        <UploadModal
-          open={openUpload}
-          onClose={() => setOpenUpload(false)}
-          onConfirm={handleImport}
+        <UploadModal open={openUpload} onClose={() => setOpenUpload(false)} onConfirm={handleImport} />
+
+        {/* 🆕 NEW: AI MODAL */}
+        <AIGenerateDialog
+          open={openAI}
+          onClose={() => setOpenAI(false)}
+          onSaved={(count) => {
+            alert(`${count} questions generated and added to your bank!`);
+            loadQuestions();
+          }}
         />
       </div>
     </div>
