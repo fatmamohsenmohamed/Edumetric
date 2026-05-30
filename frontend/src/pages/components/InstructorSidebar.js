@@ -5,7 +5,6 @@ import {
   MdCreate,
   MdLibraryBooks,
   MdBarChart,
-  MdSettings,
   MdClose,
   MdLogout,
   MdAssignment,

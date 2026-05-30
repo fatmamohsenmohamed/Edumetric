@@ -8,15 +8,38 @@ import {
   MdSchool,
   MdLock,
   MdPerson,
+  MdMenu,
 } from "react-icons/md";
+import Sidebar from "../components/StudentSidbar";
 
 export default function AvailableExams() {
   const navigate = useNavigate();
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState(null);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("http://localhost:8000/api/logout/", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+    navigate("/");
+  };
 
   useEffect(() => {
+    fetch("http://localhost:8000/api/me/", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => setUser(data))
+      .catch((err) => console.error("User error:", err));
+
     fetch("http://localhost:8000/api/available/", {
       credentials: "include",
     })
@@ -45,52 +68,74 @@ export default function AvailableExams() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center gap-4 sticky top-0 z-30">
-        <button
-          onClick={() => navigate("/student")}
-          className="p-2 rounded-lg hover:bg-slate-100 transition-all"
-        >
-          <MdArrowBack size={20} className="text-[#1e3a8a]" />
-        </button>
-        <div>
-          <h1 className="text-xl font-bold text-[#1e3a8a]">Available Exams</h1>
-          <p className="text-xs text-slate-500">
-            {exams.length} exam{exams.length !== 1 ? "s" : ""} available
-          </p>
-        </div>
-      </header>
+    <div className="min-h-screen bg-slate-50 flex">
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-      <main className="max-w-5xl mx-auto p-6 md:p-8">
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-            <p className="text-red-600 font-semibold">{error}</p>
-          </div>
-        )}
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        user={user}
+        handleLogout={handleLogout}
+      />
 
-        {!error && exams.length === 0 && (
-          <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center">
-            <MdSchool size={48} className="text-slate-300 mx-auto mb-3" />
-            <p className="text-slate-600 font-semibold">
-              No exams available right now
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center gap-4 sticky top-0 z-30">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-all"
+          >
+            <MdMenu size={20} className="text-[#1e3a8a]" />
+          </button>
+          <button
+            onClick={() => navigate("/student")}
+            className="p-2 rounded-lg hover:bg-slate-100 transition-all"
+          >
+            <MdArrowBack size={20} className="text-[#1e3a8a]" />
+          </button>
+          <div>
+            <h1 className="text-xl font-bold text-[#1e3a8a]">Available Exams</h1>
+            <p className="text-xs text-slate-500">
+              {exams.length} exam{exams.length !== 1 ? "s" : ""} available
             </p>
-            <p className="text-slate-400 text-sm mt-1">
-              Check back later when your instructor publishes new exams.
-            </p>
           </div>
-        )}
+        </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {exams.map((exam) => (
-            <ExamCard
-              key={exam.id}
-              exam={exam}
-              onStart={() => navigate(`/takeexam/${exam.id}`)}
-            />
-          ))}
-        </div>
-      </main>
+        <main className="max-w-5xl mx-auto p-6 md:p-8 w-full">
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+              <p className="text-red-600 font-semibold">{error}</p>
+            </div>
+          )}
+
+          {!error && exams.length === 0 && (
+            <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center">
+              <MdSchool size={48} className="text-slate-300 mx-auto mb-3" />
+              <p className="text-slate-600 font-semibold">
+                No exams available right now
+              </p>
+              <p className="text-slate-400 text-sm mt-1">
+                Check back later when your instructor publishes new exams.
+              </p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {exams.map((exam) => (
+              <ExamCard
+                key={exam.id}
+                exam={exam}
+                onStart={() => navigate(`/takeexam/${exam.id}`)}
+              />
+            ))}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

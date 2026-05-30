@@ -5,22 +5,14 @@ import {
   MdLibraryBooks,
   MdBarChart,
   MdAssignment,
-  MdNotifications,
   MdSearch,
   MdTrendingUp,
   MdTrendingDown,
   MdVisibility,
   MdMenu,
   MdLogout,
-  MdPerson,
   MdCheckCircle,
-  MdEdit,
-  MdDownload,
-  MdHelp,
-  MdChecklistRtl,
-  MdWarning,
   MdGroup,
-  MdSettings,
   MdDeleteForever,
 } from "react-icons/md";
 import {
@@ -39,14 +31,6 @@ import {
 
 import InstructorSidebar from "../components/InstructorSidebar";
 
-const MENU_ITEMS = [
-  { label: "My Profile", icon: MdPerson },
-  { label: "Edit Profile", icon: MdEdit },
-  { label: "Download Reports", icon: MdDownload },
-  { label: "Help & Support", icon: MdHelp },
-];
-
-
 const CustomTooltip = ({ active, payload }) =>
   active && payload?.length ? (
     <div className="bg-white p-2 border border-slate-300 rounded-lg shadow-lg">
@@ -58,7 +42,6 @@ const CustomTooltip = ({ active, payload }) =>
 export default function TeacherDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [stats, setStats] = useState(null);
   const [exams, setExams] = useState([]);
@@ -101,9 +84,7 @@ export default function TeacherDashboard() {
 
     fetch(
       "http://localhost:8000/api/teacher/analytics/performance-over-time/",
-      {
-        credentials: "include",
-      },
+      { credentials: "include" }
     )
       .then((res) => res.json())
       .then((data) => setChartData(data))
@@ -116,20 +97,21 @@ export default function TeacherDashboard() {
       .then((data) => setDifficulty(data))
       .catch((err) => console.error("Difficulty error:", err));
   }, []);
-// Add this function — but we'll update it to call the backend
-const handleDeleteAccount = async () => {
+
+  const handleDeleteAccount = async () => {
     try {
-        await fetch("http://localhost:8000/api/delete-account/", {
-            method: "DELETE",
-            credentials: "include",
-        });
+      await fetch("http://localhost:8000/api/delete-account/", {
+        method: "DELETE",
+        credentials: "include",
+      });
     } catch (err) {
-        console.error("Delete error:", err);
+      console.error("Delete error:", err);
     }
     setDeleteConfirmOpen(false);
     setProfileOpen(false);
     navigate("/");
-};
+  };
+
   const StatCard = ({ label, value, icon: Icon, up, color }) => (
     <div className="bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6 hover:shadow-md transition-all">
       <div className="flex items-start justify-between mb-4">
@@ -205,8 +187,6 @@ const handleDeleteAccount = async () => {
           </div>
           <div className="flex-1" />
 
-
-
           {/* Profile */}
           <div className="relative">
             <button
@@ -220,6 +200,7 @@ const handleDeleteAccount = async () => {
                 {user?.full_name || "Teacher"}
               </span>
             </button>
+
             {profileOpen && (
               <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-xl z-50 shadow-lg">
                 <div className="px-4 py-3 border-b border-slate-200 bg-[#1e3a8a]/5">
@@ -230,26 +211,15 @@ const handleDeleteAccount = async () => {
                     teacher@edumetric.com
                   </p>
                 </div>
+
                 <div className="py-2">
-                  {MENU_ITEMS.map(({ label, icon: Icon }) => (
-                    <button
-                      key={label}
-                      onClick={() => setProfileOpen(false)}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-[#1e3a8a]/10 transition-all"
-                    >
-                      <Icon size={16} className="text-[#1e3a8a]" />
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                <div className="border-t border-slate-200 py-2">
                   <button
-                onClick={() => { setProfileOpen(false); setDeleteConfirmOpen(true); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-700 hover:bg-red-100 transition-all font-semibold"
-            >
-                <MdDeleteForever size={16} />
-                Delete Account
-            </button>
+                    onClick={() => { setProfileOpen(false); setDeleteConfirmOpen(true); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-700 hover:bg-red-100 transition-all font-semibold"
+                  >
+                    <MdDeleteForever size={16} />
+                    Delete Account
+                  </button>
                   <button
                     onClick={handleLogout}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-all"
@@ -330,7 +300,6 @@ const handleDeleteAccount = async () => {
                 <MdLibraryBooks size={16} />
                 Question Bank
               </button>
-             
             </div>
           </div>
 
@@ -345,18 +314,11 @@ const handleDeleteAccount = async () => {
               </p>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={chartData}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="rgba(30,58,138,0.1)"
-                  />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(30,58,138,0.1)" />
                   <XAxis dataKey="month" stroke="rgba(30,58,138,0.5)" />
                   <YAxis stroke="rgba(30,58,138,0.5)" domain={[0, 100]} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar
-                    dataKey="avgScore"
-                    fill="#1e3a8a"
-                    radius={[8, 8, 0, 0]}
-                  />
+                  <Bar dataKey="avgScore" fill="#1e3a8a" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -383,9 +345,7 @@ const handleDeleteAccount = async () => {
                     ))}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />
-                  <Legend
-                    wrapperStyle={{ color: "#1e3a8a", paddingTop: "16px" }}
-                  />
+                  <Legend wrapperStyle={{ color: "#1e3a8a", paddingTop: "16px" }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -417,7 +377,7 @@ const handleDeleteAccount = async () => {
                   >
                     {h}
                   </span>
-                ),
+                )
               )}
             </div>
             {exams.map((exam, i) => (
@@ -427,7 +387,7 @@ const handleDeleteAccount = async () => {
         </main>
       </div>
 
-      {/* ✅ Add modal here */}
+      {/* Delete Confirm Modal */}
       {deleteConfirmOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden">
@@ -462,7 +422,6 @@ const handleDeleteAccount = async () => {
           </div>
         </div>
       )}
-
-    </div> 
+    </div>
   );
 }

@@ -190,6 +190,15 @@ def login(request):
         # Check if user belongs to an institution
         membership = getattr(user, "institution_membership", None)
 
+        if user.is_staff or user.is_superuser:
+            return JsonResponse({
+                "message": "Login successful",
+                "full_name": user.username,
+                "user_type": "admin",
+                "is_institutional": False,
+                "institution": None,
+            })
+
         return JsonResponse({
             "message":          "Login successful",
             "full_name":        user.first_name,
@@ -392,3 +401,5 @@ def delete_account(request):
     
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+
