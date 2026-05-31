@@ -654,8 +654,7 @@ import os
 import re
 import requests
 
-
-
+#checkin lw el subject dy mawgoda f el quetion bank wla l2
 @csrf_exempt
 @api_login_required
 def check_subject(request):
