@@ -656,3 +656,34 @@ import requests
 
 
 
+@csrf_exempt
+@api_login_required
+def check_subject(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "Only GET allowed"}, status=405)
+    
+    try:
+        # get subject from URL query parameter
+        # e.g. /api/check-subject/?subject=math
+        subject = request.GET.get("subject", "").strip().lower()
+        
+        if not subject:
+            return JsonResponse({"error": "Subject is required"}, status=400)
+        
+        # check if this subject exists in Chapter model
+        # iexact means case insensitive — "Math" == "math" == "MATH"
+        exists = Chapter.objects.filter(subject__iexact=subject).exists()
+        
+        # count how many questions exist for this subject
+        question_count = Question.objects.filter(
+            chapter__subject__iexact=subject
+        ).count()
+        
+        return JsonResponse({
+            "exists": exists,
+            "question_count": question_count,
+            "subject": subject,
+        })
+    
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
