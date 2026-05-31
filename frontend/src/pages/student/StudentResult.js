@@ -5,7 +5,9 @@ import {
   MdCheckCircle,
   MdCancel,
   MdVisibility,
+  MdMenu,
 } from "react-icons/md";
+import Sidebar from "../components/StudentSidbar";
 
 export default function MyResults() {
   const navigate = useNavigate();
@@ -20,8 +22,29 @@ export default function MyResults() {
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
   const [sortBy, setSortBy] = useState("date");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState(null);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("http://localhost:8000/api/logout/", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+    navigate("/");
+  };
 
   useEffect(() => {
+    fetch("http://localhost:8000/api/me/", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => setUser(data))
+      .catch((err) => console.error("User error:", err));
+
     fetch("http://localhost:8000/api/my-results/", { credentials: "include" })
       .then(async (res) => {
         const data = await res.json();
@@ -39,6 +62,7 @@ export default function MyResults() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [navigate]);
+
   const filteredResults = results
     .filter((r) => {
       if (filter === "passed") return r.passed;
@@ -48,7 +72,6 @@ export default function MyResults() {
     .sort((a, b) => {
       if (sortBy === "score") return (b.score || 0) - (a.score || 0);
 
-      // Safely parse dates with fallback
       const timeA = a.submitted_at_iso
         ? new Date(a.submitted_at_iso).getTime()
         : 0;
@@ -56,7 +79,6 @@ export default function MyResults() {
         ? new Date(b.submitted_at_iso).getTime()
         : 0;
 
-      // Handle invalid dates (NaN check)
       if (isNaN(timeA) && isNaN(timeB)) return 0;
       if (isNaN(timeA)) return 1;
       if (isNaN(timeB)) return -1;
@@ -73,130 +95,156 @@ export default function MyResults() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
-      {/* Header */}
-      <div className="max-w-6xl mx-auto">
-        <button
-          onClick={() => navigate("/student")}
-          className="flex items-center gap-2 text-slate-600 hover:text-blue-900 mb-4 text-sm font-medium"
-        >
-          <MdArrowBack size={20} /> Back to Dashboard
-        </button>
+    <div className="min-h-screen bg-slate-50 flex">
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-        <h1 className="text-3xl font-bold text-blue-900 mb-2">My Results</h1>
-        <p className="text-slate-500 mb-6">
-          Full history of your exam attempts
-        </p>
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        user={user}
+        handleLogout={handleLogout}
+      />
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <StatCard
-            label="Total Attempts"
-            value={stats.total}
-            color="bg-blue-900"
-          />
-          <StatCard label="Passed" value={stats.passed} color="bg-green-600" />
-          <StatCard label="Failed" value={stats.failed} color="bg-red-500" />
-          <StatCard
-            label="Average Score"
-            value={`${stats.average}%`}
-            color="bg-amber-500"
-          />
-        </div>
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center gap-4 sticky top-0 z-30">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-all"
+          >
+            <MdMenu size={20} className="text-[#1e3a8a]" />
+          </button>
+          <button
+            onClick={() => navigate("/student")}
+            className="flex items-center gap-2 text-slate-600 hover:text-blue-900 text-sm font-medium"
+          >
+            <MdArrowBack size={20} /> Back to Dashboard
+          </button>
+        </header>
 
-        {/* Filter + Sort */}
-        <div className="bg-white rounded-2xl p-4 mb-4 flex flex-wrap items-center gap-3 shadow-sm">
-          <div className="flex gap-2">
-            <FilterChip
-              active={filter === "all"}
-              onClick={() => setFilter("all")}
-            >
-              All
-            </FilterChip>
-            <FilterChip
-              active={filter === "passed"}
-              onClick={() => setFilter("passed")}
-            >
-              Passed
-            </FilterChip>
-            <FilterChip
-              active={filter === "failed"}
-              onClick={() => setFilter("failed")}
-            >
-              Failed
-            </FilterChip>
-          </div>
-          <div className="ml-auto flex items-center gap-2">
-            <label className="text-sm text-slate-500">Sort by:</label>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-900/20"
-            >
-              <option value="date">Date (newest first)</option>
-              <option value="score">Score (highest first)</option>
-            </select>
-          </div>
-        </div>
+        <div className="min-h-screen bg-slate-50 p-8">
+          <div className="max-w-6xl mx-auto">
+            <h1 className="text-3xl font-bold text-blue-900 mb-2">My Results</h1>
+            <p className="text-slate-500 mb-6">
+              Full history of your exam attempts
+            </p>
 
-        {/* Results Table */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          {error && <div className="p-6 text-red-600 text-center">{error}</div>}
-          {!error && filteredResults.length === 0 && (
-            <div className="p-12 text-center text-slate-400">
-              No results match this filter yet.
+            {/* Stats Row */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <StatCard
+                label="Total Attempts"
+                value={stats.total}
+                color="bg-blue-900"
+              />
+              <StatCard label="Passed" value={stats.passed} color="bg-green-600" />
+              <StatCard label="Failed" value={stats.failed} color="bg-red-500" />
+              <StatCard
+                label="Average Score"
+                value={`${stats.average}%`}
+                color="bg-amber-500"
+              />
             </div>
-          )}
-          {!error && filteredResults.length > 0 && (
-            <table className="w-full">
-              <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
-                <tr>
-                  <th className="text-left p-4">Exam</th>
-                  <th className="text-left p-4">Subject</th>
-                  <th className="text-left p-4">Date</th>
-                  <th className="text-left p-4">Score</th>
-                  <th className="text-left p-4">Status</th>
-                  <th className="text-left p-4">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredResults.map((r) => (
-                  <tr
-                    key={r.id}
-                    className="border-t border-slate-100 hover:bg-slate-50/50"
-                  >
-                    <td className="p-4 font-medium text-slate-800">
-                      {r.exam_title}
-                    </td>
-                    <td className="p-4 text-slate-600 capitalize">
-                      {r.subject}
-                    </td>
-                    <td className="p-4 text-slate-600">{r.submitted_at}</td>
-                    <td className="p-4 font-bold text-blue-900">{r.score}%</td>
-                    <td className="p-4">
-                      {r.passed ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                          <MdCheckCircle size={14} /> Passed
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                          <MdCancel size={14} /> Failed
-                        </span>
-                      )}
-                    </td>
-                    <td className="p-4">
-                      <button
-                        onClick={() => navigate(`/my-results/${r.id}`)}
-                        className="inline-flex items-center gap-1 text-sm text-blue-900 font-medium hover:underline"
+
+            {/* Filter + Sort */}
+            <div className="bg-white rounded-2xl p-4 mb-4 flex flex-wrap items-center gap-3 shadow-sm">
+              <div className="flex gap-2">
+                <FilterChip
+                  active={filter === "all"}
+                  onClick={() => setFilter("all")}
+                >
+                  All
+                </FilterChip>
+                <FilterChip
+                  active={filter === "passed"}
+                  onClick={() => setFilter("passed")}
+                >
+                  Passed
+                </FilterChip>
+                <FilterChip
+                  active={filter === "failed"}
+                  onClick={() => setFilter("failed")}
+                >
+                  Failed
+                </FilterChip>
+              </div>
+              <div className="ml-auto flex items-center gap-2">
+                <label className="text-sm text-slate-500">Sort by:</label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-900/20"
+                >
+                  <option value="date">Date (newest first)</option>
+                  <option value="score">Score (highest first)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Results Table */}
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              {error && <div className="p-6 text-red-600 text-center">{error}</div>}
+              {!error && filteredResults.length === 0 && (
+                <div className="p-12 text-center text-slate-400">
+                  No results match this filter yet.
+                </div>
+              )}
+              {!error && filteredResults.length > 0 && (
+                <table className="w-full">
+                  <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
+                    <tr>
+                      <th className="text-left p-4">Exam</th>
+                      <th className="text-left p-4">Subject</th>
+                      <th className="text-left p-4">Date</th>
+                      <th className="text-left p-4">Score</th>
+                      <th className="text-left p-4">Status</th>
+                      <th className="text-left p-4">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredResults.map((r) => (
+                      <tr
+                        key={r.id}
+                        className="border-t border-slate-100 hover:bg-slate-50/50"
                       >
-                        <MdVisibility size={16} /> View
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+                        <td className="p-4 font-medium text-slate-800">
+                          {r.exam_title}
+                        </td>
+                        <td className="p-4 text-slate-600 capitalize">
+                          {r.subject}
+                        </td>
+                        <td className="p-4 text-slate-600">{r.submitted_at}</td>
+                        <td className="p-4 font-bold text-blue-900">{r.score}%</td>
+                        <td className="p-4">
+                          {r.passed ? (
+                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                              <MdCheckCircle size={14} /> Passed
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                              <MdCancel size={14} /> Failed
+                            </span>
+                          )}
+                        </td>
+                        <td className="p-4">
+                          <button
+                            onClick={() => navigate(`/my-results/${r.id}`)}
+                            className="inline-flex items-center gap-1 text-sm text-blue-900 font-medium hover:underline"
+                          >
+                            <MdVisibility size={16} /> View
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

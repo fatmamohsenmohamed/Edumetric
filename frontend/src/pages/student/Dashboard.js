@@ -1,37 +1,16 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
-  MdDashboard,
-  MdCreate,
-  MdLibraryBooks,
   MdBarChart,
   MdAssignment,
-  MdSettings,
-  MdNotifications,
   MdSearch,
   MdTrendingUp,
   MdTrendingDown,
   MdVisibility,
-  MdAutoAwesome,
-  MdMenuBook,
-  MdAddCircleOutline,
   MdMenu,
-  MdClose,
   MdLogout,
-  MdPerson,
   MdCheckCircle,
   MdCancel,
-  MdEdit,
-  MdDownload,
-  MdHelp,
-  MdChecklistRtl,
-  MdWarning,
-  MdPlayArrow,
-  MdHistory,
-  MdSchool,
-  MdCalendarToday,
-  MdTimer,
-  MdHourglassEmpty,
   MdDeleteForever,
 } from "react-icons/md";
 import {
@@ -47,79 +26,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-
-const NAV = [
-  { label: "Dashboard", icon: MdDashboard, path: "/dashboard", active: true },
-  { label: "Available Exams", icon: MdPlayArrow, path: "/testexam" },
-  { label: "My Results", icon: MdHistory, path: "/my-results" },
-];
-const MENU_ITEMS = [
-  { label: "My Profile", icon: MdPerson },
-  { label: "Edit Profile", icon: MdEdit },
-  { label: "Settings", icon: MdSettings },
-  { label: "Download Reports", icon: MdDownload },
-  { label: "Help & Support", icon: MdHelp },
-];
-const NOTIFICATIONS = [
-  {
-    id: 1,
-    title: "Exam Completed",
-    message: "Your Mathematics exam has been graded",
-    time: "2 hours ago",
-    type: "success",
-    icon: MdCheckCircle,
-  },
-  {
-    id: 2,
-    title: "New Assignment",
-    message: "Physics assignment posted by instructor",
-    time: "5 hours ago",
-    type: "info",
-    icon: MdChecklistRtl,
-  },
-  {
-    id: 3,
-    title: "Low Score Alert",
-    message: "Your Data Structures score is below average",
-    time: "1 day ago",
-    type: "warning",
-    icon: MdWarning,
-  },
-  {
-    id: 4,
-    title: "Exam Reminder",
-    message: "Chemistry exam starts tomorrow at 10 AM",
-    time: "1 day ago",
-    type: "warning",
-    icon: MdWarning,
-  },
-];
-// const UPCOMING_EXAMS = [
-//   {
-//     name: "Advanced Calculus",
-//     date: "Apr 25",
-//     time: "10:00 AM",
-//     duration: "2h",
-//     questions: 50,
-//     status: "upcoming",
-//   },
-//   {
-//     name: "Quantum Physics",
-//     date: "Today",
-//     time: "2:00 PM",
-//     duration: "1.5h",
-//     questions: 40,
-//     status: "active",
-//   },
-//   {
-//     name: "Organic Chemistry",
-//     date: "May 2",
-//     time: "10:00 AM",
-//     duration: "2h",
-//     questions: 45,
-//     status: "upcoming",
-//   },
-// ];
+import Sidebar from "../components/StudentSidbar";
 
 const CustomTooltip = ({ active, payload }) =>
   active && payload?.length ? (
@@ -132,7 +39,6 @@ const CustomTooltip = ({ active, payload }) =>
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
   const navigate = useNavigate();
   const [chartData, setChartData] = useState([]);
   const [stats, setStats] = useState(null);
@@ -152,6 +58,7 @@ export default function Dashboard() {
     }
     navigate("/"); // han3del dy bardo lma y3mlo el home page MOHEMMM
   };
+
   useEffect(() => {
     fetch("http://localhost:8000/api/me/", {
       credentials: "include",
@@ -215,20 +122,22 @@ export default function Dashboard() {
       </div>
     </div>
   );
-// Add this function — but we'll update it to call the backend
-const handleDeleteAccount = async () => {
+
+  // Add this function — but we'll update it to call the backend
+  const handleDeleteAccount = async () => {
     try {
-        await fetch("http://localhost:8000/api/delete-account/", {
-            method: "DELETE",
-            credentials: "include",
-        });
+      await fetch("http://localhost:8000/api/delete-account/", {
+        method: "DELETE",
+        credentials: "include",
+      });
     } catch (err) {
-        console.error("Delete error:", err);
+      console.error("Delete error:", err);
     }
     setDeleteConfirmOpen(false);
     setProfileOpen(false);
     navigate("/");
-};
+  };
+
   const ExamRow = ({ exam, i, total }) => {
     const passed = exam.status === "passed";
     const scoreColor =
@@ -242,9 +151,7 @@ const handleDeleteAccount = async () => {
         className={`grid grid-cols-[2fr_1fr_70px_90px_60px] gap-3 items-center px-4 py-4 rounded-xl hover:bg-[#1e3a8a]/5 text-sm ${i < total - 1 ? "border-b border-slate-200" : ""}`}
       >
         <div className="font-medium text-[#1e3a8a]">{exam.name}</div>
-        <div className="text-xs text-slate-500 hidden sm:block">
-          {exam.date}
-        </div>
+        <div className="text-xs text-slate-500 hidden sm:block">{exam.date}</div>
         <div className={`font-bold text-base ${scoreColor}`}>{Number(exam.score).toFixed(1)}%</div>
         <span
           className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${passed ? "text-emerald-700 bg-emerald-100 border-emerald-300" : "text-red-700 bg-red-100 border-red-300"}`}
@@ -263,7 +170,6 @@ const handleDeleteAccount = async () => {
     );
   };
 
-
   return (
     <div className="min-h-screen bg-white flex">
       {sidebarOpen && (
@@ -272,58 +178,13 @@ const handleDeleteAccount = async () => {
           onClick={() => setSidebarOpen(false)}
         />
       )}
-      <aside
-        className={`fixed lg:relative top-0 left-0 h-full w-56 bg-white border-r border-slate-200 flex flex-col z-50 transition-transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
-      >
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#1e3a8a] text-white flex items-center justify-center font-bold">
-            E
-          </div>
-          <span className="font-bold text-lg text-[#1e3a8a]">EduMetric</span>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden ml-auto text-slate-600"
-          >
-            <MdClose size={20} />
-          </button>
-        </div>
-        <nav className="flex-1 px-4 py-6 space-y-2">
-          {NAV.map(({ label, icon: Icon, active, path }) => (
-            <button
-              key={label}
-              onClick={() => path && navigate(path)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${active ? "bg-[#1e3a8a] text-white shadow-lg" : "text-slate-600 hover:text-slate-900 hover:bg-[#1e3a8a]/10"}`}
-            >
-              <Icon size={18} />
-              {label}
-            </button>
-          ))}
-        </nav>
-        <div className="px-4 py-6 border-t border-slate-200">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-[#1e3a8a]/5 border border-slate-200 hover:bg-[#1e3a8a]/10 transition-all"
-          >
-            <div className="w-8 h-8 rounded-full bg-[#1e3a8a] text-white flex items-center justify-center text-xs font-bold">
-              {user?.full_name
-                ?.split(" ")
-                .map((n) => n[0])
-                .join("")
-                .slice(0, 2)
-                .toUpperCase() || "S"}
-            </div>
-            <div className="flex-1 min-w-0 text-left">
-              <p className="text-sm font-medium text-[#1e3a8a]">
-                {user?.full_name || "Student"}
-              </p>
-              <p className="text-xs text-slate-500">
-                {user?.full_name || "Student"}
-              </p>
-            </div>
-            <MdLogout size={16} className="text-slate-600" />
-          </button>
-        </div>
-      </aside>
+
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        user={user}
+        handleLogout={handleLogout}
+      />
 
       <div className="flex-1 flex flex-col">
         <header className="h-16 bg-white border-b border-slate-200 flex items-center px-6 gap-4 sticky top-0 z-30">
@@ -344,53 +205,6 @@ const handleDeleteAccount = async () => {
             />
           </div>
           <div className="flex-1" />
-          <div className="relative">
-            <button
-              onClick={() => setNotifOpen(!notifOpen)}
-              className="p-2 rounded-xl bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 transition-all relative"
-            >
-              <MdNotifications size={18} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full" />
-            </button>
-            {notifOpen && (
-              <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-xl z-50 shadow-lg max-h-96 overflow-y-auto">
-                <div className="px-4 py-3 border-b border-slate-200 bg-white sticky top-0">
-                  <p className="text-sm font-semibold text-[#1e3a8a]">
-                    Notifications
-                  </p>
-                </div>
-                <div className="py-2">
-                  {NOTIFICATIONS.map(
-                    ({ id, title, message, time, type, icon: Icon }) => (
-                      <div
-                        key={id}
-                        className={`px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-all cursor-pointer ${type === "success" ? "border-l-4 border-l-emerald-500" : type === "warning" ? "border-l-4 border-l-orange-500" : "border-l-4 border-l-blue-500"}`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div
-                            className={`mt-1 ${type === "success" ? "text-emerald-600" : type === "warning" ? "text-orange-600" : "text-blue-600"}`}
-                          >
-                            <Icon size={18} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-slate-900">
-                              {title}
-                            </p>
-                            <p className="text-xs text-slate-600 mt-1">
-                              {message}
-                            </p>
-                            <p className="text-xs text-slate-400 mt-2">
-                              {time}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ),
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
           <div className="relative">
             <button
               onClick={() => setProfileOpen(!profileOpen)}
@@ -416,26 +230,14 @@ const handleDeleteAccount = async () => {
                   </p>
                   <p className="text-xs text-slate-500">{user?.email || ""}</p>
                 </div>
-                <div className="py-2">
-                  {MENU_ITEMS.map(({ label, icon: Icon }) => (
-                    <button
-                      key={label}
-                      onClick={() => setProfileOpen(false)}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-[#1e3a8a]/10 transition-all"
-                    >
-                      <Icon size={16} className="text-[#1e3a8a]" />
-                      {label}
-                    </button>
-                  ))}
-                </div>
                 <div className="border-t border-slate-200 py-2">
                   <button
-                onClick={() => { setProfileOpen(false); setDeleteConfirmOpen(true); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-700 hover:bg-red-100 transition-all font-semibold"
-            >
-                <MdDeleteForever size={16} />
-                Delete Account
-            </button>
+                    onClick={() => { setProfileOpen(false); setDeleteConfirmOpen(true); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-700 hover:bg-red-100 transition-all font-semibold"
+                  >
+                    <MdDeleteForever size={16} />
+                    Delete Account
+                  </button>
                   <button
                     onClick={handleLogout}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-all"
@@ -470,7 +272,6 @@ const handleDeleteAccount = async () => {
                   up={true}
                   color="from-[#1e40af] to-[#1e3a8a]"
                 />
-
                 <StatCard
                   label="Average Score"
                   value={`${stats.avg_score}%`}
@@ -479,7 +280,6 @@ const handleDeleteAccount = async () => {
                   up={true}
                   color="from-[#1e40af] to-[#1e3a8a]"
                 />
-
                 <StatCard
                   label="Passed Exams"
                   value={stats.passed}
@@ -488,7 +288,6 @@ const handleDeleteAccount = async () => {
                   up={true}
                   color="from-[#1e40af] to-[#1e3a8a]"
                 />
-
                 <StatCard
                   label="Failed Exams"
                   value={stats.failed}
@@ -500,17 +299,6 @@ const handleDeleteAccount = async () => {
               </>
             )}
           </div>
-
-          {/* <div className="bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6">
-            <h2 className="text-lg font-bold text-[#1e3a8a] mb-4">
-              📅 Upcoming Exams
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {UPCOMING_EXAMS.map((exam, idx) => (
-                <UpcomingExamCard key={idx} exam={exam} />
-              ))}
-            </div>
-          </div> */}
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             <div className="lg:col-span-3 bg-gradient-to-br from-[#1e3a8a]/5 to-[#1e3a8a]/2 border border-slate-200 rounded-2xl p-6">
@@ -585,16 +373,14 @@ const handleDeleteAccount = async () => {
               </button>
             </div>
             <div className="grid grid-cols-[2fr_1fr_70px_90px_60px] gap-3 px-4 py-3 mb-2 border-b border-slate-200">
-              {["Exam Name", "Date", "Score", "Status", "Action"].map(
-                (h, i) => (
-                  <span
-                    key={h}
-                    className={`text-xs font-semibold uppercase text-slate-500 ${i === 1 ? "hidden sm:block" : ""}`}
-                  >
-                    {h}
-                  </span>
-                ),
-              )}
+              {["Exam Name", "Date", "Score", "Status", "Action"].map((h, i) => (
+                <span
+                  key={h}
+                  className={`text-xs font-semibold uppercase text-slate-500 ${i === 1 ? "hidden sm:block" : ""}`}
+                >
+                  {h}
+                </span>
+              ))}
             </div>
             {exams.map((exam, i) => (
               <ExamRow key={i} exam={exam} i={i} total={exams.length} />
@@ -603,7 +389,7 @@ const handleDeleteAccount = async () => {
         </main>
       </div>
 
-      {/* ✅ Add modal here */}
+      {/*  Add modal here */}
       {deleteConfirmOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden">
@@ -638,8 +424,6 @@ const handleDeleteAccount = async () => {
           </div>
         </div>
       )}
-
-    
     </div>
   );
 }

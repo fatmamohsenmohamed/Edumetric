@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaEnvelope, FaLock, FaGoogle, FaFacebook } from "react-icons/fa";
+import { FaEnvelope, FaLock} from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
@@ -48,19 +48,34 @@ export default function Login() {
     setError("");
     setSuccess("");
 
-    validateEmail(formData.email);
-    validatePassword(formData.password);
+   let hasError = false;
 
-    if (
-      !formData.email ||
-      !formData.password ||
-      emailError ||
-      passwordError
-    ) {
-      setError("Please fix the errors first");
-      return;
+    // Email validation
+    if (!formData.email) {
+      setEmailError("Email is required");
+      hasError = true;
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      setEmailError("Invalid email format");
+      hasError = true;
+    } else {
+      setEmailError("");
     }
 
+    // Password validation
+    if (!formData.password) {
+      setPasswordError("Password is required");
+      hasError = true;
+    } else if (formData.password.length < 6) {
+      setPasswordError("Password must be at least 6 characters");
+      hasError = true;
+    } else {
+      setPasswordError("");
+    }
+
+    if (hasError) {
+      setError("Please complete all required fields");
+      return;
+    }
     setLoading(true);
 
     try {
@@ -103,7 +118,7 @@ export default function Login() {
   } else if (data.is_institutional) {
       navigate("/student");
   } else {
-      navigate("/home");
+      navigate("/");
   }
     } catch (err) {
       setLoading(false);
@@ -242,13 +257,7 @@ export default function Login() {
             <button
               type="submit"
               className="w-full py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primaryLight hover:shadow-soft transition flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={
-                loading ||
-                !formData.email ||
-                !formData.password ||
-                emailError ||
-                passwordError
-              }
+              disabled={loading}
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -258,26 +267,7 @@ export default function Login() {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="flex items-center my-6">
-            <div className="flex-grow border-t border-border"></div>
-
-            <span className="mx-3 text-textSoft text-xs">OR</span>
-
-            <div className="flex-grow border-t border-border"></div>
-          </div>
-
-          {/* Social */}
-          <div className="flex gap-3">
-            <button className="flex-1 py-3 rounded-xl bg-card border border-border text-textMain hover:bg-primary/5 transition flex justify-center items-center gap-2">
-              <FaGoogle className="text-danger" /> Google
-            </button>
-
-            <button className="flex-1 py-3 rounded-xl bg-card border border-border text-textMain hover:bg-primary/5 transition flex justify-center items-center gap-2">
-              <FaFacebook className="text-primary" /> Facebook
-            </button>
-          </div>
-
+          
           {/* Footer */}
           <p className="text-center text-textSoft text-sm mt-6">
             Don’t have an account?

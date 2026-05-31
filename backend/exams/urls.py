@@ -28,4 +28,5 @@ urlpatterns = [
     path("teacher/exams/<int:exam_id>/delete/", views.teacher_delete_exam, name="teacher_delete_exam"),
 
     path("teacher/results/", teacher_student_results), 
+    
 ]

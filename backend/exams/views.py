@@ -647,4 +647,12 @@ def teacher_delete_exam(request, exam_id):
         return JsonResponse({"success": True})
     except Exam.DoesNotExist:
         return JsonResponse({"error": "Exam not found"}, status=404)
+    
+
+
+import os
+import re
+import requests
+
+
 

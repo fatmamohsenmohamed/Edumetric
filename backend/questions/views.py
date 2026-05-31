@@ -8,6 +8,8 @@ from django.http import JsonResponse
 from .models import Question, Choice
 from django.db import transaction
 from docx import Document
+import requests
+import re
 
 
 from django.shortcuts import render, get_object_or_404, redirect
@@ -261,3 +263,110 @@ def parse_docx_question(text_block):
 # Subject: Science
 
 # Correct: false
+@csrf_exempt
+def generate_questions_ai(request):
+    """Generate exam questions using Google Gemini AI."""
+    if request.method != "POST":
+        return JsonResponse({"error": "POST only"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        subject = data.get("subject", "general").strip()
+        topic = data.get("topic", "").strip()
+        difficulty = data.get("difficulty", "medium").lower()
+        count = min(max(int(data.get("count", 3)), 1), 10)
+
+        if not topic:
+            return JsonResponse({"error": "Topic is required"}, status=400)
+
+        prompt = f"""Generate exactly {count} multiple-choice questions about "{topic}"
+in the subject of "{subject}" at {difficulty} difficulty level.
+
+IMPORTANT: Return ONLY valid JSON. No markdown formatting, no code fences, no explanations.
+
+Format:
+[
+  {{
+    "question": "the question text here",
+    "options": ["option 1", "option 2", "option 3", "option 4"],
+    "correct_index": 0
+  }}
+]
+
+Rules:
+- Each question must have exactly 4 options
+- correct_index must be 0, 1, 2, or 3 (zero-indexed)
+- Wrong options should be plausible but clearly incorrect
+- Questions should be clear, unambiguous, and match the difficulty level
+- Do not include any text before or after the JSON array"""
+
+        # Get API key from environment variable (safer than hardcoding)
+        api_key = "AQ.Ab8RN6Ic8fITgfQDvDfFw4XFwHhvmV6ttyJAKDP8cCN7y1giAA"
+        if not api_key:
+            return JsonResponse(
+                {"error": "AI service not configured (missing API key)"},
+                status=500,
+            )
+
+        url = (
+            f"https://generativelanguage.googleapis.com/v1beta/"
+            f"models/gemini-2.5-flash:generateContent?key={api_key}"
+        )
+
+        ai_response = requests.post(
+            url,
+            headers={"Content-Type": "application/json"},
+            json={"contents": [{"parts": [{"text": prompt}]}]},
+            timeout=30,
+        )
+
+        if ai_response.status_code != 200:
+            print("=" * 50)
+            print(f"GEMINI ERROR (status {ai_response.status_code}):")
+            print(ai_response.text)
+            print("=" * 50)
+            return JsonResponse(
+                {"error": f"AI service returned {ai_response.status_code}: {ai_response.text[:300]}"},
+                status=500,
+    )
+        ai_text = ai_response.json()["candidates"][0]["content"]["parts"][0]["text"]
+
+        # Clean up potential markdown wrapping
+        ai_text = ai_text.strip()
+        ai_text = re.sub(r"^```(?:json)?\s*", "", ai_text)
+        ai_text = re.sub(r"\s*```$", "", ai_text)
+
+        questions = json.loads(ai_text)
+
+        # Validate structure
+        cleaned = []
+        for q in questions:
+            if (
+                isinstance(q, dict)
+                and "question" in q
+                and "options" in q
+                and "correct_index" in q
+                and len(q["options"]) == 4
+                and 0 <= q["correct_index"] <= 3
+            ):
+                cleaned.append({
+                    "question": str(q["question"]),
+                    "options": [str(o) for o in q["options"]],
+                    "correct_index": int(q["correct_index"]),
+                })
+
+        if not cleaned:
+            return JsonResponse(
+                {"error": "AI returned invalid format. Please try again."},
+                status=500,
+            )
+
+        return JsonResponse({"questions": cleaned})
+
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {"error": "AI returned invalid JSON. Please try again."},
+            status=500,
+        )
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

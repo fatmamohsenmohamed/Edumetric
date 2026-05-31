@@ -95,15 +95,17 @@ DATABASES = {
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'mssql',
-#         'NAME': 'EduMetric',
-#         'HOST': 'DESKTOP-0SKT89E\\SQLEXPRESS',
+#         'NAME': 'Edumetric',
+#         'USER': 'django_user',
+#         'PASSWORD': 'Femos526199.!!',
+#         'HOST': '10.211.55.3',   # ← your VM's IP
+#         'PORT': '1433',
 #         'OPTIONS': {
-#             'driver': 'ODBC Driver 17 for SQL Server',
-#             'trusted_connection': 'yes',
+#             'driver': 'ODBC Driver 18 for SQL Server',
+#             'extra_params': 'TrustServerCertificate=yes;Encrypt=yes;',
 #         },
 #     }
 # }
-
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
