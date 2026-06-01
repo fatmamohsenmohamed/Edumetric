@@ -31,30 +31,34 @@ export default function Pricing() {
 
   const plans = [
     {
-      title: "Basic",
-      price: "$10/mo",
-      features: ["Access to question bank", "Basic analytics", "Email support"],
+      title: "Silver",
+      price: "100LE/mo",
+      features: [
+        "10 exams per month", 
+        "PDF export for each exam", 
+        "analytics dashboard showing performane trends", 
+        "official certificate uppon completion"],
       highlight: false,
     },
     {
-      title: "Pro",
-      price: "$25/mo",
+      title: "Gold",
+      price: "150LE/mo",
       features: [
-        "Everything in Basic",
-        "AI-powered question generation",
-        "Advanced analytics",
-        "Priority support",
+        "20 exams per month",
+        "PDF export for each exam", 
+        "analytics dashboard showing performane trends", 
+        "official certificate uppon completion"
       ],
       highlight: true,
     },
     {
-      title: "Enterprise",
-      price: "$50/mo",
+      title: "Titanium",
+      price: "200LE/mo",
       features: [
-        "Everything in Pro",
-        "Custom branding",
-        "Team management",
-        "Dedicated account manager",
+        "30 exams per month",
+        "PDF export for each exam", 
+        "analytics dashboard showing performane trends", 
+        "official certificate uppon completion"
       ],
       highlight: false,
     },
@@ -106,7 +110,13 @@ export default function Pricing() {
             <ul className="flex-1 flex flex-col gap-4 mb-8 z-10">
               {plan.features.map((feature, j) => (
                 <li key={j} className="flex items-center gap-3">
-                  <span className="text-primary font-bold text-lg">✔</span>
+                  <span
+                    className={`font-bold text-lg ${
+                      plan.highlight ? "text-white" : "text-primary"
+                    }`}
+                  >
+                    ✔
+                  </span>
                   <span>{feature}</span>
                 </li>
               ))}
