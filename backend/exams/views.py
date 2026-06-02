@@ -27,7 +27,6 @@ from functools import wraps
 from .services.difficulty_calibration import calibrate_question_difficulty
 
 
-
 def api_login_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
@@ -35,8 +34,6 @@ def api_login_required(view_func):
             return JsonResponse({"error": "Authentication required"}, status=401)
         return view_func(request, *args, **kwargs)
     return wrapper
-# If no valid session is found → request.user becomes an AnonymousUser instance (which has .is_authenticated = False).
-
 
 @csrf_exempt
 @api_login_required
@@ -53,7 +50,7 @@ def create_exam(request):
                 status=403
             )
 
-        # 🔒 Teacher must belong to an institution
+
         membership = getattr(request.user, "institution_membership", None)
         if not membership:
             return JsonResponse(
@@ -114,14 +111,14 @@ def create_exam(request):
 
     except Exception as e:
         import traceback
-        print(traceback.format_exc())  # 👈 shows real error in terminal
+        print(traceback.format_exc())  
 
         return JsonResponse({
             "success": False,
             "error": str(e)
         }, status=500)
 
-@csrf_exempt  # 🔥 REQUIRED for React frontend
+@csrf_exempt  
 @api_login_required
 def take_exam(request, exam_id):
     try:
@@ -135,7 +132,6 @@ def take_exam(request, exam_id):
             )
 
         
-
 
         if request.user.is_authenticated:
             attempts = Submission.objects.filter(
@@ -189,13 +185,11 @@ def take_exam(request, exam_id):
         )
 
 
-@csrf_exempt  # 🔥 REQUIRED for React frontend
+@csrf_exempt
 @api_login_required
 def submit_exam(request, exam_id):
     try:
         exam = get_object_or_404(Exam, id=exam_id)
-
-        # 🔥 Parse body safely
         try:
             data = json.loads(request.body)
         except json.JSONDecodeError:
@@ -232,7 +226,6 @@ def submit_exam(request, exam_id):
                 status=403
             )
 
-        # 🔥 Create submission
         submission = Submission.objects.create(
             exam=exam,
             student=student,
@@ -267,7 +260,6 @@ def submit_exam(request, exam_id):
 
             # True/False
             elif question.question_type == "tf":
-                # 🔥 Handle both boolean and string "true"/"false" from JS
                 if isinstance(user_answer, str):
                     user_tf = user_answer.lower() == "true"
                 else:
@@ -366,7 +358,6 @@ def available_exams(request):
         membership = getattr(user, "institution_membership", None)
 
         if membership:
-            # Institutional student → exams from teachers in same institution
             instructor_ids = InstitutionMember.objects.filter(
                 institution=membership.institution
             ).values_list("user_id", flat=True)
@@ -478,13 +469,12 @@ def student_result_detail(request, submission_id):
     try:
         submission = Submission.objects.select_related("exam").get(
             id=submission_id,
-            student=request.user,  # 🔒 ensures students can only see their own submissions
+            student=request.user, 
         )
     except Submission.DoesNotExist:
         return JsonResponse({"error": "Submission not found"}, status=404)
 
     try:
-        # Get all answers in this submission, keyed by question_id
         answers_qs = Answer.objects.filter(submission=submission).select_related(
             "question", "selected_choice"
         )
@@ -561,15 +551,11 @@ def teacher_student_results(request):
         return JsonResponse({"error": "Only GET allowed"}, status=405)
     
     try:
-        # get all exams where instructor is the logged in teacher
-        # instructor is a ForeignKey field on the Exam model
         exams = Exam.objects.filter(instructor=request.user)
         
         results = []
         
-        for exam in exams:
-            # get all submissions for this exam
-            # Submission has a ForeignKey to Exam
+        for exam in exams:           
             submissions = Submission.objects.filter(exam=exam)
             
             for submission in submissions:
@@ -579,18 +565,16 @@ def teacher_student_results(request):
                     selected_choice__is_correct=True
                 ).count()
                 
-                # total questions in this exam
                 total_questions = exam.questions.count()
                 
                 results.append({
-                    # ✅ Get name from profile which stores full_name correctly
                     "student": submission.student.first_name or submission.student.profile.user.username,
                     "exam": exam.title,
                     "subject": exam.subject or "N/A",
                     "score": round(submission.score, 1) if submission.score is not None else 0,
                     "correct": correct_answers,
                     "total": total_questions,
-                    "date": submission.submitted_at.strftime("%Y-%m-%d"),# hy7otely el date bta3 el you el a5d feh el exam
+                    "date": submission.submitted_at.strftime("%Y-%m-%d"),
                 })
 
                 for submission in submissions:
