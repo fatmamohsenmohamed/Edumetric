@@ -8,7 +8,6 @@ import {
    MdSearch, 
    MdTrendingUp, 
    MdTrendingDown, 
-   MdVisibility, 
    MdMenu, 
    MdClose, 
    MdLogout, 
@@ -165,7 +164,7 @@ const handleDeleteUser = async (userId) => {
   const ExamRow = ({ exam, i }) => {
     const active = exam.status === "active";
     return (
-      <div className={`grid grid-cols-[2fr_1.5fr_70px_70px_90px_90px_60px] gap-3 items-center px-4 py-4 rounded-xl hover:bg-[#1e3a8a]/5 text-sm ${i < exams.length - 1 ? "border-b border-slate-200" : ""}`}>
+      <div className={`grid grid-cols-[2fr_1.5fr_90px_90px_120px_120px] gap-4 items-center px-4 py-4 rounded-xl hover:bg-[#1e3a8a]/5 text-sm ${i < exams.length - 1 ? "border-b border-slate-200" : ""}`}>
         <div className="font-medium text-[#1e3a8a]">{exam.name}</div>
         <div className="text-xs text-slate-500 hidden sm:block">{exam.teacher}</div>
         <div className="text-sm text-slate-600">{exam.students}</div>
@@ -174,9 +173,7 @@ const handleDeleteUser = async (userId) => {
         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${active ? "text-emerald-700 bg-emerald-100 border-emerald-300" : "text-gray-700 bg-gray-100 border-gray-300"}`}>
           {active ? <MdCheckCircle size={11} /> : <MdCancel size={11} />}{active ? "Active" : "Closed"}
         </span>
-        <button className="flex items-center gap-1 text-xs px-3 py-2 rounded-lg bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 transition-all">
-          <MdVisibility size={12} />View
-        </button>
+        
       </div>
     );
   };
@@ -394,10 +391,9 @@ const TeacherRow = ({ teacher, i }) => (
                 <h2 className="text-lg font-bold text-[#1e3a8a] mb-1">Exams</h2>
                 <p className="text-sm text-slate-500">Monitor all system exams</p>
               </div>
-              <button className="text-xs px-4 py-2 rounded-lg bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 transition-all">View all exams</button>
             </div>
-            <div className="grid grid-cols-[2fr_1.5fr_70px_70px_90px_90px_60px] gap-3 px-4 py-3 mb-2 border-b border-slate-200">
-              {["Exam Name", "Teacher", "Students", "Questions", "Date", "Status", "Action"].map((h, i) => <span key={h} className={`text-xs font-semibold uppercase text-slate-500 ${i === 4 ? "hidden sm:block" : ""}`}>{h}</span>)}
+            <div className="grid grid-cols-[2fr_1.5fr_90px_90px_120px_120px] gap-4 px-4 py-3 mb-2 border-b border-slate-200">
+              {["Exam Name", "Teacher", "Students", "Questions", "Date", "Status"].map((h, i) => <span key={h} className={`text-xs font-semibold uppercase text-slate-500 ${i === 4 ? "hidden sm:block" : ""}`}>{h}</span>)}
             </div>
             {exams.map((exam, i) => <ExamRow key={i} exam={exam} i={i} />)}
           </div>
