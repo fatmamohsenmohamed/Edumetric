@@ -90,7 +90,7 @@ const validate = (data, step) => {
 };
 
 /* ───────── STEP 1 ───────── */
-function Step1({ data, onChange, errors }) {
+function Step1({data,onChange,errors,subjectStatus}) {
   return (
     <div className="space-y-6">
       <h3 className="font-semibold text-lg">Basic Info</h3>
@@ -111,19 +111,44 @@ function Step1({ data, onChange, errors }) {
         )}
       </div>
 
-      <div>
-        <Label>Subject</Label>
-        <input
-          name="subject"
-          value={data.subject}
-          onChange={onChange}
-          className={`w-full h-12 px-4 border rounded-xl
-            ${errors.subject ? "border-red-500" : data.subject ? "border-green-500" : "border-gray-300"}`}
-        />
-        {errors.subject && (
-          <p className="text-red-500 text-xs">{errors.subject}</p>
-        )}
-      </div>
+     <div>
+      <Label>Subject</Label>
+
+      <input
+        name="subject"
+        value={data.subject}
+        onChange={onChange}
+        placeholder="e.g. math, science, physics"
+        className={`w-full h-12 px-4 border rounded-xl ${
+          errors.subject
+            ? "border-red-500"
+            : subjectStatus?.exists
+            ? "border-green-500"
+            : subjectStatus?.exists === false
+            ? "border-red-500"
+            : "border-gray-300"
+        }`}
+      />
+
+      {errors.subject && (
+        <p className="text-red-500 text-xs mt-1">
+          {errors.subject}
+        </p>
+      )}
+
+      {!errors.subject && subjectStatus !== null && (
+        subjectStatus.exists ? (
+          <p className="text-green-600 text-xs mt-1">
+             Subject found — {subjectStatus.question_count}
+            questions available
+          </p>
+        ) : (
+          <p className="text-red-500 text-xs mt-1">
+             No subject by this name in the question bank.
+          </p>
+        )
+      )}
+    </div>
 
       <div>
         <Label>Duration</Label>
@@ -290,6 +315,7 @@ export default function CreateExam() {
   const [maxStep, setMaxStep] = useState(1);
   const [examData, setExamData] = useState(INITIAL_EXAM_DATA);
   const [errors, setErrors] = useState({});
+  const [subjectStatus, setSubjectStatus] = useState(null);
 
   useEffect(() => {
     fetch("http://localhost:8000/api/me/", { credentials: "include" })
@@ -308,6 +334,28 @@ export default function CreateExam() {
       console.error("Logout error:", err);
     }
     navigate("/login");
+  };
+
+  const checkSubject = async (subject) => {
+    if (!subject || subject.length < 2) {
+      setSubjectStatus(null);
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `http://localhost:8000/api/check-subject/?subject=${subject}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      const data = await res.json();
+
+      setSubjectStatus(data);
+    } catch (err) {
+      console.error("Subject check error:", err);
+    }
   };
 
   const handlePublish = async () => {
@@ -346,22 +394,54 @@ export default function CreateExam() {
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    const val =
-      type === "checkbox" ? checked : type === "number" ? Number(value) : value;
-    const newData = { ...examData, [name]: val };
-    setExamData(newData);
-    setErrors(validate(newData, step));
-  };
+ const handleChange = (e) => {
+  const { name, value, type, checked } = e.target;
+
+  const val =
+    type === "checkbox"
+      ? checked
+      : type === "number"
+      ? Number(value)
+      : value;
+
+  const newData = { ...examData, [name]: val };
+
+  setExamData(newData);
+
+  setErrors(validate(newData, step));
+
+  // Subject validation
+  if (name === "subject") {
+    checkSubject(val);
+  }
+};
 
   const next = () => {
     const err = validate(examData, step);
+
     setErrors(err);
+
     if (Object.keys(err).length > 0) return;
+
+    // Subject not found
+    if (
+      step === 1 &&
+      subjectStatus !== null &&
+      !subjectStatus.exists
+    ) {
+      setErrors({
+        subject:
+          "This subject has no questions in the question bank",
+      });
+
+      return;
+    }
+
     setStep((s) => {
       const n = s + 1;
+
       setMaxStep((m) => Math.max(m, n));
+
       return n;
     });
   };
@@ -406,7 +486,12 @@ export default function CreateExam() {
 
             <Card className="p-6">
               {step === 1 && (
-                <Step1 data={examData} onChange={handleChange} errors={errors} />
+                <Step1
+                  data={examData}
+                  onChange={handleChange}
+                  errors={errors}
+                  subjectStatus={subjectStatus}
+                />
               )}
               {step === 2 && (
                 <Step2 data={examData} onChange={handleChange} errors={errors} />
