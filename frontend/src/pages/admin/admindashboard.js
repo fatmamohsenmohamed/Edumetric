@@ -164,12 +164,11 @@ const handleDeleteUser = async (userId) => {
   const ExamRow = ({ exam, i }) => {
     const active = exam.status === "active";
     return (
-      <div className={`grid grid-cols-[2fr_1.5fr_90px_90px_120px_120px] gap-4 items-center px-4 py-4 rounded-xl hover:bg-[#1e3a8a]/5 text-sm ${i < exams.length - 1 ? "border-b border-slate-200" : ""}`}>
+      <div className={`grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr] gap-4 items-center px-4 py-4 rounded-xl hover:bg-[#1e3a8a]/5 text-sm ${i < exams.length - 1 ? "border-b border-slate-200" : ""}`}>
         <div className="font-medium text-[#1e3a8a]">{exam.name}</div>
         <div className="text-xs text-slate-500 hidden sm:block">{exam.teacher}</div>
         <div className="text-sm text-slate-600">{exam.students}</div>
         <div className="text-sm text-slate-600">{exam.questions}</div>
-        <div className="text-xs text-slate-500 hidden sm:block">{exam.date}</div>
         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${active ? "text-emerald-700 bg-emerald-100 border-emerald-300" : "text-gray-700 bg-gray-100 border-gray-300"}`}>
           {active ? <MdCheckCircle size={11} /> : <MdCancel size={11} />}{active ? "Active" : "Closed"}
         </span>
@@ -392,8 +391,8 @@ const TeacherRow = ({ teacher, i }) => (
                 <p className="text-sm text-slate-500">Monitor all system exams</p>
               </div>
             </div>
-            <div className="grid grid-cols-[2fr_1.5fr_90px_90px_120px_120px] gap-4 px-4 py-3 mb-2 border-b border-slate-200">
-              {["Exam Name", "Teacher", "Students", "Questions", "Date", "Status"].map((h, i) => <span key={h} className={`text-xs font-semibold uppercase text-slate-500 ${i === 4 ? "hidden sm:block" : ""}`}>{h}</span>)}
+            <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr] gap-4 px-4 py-3 mb-2 border-b border-slate-200">
+              {["Exam Name", "Teacher", "Students", "Questions", "Status"].map((h) => <span key={h} className={`text-xs font-semibold uppercase text-slate-500 `}>{h}</span>)}
             </div>
             {exams.map((exam, i) => <ExamRow key={i} exam={exam} i={i} />)}
           </div>

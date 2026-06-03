@@ -1,8 +1,77 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { FaCreditCard, FaCheckCircle } from "react-icons/fa";
+import { FaCreditCard, FaCheckCircle, FaExclamationCircle, FaSpinner } from "react-icons/fa";
 import AOS from "aos";
 import "aos/dist/aos.css";
+
+// ================= VALIDATION RULES =================
+const validators = {
+  name: {
+    validate: (v) =>
+      v.trim().length > 2 && /^[a-zA-Z\u0600-\u06FF\s]+$/.test(v.trim()),
+    message: (v) => {
+      if (!v.trim()) return "Cardholder name is required";
+      if (v.trim().length <= 2) return "Name must be at least 3 characters";
+      if (!/^[a-zA-Z\u0600-\u06FF\s]+$/.test(v.trim()))
+        return "Name must contain letters only";
+      return "";
+    },
+  },
+  cardNumber: {
+    validate: (v) =>
+      v.replace(/\s/g, "").length === 16 &&
+      /^\d+$/.test(v.replace(/\s/g, "")),
+    message: (v) => {
+      const d = v.replace(/\s/g, "");
+      if (!d) return "Card number is required";
+      if (!/^\d+$/.test(d)) return "Card number must contain digits only";
+      if (d.length < 16)
+        return `${16 - d.length} more digit${16 - d.length > 1 ? "s" : ""} needed`;
+      return "";
+    },
+  },
+  expiry: {
+    validate: (v) => {
+      if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(v)) return false;
+      const [m, y] = v.split("/").map(Number);
+      const now = new Date();
+      const cy = now.getFullYear() % 100;
+      const cm = now.getMonth() + 1;
+      return y > cy || (y === cy && m >= cm);
+    },
+    message: (v) => {
+      if (!v) return "Expiry date is required";
+      if (!/^\d{2}\/\d{2}$/.test(v)) return "Use MM/YY format (e.g. 08/27)";
+      const [m] = v.split("/").map(Number);
+      if (m < 1 || m > 12) return "Month must be between 01 and 12";
+      return "This card has expired";
+    },
+  },
+  cvv: {
+    validate: (v) => /^\d{3,4}$/.test(v),
+    message: (v) => {
+      if (!v) return "CVV is required";
+      if (!/^\d+$/.test(v)) return "CVV must be digits only";
+      if (v.length < 3) return "CVV must be 3 or 4 digits";
+      return "";
+    },
+  },
+};
+
+// ================= FIELD COMPONENT =================
+function Field({ id, label, children, error, touched }) {
+  return (
+    <div className="space-y-1">
+      <label className="text-xs font-medium text-textSoft">{label}</label>
+      {children}
+      <div className={`flex items-center gap-1 text-xs text-danger transition-all duration-200 ${touched && error ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1 pointer-events-none"}`}
+        style={{ minHeight: "18px" }}>
+        <FaExclamationCircle className="shrink-0" />
+        <span>{error}</span>
+      </div>
+    </div>
+  );
+}
 
 export default function Checkout() {
   const location = useLocation();
@@ -10,7 +79,6 @@ export default function Checkout() {
 
   const plan = location.state?.plan;
   const examId = location.state?.examId;
-  const examTitle = location.state?.examTitle;
 
   const [formData, setFormData] = useState({
     name: "",
@@ -19,9 +87,17 @@ export default function Checkout() {
     cvv: "",
   });
 
+  // Track which fields the user has interacted with
+  const [touched, setTouched] = useState({
+    name: false,
+    cardNumber: false,
+    expiry: false,
+    cvv: false,
+  });
+
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [globalError, setGlobalError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     AOS.init({ duration: 800, once: true });
@@ -35,16 +111,35 @@ export default function Checkout() {
     );
   }
 
-  // ================= VALIDATION =================
-  const isNameValid = formData.name.trim().length > 2;
-  const isCardValid = /^[0-9]{16}$/.test(formData.cardNumber);
-  const isExpiryValid = /^(0[1-9]|1[0-2])\/\d{2}$/.test(formData.expiry);
-  const isCvvValid = /^[0-9]{3,4}$/.test(formData.cvv);
+  // ================= COMPUTED ERRORS =================
+  const errors = {
+    name:
+      touched.name && !validators.name.validate(formData.name)
+        ? validators.name.message(formData.name)
+        : "",
+    cardNumber:
+      touched.cardNumber && !validators.cardNumber.validate(formData.cardNumber)
+        ? validators.cardNumber.message(formData.cardNumber)
+        : "",
+    expiry:
+      touched.expiry && !validators.expiry.validate(formData.expiry)
+        ? validators.expiry.message(formData.expiry)
+        : "",
+    cvv:
+      touched.cvv && !validators.cvv.validate(formData.cvv)
+        ? validators.cvv.message(formData.cvv)
+        : "",
+  };
 
-  const isFormValid = isNameValid && isCardValid && isExpiryValid && isCvvValid;
+  const isFormValid = Object.keys(validators).every((k) =>
+    validators[k].validate(formData[k])
+  );
 
   // ================= FORMATTERS =================
-  const formatCardNumber = (value) => value.replace(/\D/g, "").slice(0, 16);
+  const formatCardNumber = (value) => {
+    const digits = value.replace(/\D/g, "").slice(0, 16);
+    return digits.match(/.{1,4}/g)?.join(" ") || digits;
+  };
 
   const formatExpiry = (value) => {
     let v = value.replace(/\D/g, "").slice(0, 4);
@@ -52,19 +147,37 @@ export default function Checkout() {
     return v;
   };
 
+  // ================= FIELD CHANGE HANDLER =================
+  const handleChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Mark as touched on first change
+    if (!touched[field]) {
+      setTouched((prev) => ({ ...prev, [field]: true }));
+    }
+  };
+
+  const handleBlur = (field) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  };
+
   // ================= SUBMIT =================
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setGlobalError("");
 
-    setError("");
-    setSuccess("");
+    // Mark all fields as touched to show all errors
+    setTouched({ name: true, cardNumber: true, expiry: true, cvv: true });
+
+    if (!isFormValid) {
+      setGlobalError("Please fix the errors above before continuing.");
+      return;
+    }
 
     setLoading(true);
 
-    // Simulate payment processing
     setTimeout(() => {
       setLoading(false);
-      setSuccess("Payment successful 🎉");
+      setSuccess(true);
 
       setTimeout(() => {
         if (examId) {
@@ -76,35 +189,32 @@ export default function Checkout() {
     }, 1500);
   };
 
+  // ================= INPUT CLASS HELPER =================
+  const inputClass = (field) =>
+    `w-full p-4 pr-10 rounded-xl border bg-bg transition-colors ${
+      touched[field]
+        ? validators[field].validate(formData[field])
+          ? "border-success"
+          : "border-danger"
+        : "border-border"
+    }`;
+
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center p-10">
       <div className="w-full max-w-6xl grid md:grid-cols-2 gap-10">
-        {/* LEFT - PLAN */}
-        <div
-          data-aos="fade-right"
-          className="bg-card border border-border rounded-3xl p-10 shadow-soft"
-        >
-          <h2 className="text-2xl font-bold text-textMain mb-6">Your Plan</h2>
 
+        {/* LEFT - PLAN */}
+        <div data-aos="fade-right"
+          className="bg-card border border-border rounded-3xl p-10 shadow-soft">
+          <h2 className="text-2xl font-bold text-textMain mb-6">Your Plan</h2>
           <div className="p-8 rounded-2xl bg-primary/10 border border-primary/20">
             <h3 className="text-xl font-semibold text-primary">{plan.title}</h3>
-
-            <p className="text-3xl font-bold mt-3 text-textMain">
-              {plan.price}
-            </p>
-
+            <p className="text-3xl font-bold mt-3 text-textMain">{plan.price}</p>
             <div className="mt-6 space-y-3">
-              <p className="text-sm font-semibold text-textSoft mb-2">
-                Included Features:
-              </p>
-
+              <p className="text-sm font-semibold text-textSoft mb-2">Included Features:</p>
               {plan.features.map((f, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-2 text-textSoft text-sm"
-                  data-aos="fade-up"
-                  data-aos-delay={i * 100}
-                >
+                <div key={i} className="flex items-start gap-2 text-textSoft text-sm"
+                  data-aos="fade-up" data-aos-delay={i * 100}>
                   <FaCheckCircle className="text-primary mt-0.5" />
                   <span>{f}</span>
                 </div>
@@ -114,19 +224,18 @@ export default function Checkout() {
         </div>
 
         {/* RIGHT - PAYMENT */}
-        <div
-          data-aos="fade-left"
-          className="bg-card border border-border rounded-3xl p-10 shadow-soft"
-        >
+        <div data-aos="fade-left"
+          className="bg-card border border-border rounded-3xl p-10 shadow-soft">
           <h2 className="text-2xl font-bold text-textMain mb-6 flex items-center gap-3">
             <FaCreditCard className="text-primary" />
             Payment Details
           </h2>
 
-          {/* ERROR */}
-          {error && (
-            <div className="bg-danger/10 text-danger border border-danger/30 p-4 rounded-xl mb-4 text-center">
-              {error}
+          {/* GLOBAL ERROR */}
+          {globalError && (
+            <div className="bg-danger/10 text-danger border border-danger/30 p-4 rounded-xl mb-4 flex items-center gap-2 animate-in">
+              <FaExclamationCircle />
+              {globalError}
             </div>
           )}
 
@@ -134,90 +243,104 @@ export default function Checkout() {
           {success && (
             <div className="bg-success/10 text-success border border-success/30 p-4 rounded-xl mb-4 flex items-center justify-center gap-2">
               <FaCheckCircle className="animate-bounce" />
-              {success}
+              Payment successful 🎉 Redirecting...
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+
             {/* NAME */}
-            <div className="relative">
-              <input
-                placeholder="Cardholder Name"
-                className="w-full p-4 pr-10 rounded-xl border border-border bg-bg"
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-              />
+            <Field label="Cardholder Name" error={errors.name} touched={touched.name}>
+              <div className="relative">
+                <input
+                  placeholder="Ahmed Mohamed"
+                  className={inputClass("name")}
+                  value={formData.name}
+                  onChange={(e) => handleChange("name", e.target.value)}
+                  onBlur={() => handleBlur("name")}
+                />
+                {touched.name && (
+                  validators.name.validate(formData.name)
+                    ? <FaCheckCircle className="absolute right-3 top-4 text-success" />
+                    : <FaExclamationCircle className="absolute right-3 top-4 text-danger" />
+                )}
+              </div>
+            </Field>
 
-              {isNameValid && (
-                <FaCheckCircle className="absolute right-3 top-4 text-green-500 animate-pulse" />
-              )}
-            </div>
-
-            {/* CARD */}
-            <div className="relative">
-              <input
-                placeholder="Card Number"
-                value={formData.cardNumber}
-                className="w-full p-4 pr-10 rounded-xl border border-border bg-bg"
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    cardNumber: formatCardNumber(e.target.value),
-                  })
-                }
-              />
-
-              {isCardValid && (
-                <FaCheckCircle className="absolute right-3 top-4 text-green-500 animate-pulse" />
-              )}
-            </div>
+            {/* CARD NUMBER */}
+            <Field label="Card Number" error={errors.cardNumber} touched={touched.cardNumber}>
+              <div className="relative">
+                <input
+                  placeholder="1234 5678 9012 3456"
+                  value={formData.cardNumber}
+                  className={inputClass("cardNumber")}
+                  onChange={(e) => handleChange("cardNumber", formatCardNumber(e.target.value))}
+                  onBlur={() => handleBlur("cardNumber")}
+                />
+                {touched.cardNumber && (
+                  validators.cardNumber.validate(formData.cardNumber)
+                    ? <FaCheckCircle className="absolute right-3 top-4 text-success" />
+                    : <FaExclamationCircle className="absolute right-3 top-4 text-danger" />
+                )}
+              </div>
+            </Field>
 
             {/* EXPIRY + CVV */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="relative">
-                <input
-                  placeholder="MM/YY"
-                  value={formData.expiry}
-                  className="p-4 w-full pr-10 rounded-xl border border-border bg-bg"
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      expiry: formatExpiry(e.target.value),
-                    })
-                  }
-                />
+              <Field label="Expiry Date" error={errors.expiry} touched={touched.expiry}>
+                <div className="relative">
+                  <input
+                    placeholder="MM/YY"
+                    value={formData.expiry}
+                    className={inputClass("expiry")}
+                    onChange={(e) => handleChange("expiry", formatExpiry(e.target.value))}
+                    onBlur={() => handleBlur("expiry")}
+                  />
+                  {touched.expiry && (
+                    validators.expiry.validate(formData.expiry)
+                      ? <FaCheckCircle className="absolute right-3 top-4 text-success" />
+                      : <FaExclamationCircle className="absolute right-3 top-4 text-danger" />
+                  )}
+                </div>
+              </Field>
 
-                {isExpiryValid && (
-                  <FaCheckCircle className="absolute right-3 top-4 text-green-500 animate-pulse" />
-                )}
-              </div>
-
-              <div className="relative">
-                <input
-                  placeholder="CVV"
-                  value={formData.cvv}
-                  className="p-4 w-full pr-10 rounded-xl border border-border bg-bg"
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      cvv: e.target.value.replace(/\D/g, ""),
-                    })
-                  }
-                />
-
-                {isCvvValid && (
-                  <FaCheckCircle className="absolute right-3 top-4 text-green-500 animate-pulse" />
-                )}
-              </div>
+              <Field label="CVV" error={errors.cvv} touched={touched.cvv}>
+                <div className="relative">
+                  <input
+                    placeholder="123"
+                    value={formData.cvv}
+                    className={inputClass("cvv")}
+                    onChange={(e) => handleChange("cvv", e.target.value.replace(/\D/g, "").slice(0, 4))}
+                    onBlur={() => handleBlur("cvv")}
+                  />
+                  {touched.cvv && (
+                    validators.cvv.validate(formData.cvv)
+                      ? <FaCheckCircle className="absolute right-3 top-4 text-success" />
+                      : <FaExclamationCircle className="absolute right-3 top-4 text-danger" />
+                  )}
+                </div>
+              </Field>
             </div>
 
-            {/* BUTTON */}
+            {/* SUBMIT BUTTON */}
             <button
-              disabled={loading}
-              className="w-full py-4 rounded-xl bg-primary text-white font-semibold hover:bg-primaryLight transition disabled:opacity-60"
+              type="submit"
+              disabled={loading || success}
+              className="w-full py-4 rounded-xl bg-primary text-white font-semibold hover:bg-primaryLight transition disabled:opacity-60 flex items-center justify-center gap-2 mt-2"
             >
-              {loading ? "Processing..." : "Pay Now"}
+              {loading ? (
+                <>
+                  <FaSpinner className="animate-spin" />
+                  Processing...
+                </>
+              ) : success ? (
+                <>
+                  <FaCheckCircle />
+                  Payment Successful!
+                </>
+              ) : (
+                "Pay Now"
+              )}
             </button>
           </form>
         </div>
