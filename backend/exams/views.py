@@ -399,7 +399,7 @@ def available_exams(request):
                 "attempts_used": attempts_used,
                 "attempts_left": max(0, attempts_left),
                 "can_take": attempts_left > 0,
-                "instructor": exam.instructor.first_name or exam.instructor.username,
+                # "instructor": exam.instructor.first_name or exam.instructor.username,
                 "is_paid": exam.is_paid,                                       
                 "price": float(exam.price) if exam.is_paid else 0,             
                 "is_purchased": (

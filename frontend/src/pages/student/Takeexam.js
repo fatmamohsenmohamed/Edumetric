@@ -14,6 +14,16 @@ import {
   MdSend,
 } from "react-icons/md";
 
+const capitalize = (str) => {
+  if (!str || typeof str !== "string") return str;
+  return str
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
+
 export default function TakeExam() {
   const [exam, setExam] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
@@ -544,19 +554,18 @@ export default function TakeExam() {
               >
                 ← Go back to Dashboard
               </button>
-
               {results.certificate_issued && (
                 <button
                   onClick={() =>
                     navigate("/certificate", {
                       state: {
-                        student: exam.student_name || "Student",
-                        subject: exam.subject,
+                        student: capitalize(exam.student_name) || "Student",
+                        subject: capitalize(exam.subject),
                         score: percentage,
                         correct: results.correct,
                         total: total,
-                        instructor: exam.instructor_name || "",
-                        institution: exam.institution_name || "",
+                        instructor: capitalize(exam.instructor_name) || "",
+                        institution: capitalize(exam.institution_name) || "",
                         date: new Date().toISOString(),
                       },
                     })
