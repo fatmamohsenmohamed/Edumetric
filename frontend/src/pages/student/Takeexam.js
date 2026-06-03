@@ -552,7 +552,7 @@ export default function TakeExam() {
                 onClick={() => navigate(-1)}
                 className="flex-1 py-3 bg-gradient-to-r from-[#1e3a8a] to-[#1e40af] text-white font-bold rounded-xl hover:shadow-lg transition-all"
               >
-                ← Go back to Dashboard
+                ← Go back to Home
               </button>
               {results.certificate_issued && (
                 <button

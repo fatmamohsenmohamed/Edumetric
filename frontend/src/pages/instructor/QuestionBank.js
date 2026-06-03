@@ -10,12 +10,11 @@ import {
   MdUploadFile,
   MdClose,
   MdCloudUpload,
-  MdTableChart,
   MdDescription,
   MdMenu,
   MdAutoAwesome, // 🆕 NEW — AI sparkle icon
 } from "react-icons/md";
-import * as XLSX from "xlsx";
+// import * as XLSX from "xlsx";
 import mammoth from "mammoth";
 import InstructorSidebar from "../components/InstructorSidebar";
 
@@ -572,7 +571,7 @@ function AIGenerateDialog({ open, onClose, onSaved }) {
             <button
               onClick={handleGenerate}
               disabled={loading}
-              className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:shadow-lg disabled:opacity-50"
+             className="px-6 py-2 bg-gradient-to-r from-[#2563eb] to-[#1e40af] text-white rounded-xl hover:shadow-lg disabled:opacity-50"
             >
               {loading ? "Generating..." : "✨ Generate"}
             </button>
